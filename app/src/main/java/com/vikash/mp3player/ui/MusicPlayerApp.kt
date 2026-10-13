@@ -28,6 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,6 +36,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import android.widget.Toast
+import com.vikash.mp3player.data.Song
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -75,6 +78,9 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     var hasPermission by remember { mutableStateOf(context.hasAudioPermission()) }
     var tab by rememberSaveable { mutableIntStateOf(0) }
     var showPlayer by rememberSaveable { mutableStateOf(false) }
+    // Ringtone maker: the song stays set while the panel slides away.
+    var ringtoneSong by remember { mutableStateOf<Song?>(null) }
+    var showRingtone by remember { mutableStateOf(false) }
     val snackbar = remember { SnackbarHostState() }
 
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
@@ -135,6 +141,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                         onAddToQueue = { vm.player.addToQueue(it); vm.notify("Added to queue") },
                         favorites = favorites,
                         onToggleFavorite = { vm.toggleFavorite(it.id, it.title) },
+                        onSetRingtone = { ringtoneSong = it; showRingtone = true },
                     )
                     1 -> OnlineScreen(
                         state = online,
@@ -163,7 +170,26 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
             enter = slideInVertically { it },
             exit = slideOutVertically { it },
         ) {
-            NowPlayingScreen(player, vm.player, favorites, onToggleFavorite = vm::toggleFavorite, seekStyle = seekStyle, onClose = { showPlayer = false })
+            NowPlayingScreen(
+                player, vm.player, favorites, onToggleFavorite = vm::toggleFavorite, seekStyle = seekStyle,
+                onSetRingtone = {
+                    // Only files on the phone can be cut; online streams aren't in the library.
+                    val song = library.songs.firstOrNull { it.id == player.current?.mediaId }
+                    if (song != null) { ringtoneSong = song; showRingtone = true }
+                    else Toast.makeText(context, "Ringtones can be made from songs saved on this phone.", Toast.LENGTH_SHORT).show()
+                },
+                onClose = { showPlayer = false },
+            )
+        }
+
+        AnimatedVisibility(
+            visible = showRingtone && ringtoneSong != null,
+            enter = slideInVertically { it },
+            exit = slideOutVertically { it },
+        ) {
+            ringtoneSong?.let { song ->
+                key(song.id) { RingtoneEditorScreen(song, onClose = { showRingtone = false }) }
+            }
         }
     }
 }

@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.QueueMusic
+import androidx.compose.material.icons.filled.RingVolume
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Repeat
@@ -55,6 +56,7 @@ fun NowPlayingScreen(
     favorites: List<String>,
     onToggleFavorite: (id: String, title: String) -> Unit,
     seekStyle: SeekStyle,
+    onSetRingtone: () -> Unit,
     onClose: () -> Unit,
 ) {
     var showQueue by remember { mutableStateOf(false) }
@@ -81,6 +83,7 @@ fun NowPlayingScreen(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 IconButton(onClick = onClose) { Icon(Icons.Default.KeyboardArrowDown, "Close player") }
                 Text(if (showQueue) "Queue" else "Now playing", Modifier.weight(1f), style = MaterialTheme.typography.titleMedium)
+                IconButton(onClick = onSetRingtone) { Icon(Icons.Default.RingVolume, "Set as ringtone") }
                 IconButton(onClick = { showQueue = !showQueue }) { Icon(Icons.Default.QueueMusic, "Queue") }
             }
 

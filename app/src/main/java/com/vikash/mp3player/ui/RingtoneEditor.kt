@@ -1,0 +1,424 @@
+package com.vikash.mp3player.ui
+
+import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
+import android.widget.Toast
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.Button
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.media3.common.AudioAttributes
+import androidx.media3.common.C
+import androidx.media3.common.MediaItem
+import androidx.media3.exoplayer.ExoPlayer
+import com.vikash.mp3player.data.RingtoneMaker
+import com.vikash.mp3player.data.RingtoneTarget
+import com.vikash.mp3player.data.Song
+import com.vikash.mp3player.ui.theme.Ampli
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import java.util.Locale
+import kotlin.math.abs
+
+private const val BARS = 120
+private const val MIN_CLIP_MS = 1_000L
+private const val NUDGE_MS = 100L
+
+/**
+ * Full-screen ringtone maker: pick a section of [song] with two handles, preview it, then save
+ * it and set it as the call, notification and/or alarm sound. Free for everyone.
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun RingtoneEditorScreen(song: Song, onClose: () -> Unit) {
+    val context = LocalContext.current
+    val maker = remember { RingtoneMaker(context.applicationContext) }
+    val scope = rememberCoroutineScope()
+    BackHandler(onBack = onClose)
+
+    val duration = song.durationMs.coerceAtLeast(MIN_CLIP_MS)
+    var startMs by remember { mutableLongStateOf(0L) }
+    var endMs by remember { mutableLongStateOf(minOf(30_000L, duration)) }
+    var waveform by remember { mutableStateOf<FloatArray?>(null) }
+    var targets by remember { mutableStateOf(setOf(RingtoneTarget.Call)) }
+    var saving by remember { mutableStateOf(false) }
+    var progress by remember { mutableFloatStateOf(0f) }
+    var error by remember { mutableStateOf<String?>(null) }
+    // Saved clip waiting for the "Modify system settings" permission.
+    var pendingUri by remember { mutableStateOf<Uri?>(null) }
+    var askWriteSettings by remember { mutableStateOf(false) }
+    var awaitingSettings by remember { mutableStateOf(false) }
+
+    fun setStart(ms: Long) { startMs = ms.coerceIn(0L, endMs - MIN_CLIP_MS) }
+    fun setEnd(ms: Long) { endMs = ms.coerceIn(startMs + MIN_CLIP_MS, duration) }
+    fun quickLength(len: Long) {
+        val l = len.coerceAtMost(duration)
+        if (startMs + l > duration) startMs = duration - l
+        endMs = startMs + l
+    }
+
+    LaunchedEffect(song.uri) {
+        // Stylised bars straight away, replaced by the real waveform as it decodes.
+        val seed = song.id.hashCode()
+        waveform = FloatArray(BARS) { 0.3f + 0.5f * abs(((it * 7919 + seed) % 97) / 97f) }
+        runCatching { maker.waveform(song.uri, BARS) { waveform = it } }.onSuccess { waveform = it }
+    }
+
+    // Preview: our own small player, so the main queue isn't touched (it pauses for audio focus).
+    val preview = remember {
+        ExoPlayer.Builder(context).setAudioAttributes(
+            AudioAttributes.Builder().setUsage(C.USAGE_MEDIA).setContentType(C.AUDIO_CONTENT_TYPE_MUSIC).build(),
+            /* handleAudioFocus = */ true,
+        ).build().apply {
+            setMediaItem(MediaItem.fromUri(song.uri))
+            prepare()
+        }
+    }
+    DisposableEffect(preview) { onDispose { preview.release() } }
+    var previewing by remember { mutableStateOf(false) }
+    var playhead by remember { mutableLongStateOf(-1L) }
+    LaunchedEffect(previewing) {
+        if (!previewing) { preview.pause(); playhead = -1; return@LaunchedEffect }
+        preview.seekTo(startMs)
+        preview.play()
+        while (previewing) {
+            val pos = preview.currentPosition
+            playhead = pos
+            if (pos >= endMs || (!preview.playWhenReady)) previewing = false
+            delay(40)
+        }
+    }
+
+    fun successMessage(applied: Set<RingtoneTarget>) =
+        "Set as " + applied.sortedBy { it.ordinal }.joinToString(" and ") { it.what }
+
+    fun applyDefaults(uri: Uri) {
+        val ok = maker.setAsDefault(uri, targets)
+        Toast.makeText(
+            context,
+            if (ok) successMessage(targets) else "Saved, but this phone didn't let Ampli change the sound. Pick it in Sound settings.",
+            Toast.LENGTH_LONG,
+        ).show()
+    }
+
+    fun finish(uri: Uri) {
+        if (targets.isEmpty()) {
+            Toast.makeText(context, "Saved to Ringtones", Toast.LENGTH_SHORT).show()
+            onClose()
+        } else if (maker.canSetDefaults()) {
+            applyDefaults(uri)
+            onClose()
+        } else {
+            pendingUri = uri
+            askWriteSettings = true
+        }
+    }
+
+    // Back from the system settings page: apply if the switch was turned on.
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    DisposableEffect(lifecycle) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME && awaitingSettings) {
+                awaitingSettings = false
+                val uri = pendingUri
+                if (uri != null && maker.canSetDefaults()) {
+                    applyDefaults(uri)
+                } else {
+                    Toast.makeText(context, "Saved. You can pick it any time in your phone's Sound settings.", Toast.LENGTH_LONG).show()
+                }
+                onClose()
+            }
+        }
+        lifecycle.addObserver(observer)
+        onDispose { lifecycle.removeObserver(observer) }
+    }
+
+    Surface(Modifier.fillMaxSize()) {
+        Column(
+            Modifier.fillMaxSize().systemBarsPadding().verticalScroll(rememberScrollState())
+                .padding(horizontal = 20.dp, vertical = 12.dp),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = onClose) { Icon(Icons.Default.Close, "Close ringtone maker") }
+                Text("Ringtone maker", style = MaterialTheme.typography.titleMedium)
+            }
+            Spacer(Modifier.height(8.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Artwork(song.artworkUri, 48.dp)
+                Spacer(Modifier.width(12.dp))
+                Column(Modifier.weight(1f)) {
+                    Text(song.title, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.titleMedium)
+                    Text(song.artist, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+            Spacer(Modifier.height(20.dp))
+
+            Waveform(
+                bars = waveform,
+                startFraction = startMs.toFloat() / duration,
+                endFraction = endMs.toFloat() / duration,
+                playheadFraction = if (playhead >= 0) playhead.toFloat() / duration else null,
+                onMoveStart = { setStart((it * duration).toLong()) },
+                onMoveEnd = { setEnd((it * duration).toLong()) },
+            )
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text("0:00", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(formatDuration(duration), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            Spacer(Modifier.height(12.dp))
+
+            TimeNudger("Start", startMs, onChange = ::setStart)
+            TimeNudger("End", endMs, onChange = ::setEnd)
+            Text(
+                "Length ${formatClipTime(endMs - startMs)}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(vertical = 4.dp),
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf(15, 30, 40).forEach { s ->
+                    AssistChip(onClick = { quickLength(s * 1000L) }, label = { Text("$s s") })
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                GradientPlayButton(previewing, 52.dp) { previewing = !previewing }
+                Spacer(Modifier.width(12.dp))
+                Text(if (previewing) "Playing your selection" else "Preview selection")
+            }
+
+            Spacer(Modifier.height(20.dp))
+            Text("Use it as", style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.height(4.dp))
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                RingtoneTarget.entries.forEach { t ->
+                    val on = t in targets
+                    FilterChip(
+                        selected = on,
+                        onClick = { targets = if (on) targets - t else targets + t },
+                        label = { Text(t.label) },
+                        leadingIcon = if (on) {
+                            { Icon(Icons.Default.Check, null, Modifier.size(18.dp)) }
+                        } else null,
+                    )
+                }
+                FilterChip(
+                    selected = targets.isEmpty(),
+                    onClick = { targets = emptySet() },
+                    label = { Text("Save only") },
+                    leadingIcon = if (targets.isEmpty()) {
+                        { Icon(Icons.Default.Check, null, Modifier.size(18.dp)) }
+                    } else null,
+                )
+            }
+
+            Spacer(Modifier.height(20.dp))
+            if (saving) {
+                LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth())
+                Spacer(Modifier.height(8.dp))
+                Text("Cutting your ringtone…", style = MaterialTheme.typography.bodyMedium)
+            } else {
+                Button(
+                    onClick = {
+                        previewing = false
+                        error = null
+                        saving = true
+                        progress = 0f
+                        scope.launch {
+                            runCatching {
+                                maker.makeClip(song, startMs, endMs, targets) { p -> progress = p }
+                            }.onSuccess { uri ->
+                                saving = false
+                                finish(uri)
+                            }.onFailure { e ->
+                                saving = false
+                                error = e.message ?: "Couldn't make the ringtone. Try another song."
+                            }
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                ) { Text(if (targets.isEmpty()) "Save ringtone" else "Save and set") }
+            }
+            error?.let {
+                Spacer(Modifier.height(8.dp))
+                Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium)
+            }
+            Spacer(Modifier.height(8.dp))
+            Text(
+                "The clip is cut without re-encoding, so it sounds exactly like the song. " +
+                    "Works with MP3 and M4A/AAC files.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+
+    if (askWriteSettings) {
+        AlertDialog(
+            onDismissRequest = { askWriteSettings = false; onClose() },
+            title = { Text("Allow Ampli to change sounds") },
+            text = {
+                Text(
+                    "Your clip is saved. Android asks before an app changes the phone's ringtone, " +
+                        "notification or alarm sound. Turn on \"Allow modifying system settings\" for Ampli, " +
+                        "then come back and it will be set."
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    askWriteSettings = false
+                    awaitingSettings = true
+                    context.startActivity(
+                        Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS, Uri.parse("package:${context.packageName}"))
+                    )
+                }) { Text("Open settings") }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    askWriteSettings = false
+                    Toast.makeText(context, "Saved. You can pick it any time in your phone's Sound settings.", Toast.LENGTH_LONG).show()
+                    onClose()
+                }) { Text("Not now") }
+            },
+        )
+    }
+}
+
+/** Waveform strip with the selected part highlighted and two draggable handles. */
+@Composable
+private fun Waveform(
+    bars: FloatArray?,
+    startFraction: Float,
+    endFraction: Float,
+    playheadFraction: Float?,
+    onMoveStart: (Float) -> Unit,
+    onMoveEnd: (Float) -> Unit,
+) {
+    val selected = MaterialTheme.colorScheme.primary
+    val dimmed = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
+    val handle = Ampli.Rose
+    val playColor = MaterialTheme.colorScheme.onSurface
+    // Which handle the finger is moving: true = start.
+    var draggingStart by remember { mutableStateOf(true) }
+    val currentStart by rememberUpdatedState(startFraction)
+    val currentEnd by rememberUpdatedState(endFraction)
+
+    Canvas(
+        Modifier.fillMaxWidth().height(140.dp)
+            .pointerInput(Unit) {
+                detectTapGestures { pos ->
+                    val f = (pos.x / size.width).coerceIn(0f, 1f)
+                    if (abs(f - currentStart) <= abs(f - currentEnd)) onMoveStart(f) else onMoveEnd(f)
+                }
+            }
+            .pointerInput(Unit) {
+                detectDragGestures(
+                    onDragStart = { pos ->
+                        val f = pos.x / size.width
+                        draggingStart = abs(f - currentStart) <= abs(f - currentEnd)
+                    },
+                    onDrag = { change, _ ->
+                        change.consume()
+                        val f = (change.position.x / size.width).coerceIn(0f, 1f)
+                        if (draggingStart) onMoveStart(f) else onMoveEnd(f)
+                    },
+                )
+            },
+    ) {
+        val levels = bars ?: return@Canvas
+        val slot = size.width / levels.size
+        val barW = (slot * 0.6f).coerceAtLeast(1f)
+        val mid = size.height / 2
+        levels.forEachIndexed { i, level ->
+            val x = i * slot + (slot - barW) / 2
+            val f = (i + 0.5f) / levels.size
+            val h = (level * size.height * 0.9f).coerceAtLeast(2f)
+            drawRoundRect(
+                color = if (f in startFraction..endFraction) selected else dimmed,
+                topLeft = Offset(x, mid - h / 2),
+                size = Size(barW, h),
+                cornerRadius = CornerRadius(barW / 2),
+            )
+        }
+        listOf(startFraction, endFraction).forEach { f ->
+            val x = f * size.width
+            drawLine(handle, Offset(x, 0f), Offset(x, size.height), strokeWidth = 3.dp.toPx())
+            drawCircle(handle, radius = 8.dp.toPx(), center = Offset(x, if (f == startFraction) 8.dp.toPx() else size.height - 8.dp.toPx()))
+        }
+        playheadFraction?.let {
+            val x = it * size.width
+            drawLine(playColor, Offset(x, 0f), Offset(x, size.height), strokeWidth = 2.dp.toPx())
+        }
+    }
+}
+
+/** "Start 0:12.3" with −0.1 s / +0.1 s buttons. */
+@Composable
+private fun TimeNudger(label: String, ms: Long, onChange: (Long) -> Unit) {
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Text(label, Modifier.width(56.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+        IconButton(onClick = { onChange(ms - NUDGE_MS) }) { Icon(Icons.Default.Remove, "$label 0.1 seconds earlier") }
+        Text(formatClipTime(ms), style = MaterialTheme.typography.titleMedium, color = Color.Unspecified)
+        IconButton(onClick = { onChange(ms + NUDGE_MS) }) { Icon(Icons.Default.Add, "$label 0.1 seconds later") }
+    }
+}
+
+private fun formatClipTime(ms: Long): String =
+    String.format(Locale.US, "%d:%04.1f", ms / 60_000, (ms % 60_000) / 1000.0)

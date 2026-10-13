@@ -68,6 +68,7 @@ fun LibraryScreen(
     onAddToQueue: (Song) -> Unit,
     favorites: List<String>,
     onToggleFavorite: (Song) -> Unit,
+    onSetRingtone: (Song) -> Unit,
 ) {
     if (!hasPermission) {
         EmptyMessage("Allow Ampli to see the music on this phone.") {
@@ -166,6 +167,7 @@ fun LibraryScreen(
                     onAddToQueue = onAddToQueue,
                     favorites = favorites,
                     onToggleFavorite = onToggleFavorite,
+                    onSetRingtone = onSetRingtone,
                 )
             }
             else -> {
@@ -207,6 +209,7 @@ private fun SongList(
     onAddToQueue: (Song) -> Unit,
     favorites: List<String>,
     onToggleFavorite: (Song) -> Unit,
+    onSetRingtone: (Song) -> Unit,
 ) {
     LazyColumn(Modifier.fillMaxSize()) {
         item {
@@ -235,6 +238,7 @@ private fun SongList(
                     SongAction("Play next") { onPlayNext(song) },
                     SongAction("Add to queue") { onAddToQueue(song) },
                     SongAction(if (fav) "Remove from $MY_FAVORITES" else "Add to $MY_FAVORITES") { onToggleFavorite(song) },
+                    SongAction("Set as ringtone") { onSetRingtone(song) },
                 ),
                 isFavorite = fav,
                 onToggleFavorite = { onToggleFavorite(song) },
