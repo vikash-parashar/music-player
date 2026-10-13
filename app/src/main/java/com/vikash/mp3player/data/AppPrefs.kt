@@ -22,6 +22,15 @@ class AppPrefs(context: Context) {
         prefs.edit().putString(KEY_THEME, mode.name).apply()
     }
 
+    /** Name of the chosen SeekStyle for the Now Playing progress bar. */
+    private val _seekStyle = MutableStateFlow(prefs.getString(KEY_SEEK_STYLE, null) ?: "Classic")
+    val seekStyle: StateFlow<String> = _seekStyle.asStateFlow()
+
+    fun setSeekStyle(name: String) {
+        _seekStyle.value = name
+        prefs.edit().putString(KEY_SEEK_STYLE, name).apply()
+    }
+
     /** Song ids, most recently liked first. */
     private val _favorites = MutableStateFlow(
         prefs.getString(KEY_FAVORITES, "").orEmpty().split('\n').filter { it.isNotBlank() }
@@ -43,5 +52,6 @@ class AppPrefs(context: Context) {
     private companion object {
         const val KEY_THEME = "theme_mode"
         const val KEY_FAVORITES = "favorites"
+        const val KEY_SEEK_STYLE = "seek_style"
     }
 }

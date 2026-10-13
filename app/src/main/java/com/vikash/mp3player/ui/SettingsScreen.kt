@@ -33,6 +33,10 @@ import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BrightnessAuto
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material3.RadioButton
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.draw.alpha
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.LightMode
 import com.vikash.mp3player.data.ThemeMode
@@ -72,6 +76,7 @@ fun SettingsScreen(
         ProCard(adsRemoved, price, onRemoveAds)
         if (BuildConfig.DEBUG) TestProCard(adsRemoved, onTestPro)
         AppearanceCard(themeMode, onThemeMode)
+        SeekStyleCard(seekStyle, isPro = adsRemoved, onPick = onSeekStyle, onGetPro = onRemoveAds)
         SleepTimerCard()
         EqualizerCard()
     }
@@ -131,6 +136,49 @@ private fun TestProCard(isPro: Boolean, onTestPro: (Boolean) -> Unit) {
                 )
             }
             Switch(checked = isPro, onCheckedChange = onTestPro)
+        }
+    }
+}
+
+/** Pick the Now Playing progress bar. Each option shows a live preview. */
+@Composable
+private fun SeekStyleCard(current: SeekStyle, isPro: Boolean, onPick: (SeekStyle) -> Unit, onGetPro: () -> Unit) {
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(vertical = 16.dp)) {
+            Text("Progress bar style", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(horizontal = 16.dp))
+            Text(
+                if (isPro) "Pick how the bar moves while a song plays." else "Classic and Squiggle are free. The rest come with Ampli Pro.",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 16.dp),
+            )
+            Spacer(Modifier.height(6.dp))
+            SeekStyle.entries.forEachIndexed { i, style ->
+                val locked = style.pro && !isPro
+                Row(
+                    Modifier.fillMaxWidth()
+                        .clickable { if (locked) onGetPro() else onPick(style) }
+                        .padding(horizontal = 8.dp, vertical = 2.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    RadioButton(selected = style == current, onClick = { if (locked) onGetPro() else onPick(style) }, enabled = !locked)
+                    Column(Modifier.weight(1f)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(style.label, style = MaterialTheme.typography.bodyLarge)
+                            if (locked) {
+                                Spacer(Modifier.width(8.dp))
+                                Icon(Icons.Default.Lock, "Ampli Pro", Modifier.size(14.dp), tint = MaterialTheme.colorScheme.primary)
+                            }
+                        }
+                        AnimatedSeekBar(
+                            progress = 0.25f + 0.07f * i,
+                            playing = true,
+                            style = style,
+                            height = 40.dp,
+                            modifier = Modifier.alpha(if (locked) 0.55f else 1f),
+                        )
+                    }
+                }
+            }
         }
     }
 }

@@ -54,6 +54,7 @@ fun NowPlayingScreen(
     player: PlayerConnection,
     favorites: List<String>,
     onToggleFavorite: (id: String, title: String) -> Unit,
+    seekStyle: SeekStyle,
     onClose: () -> Unit,
 ) {
     var showQueue by remember { mutableStateOf(false) }
@@ -71,7 +72,7 @@ fun NowPlayingScreen(
     LaunchedEffect(state.current, state.isPlaying) {
         while (true) {
             if (!dragging) position = player.positionMs()
-            delay(500)
+            delay(if (state.isPlaying) 100 else 500) // frequent updates keep the animated bar smooth
         }
     }
 
@@ -128,14 +129,18 @@ fun NowPlayingScreen(
             }
 
             val duration = state.durationMs.coerceAtLeast(1)
-            Slider(
-                value = if (dragging) dragValue else (position.toFloat() / duration).coerceIn(0f, 1f),
-                onValueChange = { dragging = true; dragValue = it },
-                onValueChangeFinished = {
-                    val target = (dragValue * duration).toLong()
-                    player.seekTo(target)
-                    position = target
-                    dragging = false
+            AnimatedSeekBar(
+                progress = if (dragging) dragValue else (position.toFloat() / duration).coerceIn(0f, 1f),
+                playing = state.isPlaying && !dragging,
+                style = seekStyle,
+                onSeek = { dragging = true; dragValue = it },
+                onSeekFinished = {
+                    if (dragging) {
+                        val target = (dragValue * duration).toLong()
+                        player.seekTo(target)
+                        position = target
+                        dragging = false
+                    }
                 },
             )
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {

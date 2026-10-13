@@ -67,6 +67,10 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     val videos by vm.videos.collectAsStateWithLifecycle()
     val favorites by vm.prefs.favorites.collectAsStateWithLifecycle()
     val themeMode by vm.prefs.themeMode.collectAsStateWithLifecycle()
+    val seekStyleName by vm.prefs.seekStyle.collectAsStateWithLifecycle()
+    // Pro styles fall back to Classic if Pro is turned off.
+    val seekStyle = SeekStyle.entries.firstOrNull { it.name == seekStyleName }
+        ?.takeIf { !it.pro || adsRemoved } ?: SeekStyle.Classic
 
     var hasPermission by remember { mutableStateOf(context.hasAudioPermission()) }
     var tab by rememberSaveable { mutableIntStateOf(0) }
@@ -147,6 +151,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                     else -> SettingsScreen(
                         adsRemoved = adsRemoved, price = price, onRemoveAds = onRemoveAds,
                         onTestPro = vm.billing::setTestPro,
+                        seekStyle = seekStyle, onSeekStyle = { vm.prefs.setSeekStyle(it.name) },
                         themeMode = themeMode, onThemeMode = vm.prefs::setThemeMode,
                     )
                 }
@@ -158,7 +163,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
             enter = slideInVertically { it },
             exit = slideOutVertically { it },
         ) {
-            NowPlayingScreen(player, vm.player, favorites, onToggleFavorite = vm::toggleFavorite, onClose = { showPlayer = false })
+            NowPlayingScreen(player, vm.player, favorites, onToggleFavorite = vm::toggleFavorite, seekStyle = seekStyle, onClose = { showPlayer = false })
         }
     }
 }
