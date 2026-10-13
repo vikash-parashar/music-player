@@ -1,0 +1,51 @@
+name: Build APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      # GitHub's Ubuntu runners ship with the Android SDK preinstalled.
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Write local.properties
+        env:
+          JAMENDO_CLIENT_ID: ${{ secrets.JAMENDO_CLIENT_ID }}
+        run: |
+          echo "sdk.dir=$ANDROID_HOME" > local.properties
+          echo "JAMENDO_CLIENT_ID=${JAMENDO_CLIENT_ID}" >> local.properties
+
+      - name: Build debug APK
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon assembleDebug
+
+      - name: Rename APK
+        run: cp app/build/outputs/apk/debug/app-debug.apk "Ampli-${GITHUB_RUN_NUMBER}.apk"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Ampli-apk
+          path: Ampli-*.apk
+
+      # A release gives a direct download link that opens on the phone.
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: Ampli test build ${{ github.run_number }}
+          prerelease: true
+          files: Ampli-*.apk

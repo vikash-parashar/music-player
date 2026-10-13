@@ -1,0 +1,6 @@
+# Copy to local.properties (Android Studio also writes sdk.dir here). Never commit it.
+JAMENDO_CLIENT_ID=your_jamendo_client_id
+REMOVE_ADS_PRODUCT_ID=remove_ads
+# Release-only. Debug builds always use Google's test ads.
+ADMOB_APP_ID=ca-app-pub-XXXXXXXXXXXXXXXX~YYYYYYYYYY
+ADMOB_BANNER_ID=ca-app-pub-XXXXXXXXXXXXXXXX/ZZZZZZZZZZ
