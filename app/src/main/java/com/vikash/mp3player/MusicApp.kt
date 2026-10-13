@@ -8,6 +8,7 @@ import coil3.request.crossfade
 import com.vikash.mp3player.data.AppPrefs
 import com.vikash.mp3player.data.JamendoRepository
 import com.vikash.mp3player.data.LocalMusicRepository
+import com.vikash.mp3player.data.LocalVideoRepository
 import com.vikash.mp3player.data.SongDownloader
 import com.vikash.mp3player.monetization.BillingManager
 
@@ -15,6 +16,7 @@ import com.vikash.mp3player.monetization.BillingManager
 class MusicApp : Application(), SingletonImageLoader.Factory {
 
     val localMusic by lazy { LocalMusicRepository(this) }
+    val localVideos by lazy { LocalVideoRepository(this) }
     val jamendo by lazy { JamendoRepository() }
     val downloader by lazy { SongDownloader(this) }
     val billing by lazy { BillingManager(this) }

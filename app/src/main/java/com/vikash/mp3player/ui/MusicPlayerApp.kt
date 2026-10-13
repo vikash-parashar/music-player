@@ -17,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LibraryMusic
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -63,6 +64,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     val adsRemoved by vm.billing.adsRemoved.collectAsStateWithLifecycle()
     val price by vm.billing.price.collectAsStateWithLifecycle()
     val adsReady by Ads.ready.collectAsStateWithLifecycle()
+    val videos by vm.videos.collectAsStateWithLifecycle()
     val favorites by vm.prefs.favorites.collectAsStateWithLifecycle()
     val themeMode by vm.prefs.themeMode.collectAsStateWithLifecycle()
 
@@ -90,7 +92,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
 
     Box(Modifier.fillMaxSize()) {
         Scaffold(
-            topBar = { BrandHeader(showAdFreePill = !adsRemoved, onAdFreeClick = { tab = 2 }) },
+            topBar = { BrandHeader(showAdFreePill = !adsRemoved, onAdFreeClick = { tab = 3 }) },
             snackbarHost = { SnackbarHost(snackbar) },
             bottomBar = {
                 Column {
@@ -107,6 +109,10 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                         )
                         NavigationBarItem(
                             selected = tab == 2, onClick = { tab = 2 },
+                            icon = { Icon(Icons.Default.VideoLibrary, null) }, label = { Text("Videos") },
+                        )
+                        NavigationBarItem(
+                            selected = tab == 3, onClick = { tab = 3 },
                             icon = { Icon(Icons.Default.Settings, null) }, label = { Text("Settings") },
                         )
                     }
@@ -136,6 +142,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                         onAddToQueue = { vm.player.addToQueue(it); vm.notify("Added to queue") },
                         onDownload = vm::download,
                     )
+                    2 -> VideosScreen(videos, onLoad = vm::loadVideos)
                     else -> SettingsScreen(
                         adsRemoved = adsRemoved, price = price, onRemoveAds = onRemoveAds,
                         themeMode = themeMode, onThemeMode = vm.prefs::setThemeMode,

@@ -4,6 +4,8 @@
 
     <!-- Local library: Android 13+ uses READ_MEDIA_AUDIO, older versions READ_EXTERNAL_STORAGE. -->
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+    <!-- Videos tab: camera clips and downloaded videos. -->
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
     <uses-permission
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
@@ -51,6 +53,26 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Full-screen video player. Also offered in "Open with" for any video file. -->
+        <activity
+            android:name=".video.VideoPlayerActivity"
+            android:exported="true"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden"
+            android:supportsPictureInPicture="true"
+            android:launchMode="singleTask"
+            android:theme="@style/Theme.Mp3Player.Video">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="content" android:mimeType="video/*" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="file" android:mimeType="video/*" />
             </intent-filter>
         </activity>
 

@@ -4,6 +4,10 @@
         <item name="android:windowBackground">@color/ampli_night</item>
     </style>
 
+    <style name="Theme.Mp3Player.Video" parent="android:Theme.Material.NoActionBar.Fullscreen">
+        <item name="android:windowBackground">@android:color/black</item>
+    </style>
+
     <!-- Launch screen: logo on the brand night color, then hands over to Theme.Mp3Player. -->
     <style name="Theme.Mp3Player.Starting" parent="Theme.SplashScreen.IconBackground">
         <item name="windowSplashScreenBackground">@color/ampli_night</item>

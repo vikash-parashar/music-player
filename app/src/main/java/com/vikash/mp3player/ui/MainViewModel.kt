@@ -53,6 +53,17 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     private var searchJob: Job? = null
 
+    private val _videos = MutableStateFlow(VideoState())
+    val videos: StateFlow<VideoState> = _videos.asStateFlow()
+
+    fun loadVideos() {
+        viewModelScope.launch {
+            _videos.update { it.copy(loading = true) }
+            val list = runCatching { musicApp.localVideos.loadVideos() }.getOrDefault(emptyList())
+            _videos.value = VideoState(loading = false, videos = list)
+        }
+    }
+
     fun loadLibrary() {
         viewModelScope.launch {
             _library.update { it.copy(loading = true) }
