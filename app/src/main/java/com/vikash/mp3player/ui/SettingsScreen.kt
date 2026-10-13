@@ -68,6 +68,8 @@ fun SettingsScreen(
     onTestPro: (Boolean) -> Unit,
     themeMode: ThemeMode,
     onThemeMode: (ThemeMode) -> Unit,
+    seekStyle: SeekStyle,
+    onSeekStyle: (SeekStyle) -> Unit,
 ) {
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
