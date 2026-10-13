@@ -142,9 +142,11 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                         onAddToQueue = { vm.player.addToQueue(it); vm.notify("Added to queue") },
                         onDownload = vm::download,
                     )
-                    2 -> VideosScreen(videos, onLoad = vm::loadVideos)
+                    2 -> if (adsRemoved) VideosScreen(videos, onLoad = vm::loadVideos)
+                         else LockedVideos(price = price, onGetPro = onRemoveAds)
                     else -> SettingsScreen(
                         adsRemoved = adsRemoved, price = price, onRemoveAds = onRemoveAds,
+                        onTestPro = vm.billing::setTestPro,
                         themeMode = themeMode, onThemeMode = vm.prefs::setThemeMode,
                     )
                 }

@@ -10,6 +10,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import com.vikash.mp3player.BuildConfig
 import com.vikash.mp3player.R
 import com.vikash.mp3player.ui.theme.Ampli
 import androidx.compose.foundation.layout.Arrangement
@@ -60,6 +61,7 @@ fun SettingsScreen(
     adsRemoved: Boolean,
     price: String?,
     onRemoveAds: () -> Unit,
+    onTestPro: (Boolean) -> Unit,
     themeMode: ThemeMode,
     onThemeMode: (ThemeMode) -> Unit,
 ) {
@@ -67,39 +69,68 @@ fun SettingsScreen(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        RemoveAdsCard(adsRemoved, price, onRemoveAds)
+        ProCard(adsRemoved, price, onRemoveAds)
+        if (BuildConfig.DEBUG) TestProCard(adsRemoved, onTestPro)
         AppearanceCard(themeMode, onThemeMode)
         SleepTimerCard()
         EqualizerCard()
     }
 }
 
+/** What the one-time Ampli Pro purchase unlocks. Shared with the locked Videos screen. */
+val PRO_FEATURES = listOf(
+    "No ads, ever",
+    "Video player for camera clips and downloads",
+    "Name that song: identify music playing around you (coming soon)",
+)
+
 @Composable
-private fun RemoveAdsCard(adsRemoved: Boolean, price: String?, onRemoveAds: () -> Unit) {
-    Box(Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(Ampli.Gradient)) {
-        Row(Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
+fun ProCard(isPro: Boolean, price: String?, onGetPro: () -> Unit, modifier: Modifier = Modifier) {
+    Box(modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(Ampli.Gradient)) {
+        Row(Modifier.padding(20.dp), verticalAlignment = Alignment.Top) {
             Column(Modifier.weight(1f)) {
                 Text(
-                    if (adsRemoved) "Ampli Ad-free" else "Go ad-free",
+                    if (isPro) "You have Ampli Pro" else "Ampli Pro",
                     style = MaterialTheme.typography.titleLarge,
                     color = Color.White,
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    if (adsRemoved) "You're ad-free forever. Thanks for supporting Ampli!"
-                    else "One payment, no subscription. Works on every phone with this Google account.",
+                    if (isPro) "Everything is unlocked forever. Thanks for supporting Ampli!"
+                    else "Pay once, keep it forever. No monthly fee, on every phone with this Google account.",
                     color = Color.White.copy(alpha = 0.9f),
                 )
-                if (!adsRemoved) {
+                Spacer(Modifier.height(10.dp))
+                PRO_FEATURES.forEach {
+                    Text("✓  $it", color = Color.White, style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(vertical = 2.dp))
+                }
+                if (!isPro) {
                     Spacer(Modifier.height(14.dp))
                     Button(
-                        onClick = onRemoveAds,
+                        onClick = onGetPro,
                         colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Ampli.RoseDeep),
-                    ) { Text(if (price != null) "Remove ads for $price" else "Remove ads") }
+                    ) { Text(if (price != null) "Get Pro for $price" else "Get Ampli Pro") }
                 }
             }
-            Spacer(Modifier.width(12.dp))
-            Image(painterResource(R.drawable.ic_launcher_foreground), null, Modifier.size(88.dp))
+            Spacer(Modifier.width(8.dp))
+            Image(painterResource(R.drawable.ic_launcher_foreground), null, Modifier.size(72.dp))
+        }
+    }
+}
+
+@Composable
+private fun TestProCard(isPro: Boolean, onTestPro: (Boolean) -> Unit) {
+    Card(Modifier.fillMaxWidth()) {
+        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text("Test build: try Pro", style = MaterialTheme.typography.titleMedium)
+                Text(
+                    "Purchases only work in the Play Store version. This switch is not in the release app.",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Switch(checked = isPro, onCheckedChange = onTestPro)
         }
     }
 }

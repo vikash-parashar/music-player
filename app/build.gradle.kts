@@ -27,7 +27,7 @@ android {
         versionName = "1.0.0"
 
         buildConfigField("String", "JAMENDO_CLIENT_ID", "\"${prop("JAMENDO_CLIENT_ID")}\"")
-        buildConfigField("String", "REMOVE_ADS_PRODUCT_ID", "\"${prop("REMOVE_ADS_PRODUCT_ID", "remove_ads")}\"")
+        buildConfigField("String", "REMOVE_ADS_PRODUCT_ID", "\"${prop("REMOVE_ADS_PRODUCT_ID", "ampli_pro")}\"")
     }
 
     buildTypes {

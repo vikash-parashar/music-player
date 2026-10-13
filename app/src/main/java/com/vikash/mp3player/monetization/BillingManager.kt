@@ -21,7 +21,7 @@ import kotlinx.coroutines.flow.asStateFlow
 
 /**
  * One-time "Remove ads" purchase through Google Play Billing. Create a one-time product with
- * id [BuildConfig.REMOVE_ADS_PRODUCT_ID] (default "remove_ads") in Play Console under
+ * id [BuildConfig.REMOVE_ADS_PRODUCT_ID] (default "ampli_pro", the one-time Ampli Pro unlock) in Play Console under
  * Monetize > Products > In-app products.
  *
  * The cached flag lets ad-free users start offline; Play is re-checked on every launch, so a
@@ -120,6 +120,11 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
     private fun Purchase.ownsRemoveAds() =
         purchaseState == Purchase.PurchaseState.PURCHASED &&
             BuildConfig.REMOVE_ADS_PRODUCT_ID in products
+
+    /** Sideloaded test builds can't reach Play Billing, so they get a switch to try Pro. */
+    fun setTestPro(value: Boolean) {
+        if (BuildConfig.DEBUG) setAdsRemoved(value)
+    }
 
     private fun setAdsRemoved(value: Boolean) {
         _adsRemoved.value = value

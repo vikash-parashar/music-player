@@ -30,6 +30,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
@@ -50,6 +51,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -155,6 +157,30 @@ fun VideosScreen(state: VideoState, onLoad: () -> Unit) {
                 }
             }
         }
+    }
+}
+
+/** Shown on the Videos tab until the user has Ampli Pro. */
+@Composable
+fun LockedVideos(price: String?, onGetPro: () -> Unit) {
+    Column(
+        Modifier.fillMaxSize().padding(16.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Icon(Icons.Default.VideoLibrary, null, Modifier.size(56.dp), tint = MaterialTheme.colorScheme.primary)
+        Text(
+            "Watch your videos in Ampli",
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(top = 12.dp, bottom = 4.dp),
+        )
+        Text(
+            "Camera clips, WhatsApp and downloaded videos, full screen or in a floating window.",
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(bottom = 20.dp),
+        )
+        ProCard(isPro = false, price = price, onGetPro = onGetPro)
     }
 }
 

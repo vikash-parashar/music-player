@@ -185,7 +185,7 @@ fun EmptyMessage(text: String, modifier: Modifier = Modifier, action: (@Composab
     }
 }
 
-/** App bar: logo + wordmark, with a "Go ad-free" pill while ads are on. */
+/** App bar: logo + wordmark, with a "Get Pro" pill until the user has Pro. */
 @Composable
 fun BrandHeader(showAdFreePill: Boolean, onAdFreeClick: () -> Unit) {
     Row(
@@ -200,7 +200,7 @@ fun BrandHeader(showAdFreePill: Boolean, onAdFreeClick: () -> Unit) {
                 Modifier.clip(RoundedCornerShape(50)).background(Ampli.Gradient)
                     .clickable(onClick = onAdFreeClick).padding(horizontal = 14.dp, vertical = 6.dp),
             ) {
-                Text("Go ad-free", color = Color.White, style = MaterialTheme.typography.labelLarge)
+                Text("Get Pro", color = Color.White, style = MaterialTheme.typography.labelLarge)
             }
         }
     }
