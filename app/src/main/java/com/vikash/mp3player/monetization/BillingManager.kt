@@ -60,14 +60,16 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
         })
     }
 
-    fun purchaseRemoveAds(activity: Activity) {
-        val details = productDetails ?: return start()
+    /** Opens Google Play's payment sheet. Returns false when Play has no product to sell yet. */
+    fun purchaseRemoveAds(activity: Activity): Boolean {
+        val details = productDetails ?: run { start(); return false }
         val params = BillingFlowParams.newBuilder()
             .setProductDetailsParamsList(
                 listOf(BillingFlowParams.ProductDetailsParams.newBuilder().setProductDetails(details).build())
             )
             .build()
         client.launchBillingFlow(activity, params)
+        return true
     }
 
     override fun onPurchasesUpdated(result: BillingResult, purchases: MutableList<Purchase>?) {

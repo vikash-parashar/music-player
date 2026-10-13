@@ -1,6 +1,7 @@
 package com.vikash.mp3player
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -30,7 +31,16 @@ class MainActivity : ComponentActivity() {
         setContent {
             val themeMode by (application as MusicApp).prefs.themeMode.collectAsState()
             Mp3PlayerTheme(themeMode) {
-                MusicPlayerApp(vm, onRemoveAds = { billing.purchaseRemoveAds(this) })
+                MusicPlayerApp(vm, onRemoveAds = {
+                    if (!billing.purchaseRemoveAds(this)) {
+                        Toast.makeText(
+                            this,
+                            if (BuildConfig.DEBUG) "Payments work once Ampli is on the Play Store. For now, use \"Test build: try Pro\" in Settings."
+                            else "Couldn't reach Google Play. Check your connection and try again.",
+                            Toast.LENGTH_LONG,
+                        ).show()
+                    }
+                })
             }
         }
     }
