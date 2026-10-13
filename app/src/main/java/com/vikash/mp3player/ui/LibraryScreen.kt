@@ -1,7 +1,15 @@
 package com.vikash.mp3player.ui
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import com.vikash.mp3player.ui.theme.Ampli
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -43,7 +51,11 @@ private enum class LibraryTab(val label: String, val key: (Song) -> String) {
     Albums("Albums", { it.album.ifBlank { "Unknown album" } }),
     Artists("Artists", { it.artist }),
     Folders("Folders", { it.folder.ifBlank { "Internal storage" } }),
+    Playlists("Playlists", { "" }),
 }
+
+const val MY_FAVORITES = "My Favorites"
+
 
 @Composable
 fun LibraryScreen(
@@ -54,6 +66,8 @@ fun LibraryScreen(
     onPlay: (List<Song>, Int) -> Unit,
     onPlayNext: (Song) -> Unit,
     onAddToQueue: (Song) -> Unit,
+    favorites: List<String>,
+    onToggleFavorite: (Song) -> Unit,
 ) {
     if (!hasPermission) {
         EmptyMessage("Allow Ampli to see the music on this phone.") {
@@ -100,8 +114,48 @@ fun LibraryScreen(
                     CircularProgressIndicator(Modifier.padding(32.dp))
                 }
             state.songs.isEmpty() -> EmptyMessage("No music found on this phone yet. Downloaded songs appear here too.")
+            current == LibraryTab.Playlists && openGroup == null -> {
+                val count = state.songs.count { it.id in favorites }
+                LazyColumn(Modifier.fillMaxSize()) {
+                    item {
+                        Row(
+                            Modifier.fillMaxWidth().clickable { openGroup = MY_FAVORITES }.padding(horizontal = 16.dp, vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Box(
+                                Modifier.size(48.dp).clip(RoundedCornerShape(10.dp)).background(Ampli.Gradient),
+                                contentAlignment = Alignment.Center,
+                            ) { Icon(Icons.Default.Favorite, null, tint = Color.White) }
+                            Spacer(Modifier.width(12.dp))
+                            Column(Modifier.weight(1f)) {
+                                Text(MY_FAVORITES, maxLines = 1)
+                                Text(
+                                    if (count == 0) "Tap the heart on any song to add it" else "$count songs",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            current == LibraryTab.Playlists && openGroup == MY_FAVORITES && favorites.none { id -> state.songs.any { it.id == id } } ->
+                Column(Modifier.fillMaxSize()) {
+                    Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(onClick = { openGroup = null }) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back") }
+                        Text(MY_FAVORITES, style = MaterialTheme.typography.titleMedium)
+                    }
+                    EmptyMessage("No favorites yet. Tap the heart next to a song, or on the player screen, to add it here.")
+                }
             current == LibraryTab.Songs || openGroup != null -> {
-                val songs = if (openGroup == null) filtered else filtered.filter { current.key(it) == openGroup }
+                val songs = when {
+                    openGroup == null -> filtered
+                    current == LibraryTab.Playlists -> {
+                        val byId = filtered.associateBy { it.id }
+                        favorites.mapNotNull { byId[it] }
+                    }
+                    else -> filtered.filter { current.key(it) == openGroup }
+                }
                 SongList(
                     title = openGroup,
                     songs = songs,
@@ -110,6 +164,8 @@ fun LibraryScreen(
                     onPlay = onPlay,
                     onPlayNext = onPlayNext,
                     onAddToQueue = onAddToQueue,
+                    favorites = favorites,
+                    onToggleFavorite = onToggleFavorite,
                 )
             }
             else -> {
@@ -149,6 +205,8 @@ private fun SongList(
     onPlay: (List<Song>, Int) -> Unit,
     onPlayNext: (Song) -> Unit,
     onAddToQueue: (Song) -> Unit,
+    favorites: List<String>,
+    onToggleFavorite: (Song) -> Unit,
 ) {
     LazyColumn(Modifier.fillMaxSize()) {
         item {
@@ -168,6 +226,7 @@ private fun SongList(
         }
         items(songs.size, key = { songs[it].id }) { i ->
             val song = songs[i]
+            val fav = song.id in favorites
             SongRow(
                 song = song,
                 isCurrent = song.id == currentId,
@@ -175,7 +234,10 @@ private fun SongList(
                 actions = listOf(
                     SongAction("Play next") { onPlayNext(song) },
                     SongAction("Add to queue") { onAddToQueue(song) },
+                    SongAction(if (fav) "Remove from $MY_FAVORITES" else "Add to $MY_FAVORITES") { onToggleFavorite(song) },
                 ),
+                isFavorite = fav,
+                onToggleFavorite = { onToggleFavorite(song) },
             )
         }
     }

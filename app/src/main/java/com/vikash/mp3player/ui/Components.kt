@@ -19,6 +19,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
@@ -78,6 +80,18 @@ fun Artwork(uri: Uri?, size: Dp, modifier: Modifier = Modifier) {
     }
 }
 
+/** Heart toggle: filled rose when the song is in My Favorites. */
+@Composable
+fun FavoriteButton(isFavorite: Boolean, onToggle: () -> Unit, modifier: Modifier = Modifier) {
+    IconButton(onClick = onToggle, modifier = modifier) {
+        Icon(
+            if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+            if (isFavorite) "Remove from My Favorites" else "Add to My Favorites",
+            tint = if (isFavorite) Ampli.Rose else MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
 data class SongAction(val label: String, val onClick: () -> Unit)
 
 @Composable
@@ -86,6 +100,8 @@ fun SongRow(
     isCurrent: Boolean,
     onClick: () -> Unit,
     actions: List<SongAction>,
+    isFavorite: Boolean? = null,
+    onToggleFavorite: () -> Unit = {},
 ) {
     var menuOpen by remember { mutableStateOf(false) }
     Row(
@@ -110,6 +126,7 @@ fun SongRow(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
+        if (isFavorite != null) FavoriteButton(isFavorite, onToggleFavorite)
         Box {
             IconButton(onClick = { menuOpen = true }) { Icon(Icons.Default.MoreVert, "More options") }
             DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {

@@ -5,6 +5,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.vikash.mp3player.monetization.Ads
 import com.vikash.mp3player.ui.MainViewModel
@@ -26,7 +28,8 @@ class MainActivity : ComponentActivity() {
         if (!billing.adsRemoved.value) Ads.gatherConsentAndInit(this)
 
         setContent {
-            Mp3PlayerTheme {
+            val themeMode by (application as MusicApp).prefs.themeMode.collectAsState()
+            Mp3PlayerTheme(themeMode) {
                 MusicPlayerApp(vm, onRemoveAds = { billing.purchaseRemoveAds(this) })
             }
         }

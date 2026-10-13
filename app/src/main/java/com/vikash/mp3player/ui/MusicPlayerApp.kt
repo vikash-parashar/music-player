@@ -63,6 +63,8 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     val adsRemoved by vm.billing.adsRemoved.collectAsStateWithLifecycle()
     val price by vm.billing.price.collectAsStateWithLifecycle()
     val adsReady by Ads.ready.collectAsStateWithLifecycle()
+    val favorites by vm.prefs.favorites.collectAsStateWithLifecycle()
+    val themeMode by vm.prefs.themeMode.collectAsStateWithLifecycle()
 
     var hasPermission by remember { mutableStateOf(context.hasAudioPermission()) }
     var tab by rememberSaveable { mutableIntStateOf(0) }
@@ -121,6 +123,8 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                         onPlay = vm.player::play,
                         onPlayNext = { vm.player.playNext(it); vm.notify("Playing \"${it.title}\" next") },
                         onAddToQueue = { vm.player.addToQueue(it); vm.notify("Added to queue") },
+                        favorites = favorites,
+                        onToggleFavorite = { vm.toggleFavorite(it.id, it.title) },
                     )
                     1 -> OnlineScreen(
                         state = online,
@@ -132,7 +136,10 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                         onAddToQueue = { vm.player.addToQueue(it); vm.notify("Added to queue") },
                         onDownload = vm::download,
                     )
-                    else -> SettingsScreen(adsRemoved = adsRemoved, price = price, onRemoveAds = onRemoveAds)
+                    else -> SettingsScreen(
+                        adsRemoved = adsRemoved, price = price, onRemoveAds = onRemoveAds,
+                        themeMode = themeMode, onThemeMode = vm.prefs::setThemeMode,
+                    )
                 }
             }
         }
@@ -142,7 +149,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
             enter = slideInVertically { it },
             exit = slideOutVertically { it },
         ) {
-            NowPlayingScreen(player, vm.player, onClose = { showPlayer = false })
+            NowPlayingScreen(player, vm.player, favorites, onToggleFavorite = vm::toggleFavorite, onClose = { showPlayer = false })
         }
     }
 }

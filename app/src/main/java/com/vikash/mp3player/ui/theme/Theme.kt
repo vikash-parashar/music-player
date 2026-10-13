@@ -1,5 +1,6 @@
 package com.vikash.mp3player.ui.theme
 
+import com.vikash.mp3player.data.ThemeMode
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
@@ -66,10 +67,14 @@ private val AmpliTypography = Typography().run {
     )
 }
 
-/** Brand colors everywhere (no wallpaper colors) so the app always looks like Ampli. Dark by default. */
+/** Brand colors everywhere (no wallpaper colors) so the app always looks like Ampli. Follows the phone unless the user picks Day or Night in Settings. */
 @Composable
-fun Mp3PlayerTheme(content: @Composable () -> Unit) {
-    val dark = isSystemInDarkTheme()
+fun Mp3PlayerTheme(mode: ThemeMode = ThemeMode.System, content: @Composable () -> Unit) {
+    val dark = when (mode) {
+        ThemeMode.System -> isSystemInDarkTheme()
+        ThemeMode.Light -> false
+        ThemeMode.Dark -> true
+    }
     MaterialTheme(
         colorScheme = if (dark) DarkColors else LightColors,
         typography = AmpliTypography,

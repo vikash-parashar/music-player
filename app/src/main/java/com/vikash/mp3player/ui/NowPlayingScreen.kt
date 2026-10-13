@@ -48,7 +48,13 @@ import com.vikash.mp3player.playback.PlayerUiState
 import kotlinx.coroutines.delay
 
 @Composable
-fun NowPlayingScreen(state: PlayerUiState, player: PlayerConnection, onClose: () -> Unit) {
+fun NowPlayingScreen(
+    state: PlayerUiState,
+    player: PlayerConnection,
+    favorites: List<String>,
+    onToggleFavorite: (id: String, title: String) -> Unit,
+    onClose: () -> Unit,
+) {
     var showQueue by remember { mutableStateOf(false) }
     BackHandler { if (showQueue) showQueue = false else onClose() }
     val current = state.current
@@ -106,8 +112,17 @@ fun NowPlayingScreen(state: PlayerUiState, player: PlayerConnection, onClose: ()
                 Spacer(Modifier.weight(0.2f))
                 Artwork(current.artworkUri, 300.dp, Modifier.align(Alignment.CenterHorizontally))
                 Spacer(Modifier.weight(0.2f))
-                Text(current.title, style = MaterialTheme.typography.headlineSmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                Text(current.artist, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Text(current.title, style = MaterialTheme.typography.headlineSmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                        Text(current.artist, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    FavoriteButton(
+                        isFavorite = current.mediaId in favorites,
+                        onToggle = { onToggleFavorite(current.mediaId, current.title) },
+                        modifier = Modifier.size(56.dp),
+                    )
+                }
                 Spacer(Modifier.height(16.dp))
             }
 

@@ -26,6 +26,15 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BrightnessAuto
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.LightMode
+import com.vikash.mp3player.data.ThemeMode
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Slider
@@ -51,12 +60,15 @@ fun SettingsScreen(
     adsRemoved: Boolean,
     price: String?,
     onRemoveAds: () -> Unit,
+    themeMode: ThemeMode,
+    onThemeMode: (ThemeMode) -> Unit,
 ) {
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         RemoveAdsCard(adsRemoved, price, onRemoveAds)
+        AppearanceCard(themeMode, onThemeMode)
         SleepTimerCard()
         EqualizerCard()
     }
@@ -88,6 +100,40 @@ private fun RemoveAdsCard(adsRemoved: Boolean, price: String?, onRemoveAds: () -
             }
             Spacer(Modifier.width(12.dp))
             Image(painterResource(R.drawable.ic_launcher_foreground), null, Modifier.size(88.dp))
+        }
+    }
+}
+
+@Composable
+private fun AppearanceCard(mode: ThemeMode, onMode: (ThemeMode) -> Unit) {
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(16.dp)) {
+            Text("Day / Night mode", style = MaterialTheme.typography.titleMedium)
+            Text(
+                "Auto follows your phone's dark mode.",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(10.dp))
+            SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+                ThemeMode.entries.forEachIndexed { i, m ->
+                    SegmentedButton(
+                        selected = mode == m,
+                        onClick = { onMode(m) },
+                        shape = SegmentedButtonDefaults.itemShape(i, ThemeMode.entries.size),
+                        icon = {
+                            Icon(
+                                when (m) {
+                                    ThemeMode.System -> Icons.Default.BrightnessAuto
+                                    ThemeMode.Light -> Icons.Default.LightMode
+                                    ThemeMode.Dark -> Icons.Default.DarkMode
+                                },
+                                null,
+                                Modifier.size(18.dp),
+                            )
+                        },
+                    ) { Text(m.label) }
+                }
+            }
         }
     }
 }

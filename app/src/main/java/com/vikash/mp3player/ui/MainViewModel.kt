@@ -34,7 +34,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     private val musicApp = app as MusicApp
     val player = PlayerConnection(app).also { it.connect() }
     val billing = musicApp.billing
-
+    val prefs = musicApp.prefs
     private val _library = MutableStateFlow(LibraryState())
     val library: StateFlow<LibraryState> = _library.asStateFlow()
 
@@ -43,6 +43,13 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     private val _messages = MutableSharedFlow<String>(extraBufferCapacity = 4)
     val messages: SharedFlow<String> = _messages
+
+    /** Heart a song: adds it to (or removes it from) the "My Favorites" playlist. */
+    fun toggleFavorite(id: String, title: String) {
+        val added = prefs.toggleFavorite(id)
+        _messages.tryEmit(if (added) "Added \"$title\" to My Favorites" else "Removed from My Favorites")
+    }
+
 
     private var searchJob: Job? = null
 
