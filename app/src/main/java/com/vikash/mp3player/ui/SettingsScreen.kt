@@ -79,6 +79,7 @@ fun SettingsScreen(
     onRestore: (Uri) -> Unit,
     onOpenTransfer: () -> Unit,
     onOpenCarMode: () -> Unit,
+    onOpenDuplicates: () -> Unit,
     folders: List<Pair<String, Int>>,
     hiddenFolders: Set<String>,
     onFolderHidden: (String, Boolean) -> Unit,
@@ -97,6 +98,7 @@ fun SettingsScreen(
         CarModeCard(onOpenCarMode)
         TransferCard(onOpenTransfer)
         FoldersCard(folders, hiddenFolders, onFolderHidden)
+        DuplicatesCard(onOpenDuplicates)
         BackupCard(onBackup, onRestore)
     }
 }
@@ -361,6 +363,22 @@ private fun TransferCard(onOpen: () -> Unit) {
             )
             Spacer(Modifier.height(10.dp))
             Button(onClick = onOpen) { Text("Start Wi-Fi transfer") }
+        }
+    }
+}
+
+/** Opens the duplicate finder: the same song saved twice wastes space and clutters shuffle. */
+@Composable
+private fun DuplicatesCard(onOpen: () -> Unit) {
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(16.dp)) {
+            Text("Clean up duplicates", style = MaterialTheme.typography.titleMedium)
+            Text(
+                "Find songs saved more than once, keep the best copy and free up space.",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(10.dp))
+            Button(onClick = onOpen) { Text("Find duplicates") }
         }
     }
 }

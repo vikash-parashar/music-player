@@ -126,6 +126,7 @@ fun LibraryScreen(
     onToggleFavorite: (Song) -> Unit,
     onSetRingtone: (Song) -> Unit,
     onEditTags: (Song) -> Unit,
+    onDelete: (List<Song>) -> Unit,
     stats: StatsData,
     onOpenStats: () -> Unit,
     playlists: List<UserPlaylist>,
@@ -278,6 +279,7 @@ fun LibraryScreen(
                             onToggleFavorite = onToggleFavorite,
                             onSetRingtone = onSetRingtone,
                             onEditTags = onEditTags,
+                            onDelete = onDelete,
                             onAddToPlaylist = onAddToPlaylist,
                             onAddAllToQueue = onAddAllToQueue,
                             onAddFavorites = onAddFavorites,
@@ -311,6 +313,7 @@ fun LibraryScreen(
                         onToggleFavorite = onToggleFavorite,
                         onSetRingtone = onSetRingtone,
                         onEditTags = onEditTags,
+                        onDelete = onDelete,
                         onAddToPlaylist = onAddToPlaylist,
                         onAddAllToQueue = onAddAllToQueue,
                         onAddFavorites = onAddFavorites,
@@ -332,6 +335,7 @@ fun LibraryScreen(
                     onToggleFavorite = onToggleFavorite,
                     onSetRingtone = onSetRingtone,
                     onEditTags = onEditTags,
+                    onDelete = onDelete,
                     onAddToPlaylist = onAddToPlaylist,
                     onAddAllToQueue = onAddAllToQueue,
                     onAddFavorites = onAddFavorites,
@@ -428,6 +432,7 @@ private fun SongList(
     onToggleFavorite: (Song) -> Unit,
     onSetRingtone: (Song) -> Unit,
     onEditTags: (Song) -> Unit,
+    onDelete: (List<Song>) -> Unit,
     onAddToPlaylist: (List<Song>) -> Unit,
     onAddAllToQueue: (List<Song>) -> Unit,
     onAddFavorites: (List<Song>) -> Unit,
@@ -466,6 +471,9 @@ private fun SongList(
                         IconButton(onClick = { onAddFavorites(picked); selected = emptySet() }) {
                             Icon(Icons.Default.Favorite, "Add selected to My Favorites")
                         }
+                        IconButton(onClick = { onDelete(picked.filter { !it.isOnline }); selected = emptySet() }) {
+                            Icon(Icons.Default.Delete, "Delete selected from phone")
+                        }
                     }
                 } else {
                     Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -500,6 +508,7 @@ private fun SongList(
                     add(SongAction(if (fav) "Remove from $MY_FAVORITES" else "Add to $MY_FAVORITES") { onToggleFavorite(song) })
                     add(SongAction("Set as ringtone") { onSetRingtone(song) })
                     add(SongAction("Edit song info") { onEditTags(song) })
+                    if (!song.isOnline) add(SongAction("Delete from phone") { onDelete(listOf(song)) })
                 },
                 isFavorite = fav,
                 onToggleFavorite = { onToggleFavorite(song) },
