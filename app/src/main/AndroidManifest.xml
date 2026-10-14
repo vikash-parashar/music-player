@@ -16,6 +16,8 @@
         tools:ignore="ScopedStorage" />
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- "Name that song" listens through the mic for a few seconds, only when the user taps it. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <!-- Background playback with a media notification. -->

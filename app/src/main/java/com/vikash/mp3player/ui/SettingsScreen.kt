@@ -108,7 +108,8 @@ val PRO_FEATURES = listOf(
     "No ads, ever",
     "Video player for camera clips and downloads",
     "Play on your TV or speaker with Chromecast",
-    "Name that song: identify music playing around you (coming soon)",
+    "Name that song: identify music playing around you" +
+        if (com.vikash.mp3player.recognize.SongRecognizer.isConfigured) "" else " (coming soon)",
 )
 
 @Composable

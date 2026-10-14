@@ -104,6 +104,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     var showTransfer by rememberSaveable { mutableStateOf(false) }
     var showCarMode by rememberSaveable { mutableStateOf(false) }
     var showDuplicates by rememberSaveable { mutableStateOf(false) }
+    var showRecognize by remember { mutableStateOf(false) }
     val snackbar = remember { SnackbarHostState() }
 
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
@@ -125,7 +126,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
 
     Box(Modifier.fillMaxSize()) {
         Scaffold(
-            topBar = { BrandHeader(showAdFreePill = !adsRemoved, onAdFreeClick = { tab = 3 }) },
+            topBar = { BrandHeader(showAdFreePill = !adsRemoved, onAdFreeClick = { tab = 3 }, onRecognize = { showRecognize = true }) },
             snackbarHost = { SnackbarHost(snackbar) },
             bottomBar = {
                 Column {
@@ -265,6 +266,8 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
         AnimatedVisibility(visible = showCarMode, enter = fadeIn(), exit = fadeOut()) {
             CarModeScreen(player, vm.player, library.songs, onPlay = vm.player::play, onClose = { showCarMode = false })
         }
+
+        if (showRecognize) RecognizeDialog(isPro = adsRemoved, onGetPro = onRemoveAds, onDismiss = { showRecognize = false })
 
         deleteSongs?.let { songs ->
             key(songs.map { it.id }) {

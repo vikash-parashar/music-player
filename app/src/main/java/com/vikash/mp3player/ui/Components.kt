@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Hearing
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.MoreVert
@@ -251,7 +252,7 @@ fun EmptyMessage(text: String, modifier: Modifier = Modifier, action: (@Composab
 
 /** App bar: logo + wordmark, with a "Get Pro" pill until the user has Pro. */
 @Composable
-fun BrandHeader(showAdFreePill: Boolean, onAdFreeClick: () -> Unit) {
+fun BrandHeader(showAdFreePill: Boolean, onAdFreeClick: () -> Unit, onRecognize: () -> Unit) {
     Row(
         Modifier.fillMaxWidth().statusBarsPadding().padding(start = 16.dp, end = 12.dp, top = 8.dp, bottom = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -259,6 +260,7 @@ fun BrandHeader(showAdFreePill: Boolean, onAdFreeClick: () -> Unit) {
         Image(painterResource(R.drawable.ic_logo_mark), contentDescription = null, modifier = Modifier.size(30.dp))
         Spacer(Modifier.width(8.dp))
         Text("Ampli", style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
+        IconButton(onClick = onRecognize) { Icon(Icons.Default.Hearing, "Name that song") }
         if (showAdFreePill) {
             Box(
                 Modifier.clip(RoundedCornerShape(50)).background(Ampli.Gradient)
