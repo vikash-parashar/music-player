@@ -39,11 +39,20 @@ data class PlayerUiState(
     val currentIndex: Int = 0,
     val speed: Float = 1f,
     val pitch: Float = 1f,
+    /** Saved queues (Musicolet-style): one per folder, album, playlist... Names with song counts. */
+    val queues: List<QueueInfo> = emptyList(),
+    val activeQueue: Int = 0,
 )
+
+data class QueueInfo(val name: String, val size: Int)
 
 /**
  * The UI's handle on [PlaybackService]. Exposes player state as a flow and remembers the
  * queue and position, so the app resumes where the listener left off (like Musicolet).
+ *
+ * Multiple queues: playing a different folder, album or playlist starts a new queue instead of
+ * wiping the current one. Each saved queue keeps its song and position, so switching back
+ * resumes exactly where it was.
  */
 class PlayerConnection(private val context: Context) {
 
@@ -53,6 +62,10 @@ class PlayerConnection(private val context: Context) {
     private var controller: MediaController? = null
     private val prefs = context.getSharedPreferences("queue", Context.MODE_PRIVATE)
     private val json = Json { ignoreUnknownKeys = true }
+
+    /** All queues; the active one is refreshed from the player whenever it is saved. */
+    private var queues: MutableList<SavedQueue> = mutableListOf()
+    private var active = 0
 
     private val listener = object : Player.Listener {
         override fun onEvents(player: Player, events: Player.Events) {
@@ -94,11 +107,90 @@ class PlayerConnection(private val context: Context) {
         controller = null
     }
 
-    fun play(songs: List<Song>, startIndex: Int) {
+    /**
+     * Plays [songs] from [startIndex]. [source] names the list (album, folder, "Online"...):
+     * a new source gets its own queue and the current queue is kept for later.
+     */
+    fun play(songs: List<Song>, startIndex: Int, source: String = DEFAULT_QUEUE) {
         val c = controller ?: return
+        snapshotActive(c)
+        val existing = queues.indexOfFirst { it.name == source }
+        when {
+            existing >= 0 -> active = existing
+            queues.isEmpty() || c.mediaItemCount == 0 -> {
+                if (queues.isEmpty()) queues.add(SavedQueue(source)) else queues[active] = SavedQueue(source)
+            }
+            else -> {
+                queues.add(SavedQueue(source))
+                active = queues.lastIndex
+                trimQueues()
+            }
+        }
         c.setMediaItems(songs.map { it.toMediaItem() }, startIndex, 0L)
         c.prepare()
         c.play()
+    }
+
+    /** Switches to another saved queue, resuming its song and position. Keeps playing if it was. */
+    fun switchQueue(index: Int) {
+        val c = controller ?: return
+        if (index == active || index !in queues.indices) return
+        val wasPlaying = c.isPlaying
+        snapshotActive(c)
+        active = index
+        loadActive(c)
+        if (wasPlaying) c.play()
+        saveQueue()
+    }
+
+    fun removeQueue(index: Int) {
+        val c = controller ?: return
+        if (index !in queues.indices) return
+        if (queues.size == 1) {
+            c.clearMediaItems()
+            queues.clear()
+            active = 0
+            saveQueue()
+            return
+        }
+        if (index == active) {
+            queues.removeAt(index)
+            active = active.coerceAtMost(queues.lastIndex)
+            loadActive(c)
+        } else {
+            snapshotActive(c)
+            queues.removeAt(index)
+            if (index < active) active--
+        }
+        saveQueue()
+    }
+
+    /** Keeps at most [MAX_QUEUES]; the oldest inactive queues go first. */
+    private fun trimQueues() {
+        while (queues.size > MAX_QUEUES) {
+            val drop = if (active == 0) 1 else 0
+            queues.removeAt(drop)
+            if (drop < active) active--
+        }
+    }
+
+    private fun snapshotActive(c: MediaController) {
+        if (c.mediaItemCount == 0 || queues.isEmpty()) return
+        queues[active] = queues[active].copy(
+            items = (0 until c.mediaItemCount).map { c.getMediaItemAt(it).toSaved() },
+            index = c.currentMediaItemIndex,
+            positionMs = c.currentPosition,
+        )
+    }
+
+    private fun loadActive(c: MediaController) {
+        val q = queues.getOrNull(active) ?: return
+        if (q.items.isEmpty()) {
+            c.clearMediaItems()
+            return
+        }
+        c.setMediaItems(q.items.map { it.toMediaItem() }, q.index.coerceIn(0, q.items.lastIndex), q.positionMs)
+        c.prepare()
     }
 
     fun playNext(song: Song) {
@@ -160,28 +252,51 @@ class PlayerConnection(private val context: Context) {
             currentIndex = c.currentMediaItemIndex,
             speed = c.playbackParameters.speed,
             pitch = c.playbackParameters.pitch,
+            queues = queues.mapIndexed { i, q -> QueueInfo(q.name, if (i == active) c.mediaItemCount else q.items.size) },
+            activeQueue = active,
         )
     }
 
     private fun saveQueue() {
         val c = controller ?: return
-        val items = (0 until c.mediaItemCount).map { c.getMediaItemAt(it).toSaved() }
+        if (queues.isEmpty() && c.mediaItemCount > 0) queues.add(SavedQueue(DEFAULT_QUEUE))
+        snapshotActive(c)
         prefs.edit()
-            .putString("items", json.encodeToString(items))
-            .putInt("index", c.currentMediaItemIndex)
-            .putLong("position", c.currentPosition)
+            .putString(KEY_QUEUES, json.encodeToString(queues.toList()))
+            .putInt(KEY_ACTIVE, active)
             .apply()
     }
 
     private fun restoreQueue(c: MediaController) {
-        val raw = prefs.getString("items", null) ?: return
-        val items = runCatching { json.decodeFromString<List<SavedItem>>(raw) }.getOrNull() ?: return
-        if (items.isEmpty()) return
-        val index = prefs.getInt("index", 0).coerceIn(0, items.lastIndex)
-        c.setMediaItems(items.map { it.toMediaItem() }, index, prefs.getLong("position", 0))
-        c.prepare() // ready to resume, but don't start playing on app launch
+        val raw = prefs.getString(KEY_QUEUES, null)
+        queues = if (raw != null) {
+            runCatching { json.decodeFromString<List<SavedQueue>>(raw) }.getOrNull().orEmpty().toMutableList()
+        } else {
+            // Builds before multiple queues saved a single queue under these keys.
+            val old = prefs.getString("items", null)
+                ?.let { runCatching { json.decodeFromString<List<SavedItem>>(it) }.getOrNull() }
+            if (old.isNullOrEmpty()) mutableListOf()
+            else mutableListOf(SavedQueue(DEFAULT_QUEUE, old, prefs.getInt("index", 0), prefs.getLong("position", 0)))
+        }
+        active = prefs.getInt(KEY_ACTIVE, 0).coerceIn(0, (queues.size - 1).coerceAtLeast(0))
+        loadActive(c) // ready to resume, but don't start playing on app launch
+    }
+
+    private companion object {
+        const val DEFAULT_QUEUE = "All songs"
+        const val MAX_QUEUES = 10
+        const val KEY_QUEUES = "queues"
+        const val KEY_ACTIVE = "active"
     }
 }
+
+@Serializable
+private data class SavedQueue(
+    val name: String,
+    val items: List<SavedItem> = emptyList(),
+    val index: Int = 0,
+    val positionMs: Long = 0,
+)
 
 @Serializable
 private data class SavedItem(

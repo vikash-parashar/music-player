@@ -10,4 +10,5 @@
     <string name="tab_songs">Songs</string>
     <string name="tab_albums">Albums</string>
     <string name="tab_folders">Folders</string>
+    <string name="widget_description">Play, pause and skip songs from your home screen</string>
 </resources>

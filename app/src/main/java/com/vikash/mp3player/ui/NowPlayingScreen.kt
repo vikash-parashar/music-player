@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.QueueMusic
@@ -96,6 +97,26 @@ fun NowPlayingScreen(
             }
 
             if (showQueue) {
+                // Saved queues: tap to switch (resumes where it left off), x to remove.
+                if (state.queues.size > 1) {
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(bottom = 8.dp)) {
+                        items(state.queues.size) { i ->
+                            val q = state.queues[i]
+                            val selected = i == state.activeQueue
+                            FilterChip(
+                                selected = selected,
+                                onClick = { player.switchQueue(i) },
+                                label = { Text("${q.name} · ${q.size}", maxLines = 1) },
+                                trailingIcon = {
+                                    Icon(
+                                        Icons.Default.Close, "Remove queue",
+                                        Modifier.size(16.dp).clickable { player.removeQueue(i) },
+                                    )
+                                },
+                            )
+                        }
+                    }
+                }
                 val listState = rememberLazyListState(initialFirstVisibleItemIndex = state.currentIndex)
                 LazyColumn(Modifier.weight(1f), state = listState) {
                     items(state.queue.size) { i ->

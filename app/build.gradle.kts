@@ -99,4 +99,5 @@ dependencies {
     implementation(libs.billing.ktx)
     implementation(libs.play.services.ads)
     implementation(libs.ump)
+    implementation(libs.glance.appwidget)
 }

@@ -28,6 +28,7 @@ import com.vikash.mp3player.MusicApp
 import com.vikash.mp3player.R
 import com.vikash.mp3player.data.LocalMusicRepository
 import com.vikash.mp3player.data.Song
+import com.vikash.mp3player.widget.WidgetState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -104,6 +105,7 @@ class PlaybackService : MediaLibraryService() {
             }
 
             override fun onIsPlayingChanged(isPlaying: Boolean) {
+                refreshWidget(player)
                 if (isPlaying) {
                     if (trackedItem == null) trackedItem = player.currentMediaItem
                     playingSince = SystemClock.elapsedRealtime()
@@ -118,6 +120,7 @@ class PlaybackService : MediaLibraryService() {
             }
 
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                refreshWidget(player)
                 reportListening()
                 trackedItem = mediaItem
                 trackedDurationMs = if (player.duration > 0) player.duration else 0L
@@ -141,6 +144,14 @@ class PlaybackService : MediaLibraryService() {
     override fun onTaskRemoved(rootIntent: Intent?) {
         val player = session?.player ?: return stopSelf()
         if (!player.playWhenReady || player.mediaItemCount == 0) stopSelf()
+    }
+
+    private fun refreshWidget(player: Player) {
+        val meta = player.currentMediaItem?.mediaMetadata
+        val title = meta?.title?.toString().orEmpty()
+        val artist = meta?.artist?.toString().orEmpty()
+        val playing = player.isPlaying
+        scope.launch { WidgetState.update(this@PlaybackService, title, artist, playing) }
     }
 
     private fun addHeardTime() {
@@ -167,8 +178,16 @@ class PlaybackService : MediaLibraryService() {
         heardMs = 0L
     }
 
+    @OptIn(kotlinx.coroutines.DelicateCoroutinesApi::class)
     override fun onDestroy() {
         reportListening()
+        session?.player?.let { p ->
+            val meta = p.currentMediaItem?.mediaMetadata
+            // The scope is cancelled below, so this update runs on its own.
+            kotlinx.coroutines.GlobalScope.launch {
+                WidgetState.update(applicationContext, meta?.title?.toString().orEmpty(), meta?.artist?.toString().orEmpty(), false)
+            }
+        }
         scope.cancel()
         EqualizerController.release()
         session?.run {
