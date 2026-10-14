@@ -1,0 +1,10 @@
+<resources>
+    <!-- Android 12+: same launch screen, plus the product label under the knob (Ampli logo family). -->
+    <style name="Theme.Mp3Player.Starting" parent="Theme.SplashScreen.IconBackground">
+        <item name="windowSplashScreenBackground">@color/ampli_night</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+        <item name="windowSplashScreenIconBackgroundColor">@color/ampli_slate</item>
+        <item name="android:windowSplashScreenBrandingImage">@drawable/splash_label</item>
+        <item name="postSplashScreenTheme">@style/Theme.Mp3Player</item>
+    </style>
+</resources>
