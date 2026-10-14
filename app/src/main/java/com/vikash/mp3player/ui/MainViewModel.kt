@@ -224,6 +224,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                     val names = here.map { it.name.lowercase() }.toSet()
                     musicApp.playlists.replaceAll(here + restored.playlists.filterNot { it.name.lowercase() in names })
                     EqualizerController.reload()
+                    com.vikash.mp3player.playback.FadeSetting.reload(getApplication())
                     _messages.tryEmit(
                         "Restored ${restored.favorites.size} favorites, ${restored.playlists.size} playlists and your settings"
                     )

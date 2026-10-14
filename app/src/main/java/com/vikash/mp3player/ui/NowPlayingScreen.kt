@@ -2,6 +2,8 @@ package com.vikash.mp3player.ui
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -27,6 +29,7 @@ import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material.icons.filled.Loop
+import androidx.compose.material.icons.filled.Lyrics
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FilterChip
@@ -44,6 +47,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -69,6 +73,7 @@ fun NowPlayingScreen(
 ) {
     var showQueue by remember { mutableStateOf(false) }
     var showSpeed by remember { mutableStateOf(false) }
+    var showLyrics by rememberSaveable { mutableStateOf(false) }
     BackHandler { if (showQueue) showQueue = false else onClose() }
     val current = state.current
     if (current == null) {
@@ -143,9 +148,18 @@ fun NowPlayingScreen(
                     }
                 }
             } else {
-                Spacer(Modifier.weight(0.2f))
-                Artwork(current.artworkUri, 300.dp, Modifier.align(Alignment.CenterHorizontally))
-                Spacer(Modifier.weight(0.2f))
+                if (showLyrics) {
+                    LyricsView(
+                        songId = current.mediaId,
+                        positionMs = position,
+                        onSeek = { player.seekTo(it); position = it },
+                        modifier = Modifier.fillMaxWidth().weight(1f).padding(vertical = 8.dp),
+                    )
+                } else {
+                    Spacer(Modifier.weight(0.2f))
+                    Artwork(current.artworkUri, 300.dp, Modifier.align(Alignment.CenterHorizontally))
+                    Spacer(Modifier.weight(0.2f))
+                }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
                         Text(current.title, style = MaterialTheme.typography.headlineSmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
@@ -202,8 +216,8 @@ fun NowPlayingScreen(
                 }
             }
 
-            // Extra tools: speed/pitch and A-B repeat.
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+            // Extra tools: speed/pitch, lyrics and A-B repeat.
+            Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.Center) {
                 val normal = state.speed == 1f && state.pitch == 1f
                 FilterChip(
                     selected = !normal,
@@ -211,7 +225,14 @@ fun NowPlayingScreen(
                     leadingIcon = { Icon(Icons.Default.Speed, null, Modifier.size(18.dp)) },
                     label = { Text("%.2f".format(java.util.Locale.US, state.speed).trimEnd('0').trimEnd('.') + "x") },
                 )
-                Spacer(Modifier.width(12.dp))
+                Spacer(Modifier.width(8.dp))
+                FilterChip(
+                    selected = showLyrics,
+                    onClick = { showLyrics = !showLyrics },
+                    leadingIcon = { Icon(Icons.Default.Lyrics, null, Modifier.size(18.dp)) },
+                    label = { Text("Lyrics") },
+                )
+                Spacer(Modifier.width(8.dp))
                 FilterChip(
                     selected = abLoop.aMs != null,
                     onClick = onCycleAb,
