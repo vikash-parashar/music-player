@@ -101,7 +101,7 @@ fun StatsScreen(stats: StatsData, onClear: () -> Unit, onClose: () -> Unit) {
                 Text("Your listening", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
                 IconButton(onClick = {
                     val text = buildString {
-                        appendLine("My music on Ampli 🎧")
+                        appendLine("My music on Ampli MP3 Player 🎧")
                         appendLine("This month: ${hours(s.monthMs)} of music")
                         s.topSongs.firstOrNull()?.let { appendLine("Top song: ${it.first} by ${it.second}") }
                         s.topArtists.firstOrNull()?.let { appendLine("Top artist: ${it.first}") }
