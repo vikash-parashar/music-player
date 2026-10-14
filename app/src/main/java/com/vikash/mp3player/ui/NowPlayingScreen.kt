@@ -29,6 +29,8 @@ import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material.icons.filled.DirectionsCar
+import androidx.compose.material.icons.filled.Cast
+import androidx.compose.material.icons.filled.CastConnected
 import androidx.compose.material.icons.filled.Loop
 import androidx.compose.material.icons.filled.Lyrics
 import androidx.compose.material.icons.filled.Speed
@@ -43,6 +45,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableLongStateOf
@@ -71,8 +74,12 @@ fun NowPlayingScreen(
     abLoop: AbLoop,
     onCycleAb: () -> Unit,
     onCarMode: () -> Unit,
+    isPro: Boolean,
+    onGetPro: () -> Unit,
     onClose: () -> Unit,
 ) {
+    var showCast by remember { mutableStateOf(false) }
+    val casting by com.vikash.mp3player.cast.CastState.casting.collectAsState()
     var showQueue by remember { mutableStateOf(false) }
     var showSpeed by remember { mutableStateOf(false) }
     var showLyrics by rememberSaveable { mutableStateOf(false) }
@@ -99,6 +106,10 @@ fun NowPlayingScreen(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 IconButton(onClick = onClose) { Icon(Icons.Default.KeyboardArrowDown, "Close player") }
                 Text(if (showQueue) "Queue" else "Now playing", Modifier.weight(1f), style = MaterialTheme.typography.titleMedium)
+                IconButton(onClick = { showCast = true }) {
+                    Icon(if (casting) Icons.Default.CastConnected else Icons.Default.Cast, "Play on TV or speaker",
+                        tint = if (casting) MaterialTheme.colorScheme.primary else androidx.compose.material3.LocalContentColor.current)
+                }
                 IconButton(onClick = onCarMode) { Icon(Icons.Default.DirectionsCar, "Car mode") }
                 IconButton(onClick = onSetRingtone) { Icon(Icons.Default.RingVolume, "Set as ringtone") }
                 IconButton(onClick = { showQueue = !showQueue }) { Icon(Icons.Default.QueueMusic, "Queue") }
@@ -255,6 +266,7 @@ fun NowPlayingScreen(
     }
 
     if (showSpeed) SpeedPitchDialog(state.speed, state.pitch, player::setSpeedAndPitch) { showSpeed = false }
+    if (showCast) CastDialog(isPro, onGetPro) { showCast = false }
 }
 
 @Composable

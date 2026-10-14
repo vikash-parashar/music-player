@@ -26,6 +26,7 @@ import com.google.common.util.concurrent.SettableFuture
 import com.vikash.mp3player.MainActivity
 import com.vikash.mp3player.MusicApp
 import com.vikash.mp3player.R
+import com.vikash.mp3player.cast.CastSwitcher
 import com.vikash.mp3player.data.LocalMusicRepository
 import com.vikash.mp3player.data.Song
 import com.vikash.mp3player.widget.WidgetState
@@ -52,6 +53,8 @@ class PlaybackService : MediaLibraryService() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private lateinit var library: LocalMusicRepository
     private val resume by lazy { ResumePositions(this) }
+    private var cast: CastSwitcher? = null
+    private var phonePlayer: ExoPlayer? = null
 
     /** Cached local songs for the car browse tree; reloaded when the root is requested. */
     private var songs: List<Song> = emptyList()
@@ -78,6 +81,7 @@ class PlaybackService : MediaLibraryService() {
             .setWakeMode(C.WAKE_MODE_NETWORK) // keep streaming with the screen off
             .build()
 
+        phonePlayer = player
         EqualizerController.attach(this, player.audioSessionId)
 
         setMediaNotificationProvider(
@@ -94,6 +98,7 @@ class PlaybackService : MediaLibraryService() {
             .setCustomLayout(controlButtons(player))
             .build()
         session = librarySession
+        cast = CastSwitcher(this, player, librarySession, scope)
 
         // Keep the Shuffle/Repeat icons in sync wherever they are shown.
         player.addListener(object : Player.Listener {
@@ -236,12 +241,14 @@ class PlaybackService : MediaLibraryService() {
                 WidgetState.update(applicationContext, meta?.title?.toString().orEmpty(), meta?.artist?.toString().orEmpty(), false)
             }
         }
+        cast?.release()
+        cast = null
         scope.cancel()
         EqualizerController.release()
-        session?.run {
-            player.release()
-            release()
-        }
+        // While casting the session holds the cast player (released above); always free the phone's.
+        phonePlayer?.release()
+        phonePlayer = null
+        session?.release()
         session = null
         super.onDestroy()
     }
@@ -384,12 +391,18 @@ class PlaybackService : MediaLibraryService() {
             mediaSession: MediaSession,
             controller: MediaSession.ControllerInfo,
             mediaItems: MutableList<MediaItem>,
-        ): ListenableFuture<MutableList<MediaItem>> = Futures.immediateFuture(
-            mediaItems.map { item ->
+        ): ListenableFuture<MutableList<MediaItem>> {
+            val restored = mediaItems.map { item ->
                 val uri = item.requestMetadata.mediaUri
                 if (item.localConfiguration == null && uri != null) item.buildUpon().setUri(uri).build() else item
             }.toMutableList()
-        )
+            val switcher = cast
+            if (switcher == null || !switcher.isCasting) return Futures.immediateFuture(restored)
+            // Casting: the TV needs Wi-Fi addresses instead of phone-only ones.
+            val result = SettableFuture.create<MutableList<MediaItem>>()
+            scope.launch { result.set(switcher.adaptForCast(restored).toMutableList()) }
+            return result
+        }
 
         // A tap on a song in Android Auto: queue the whole list it came from, starting at that song.
         override fun onSetMediaItems(

@@ -221,6 +221,8 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                 abLoop = abLoop,
                 onCycleAb = vm::cycleAbRepeat,
                 onCarMode = { showCarMode = true },
+                isPro = adsRemoved,
+                onGetPro = onRemoveAds,
                 onClose = { showPlayer = false },
             )
         }

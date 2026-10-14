@@ -107,6 +107,7 @@ fun SettingsScreen(
 val PRO_FEATURES = listOf(
     "No ads, ever",
     "Video player for camera clips and downloads",
+    "Play on your TV or speaker with Chromecast",
     "Name that song: identify music playing around you (coming soon)",
 )
 
