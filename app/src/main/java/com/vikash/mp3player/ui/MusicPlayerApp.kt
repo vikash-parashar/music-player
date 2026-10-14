@@ -85,6 +85,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     // Ringtone maker: the song stays set while the panel slides away.
     var ringtoneSong by remember { mutableStateOf<Song?>(null) }
     var tagSong by remember { mutableStateOf<Song?>(null) }
+    var deleteSongs by remember { mutableStateOf<List<Song>?>(null) }
     val playlists by vm.playlists.collectAsStateWithLifecycle()
     val songSort by vm.prefs.songSort.collectAsStateWithLifecycle()
     val folders by vm.folders.collectAsStateWithLifecycle()
@@ -102,6 +103,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     var showStats by rememberSaveable { mutableStateOf(false) }
     var showTransfer by rememberSaveable { mutableStateOf(false) }
     var showCarMode by rememberSaveable { mutableStateOf(false) }
+    var showDuplicates by rememberSaveable { mutableStateOf(false) }
     val snackbar = remember { SnackbarHostState() }
 
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
@@ -164,6 +166,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                         onToggleFavorite = { vm.toggleFavorite(it.id, it.title) },
                         onSetRingtone = { ringtoneSong = it; showRingtone = true },
                         onEditTags = { tagSong = it },
+                        onDelete = { if (it.isNotEmpty()) deleteSongs = it },
                         stats = stats,
                         onOpenStats = { showStats = true },
                         playlists = playlists,
@@ -193,6 +196,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                         onBackup = vm::exportBackup, onRestore = vm::restoreBackup,
                         onOpenTransfer = { showTransfer = true },
                         onOpenCarMode = { showCarMode = true },
+                        onOpenDuplicates = { showDuplicates = true },
                         folders = folders,
                         hiddenFolders = hiddenFolders,
                         onFolderHidden = vm.prefs::setFolderHidden,
@@ -248,8 +252,30 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
             }
         }
 
+        AnimatedVisibility(
+            visible = showDuplicates,
+            enter = slideInVertically { it },
+            exit = slideOutVertically { it },
+        ) {
+            DuplicatesScreen(library.songs, onDelete = { if (it.isNotEmpty()) deleteSongs = it }, onClose = { showDuplicates = false })
+        }
+
         AnimatedVisibility(visible = showCarMode, enter = fadeIn(), exit = fadeOut()) {
             CarModeScreen(player, vm.player, library.songs, onPlay = vm.player::play, onClose = { showCarMode = false })
+        }
+
+        deleteSongs?.let { songs ->
+            key(songs.map { it.id }) {
+                DeleteSongsDialog(
+                    songs,
+                    onDismiss = { deleteSongs = null },
+                    onDeleted = { count ->
+                        deleteSongs = null
+                        vm.loadLibrary()
+                        Toast.makeText(context, if (count == 1) "Song deleted" else "$count songs deleted", Toast.LENGTH_SHORT).show()
+                    },
+                )
+            }
         }
 
         tagSong?.let { song ->

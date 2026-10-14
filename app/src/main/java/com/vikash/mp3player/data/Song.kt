@@ -18,4 +18,6 @@ data class Song(
     val downloadUrl: String? = null,
     /** When the file was added to the phone (seconds), for "Recently added". 0 for online tracks. */
     val dateAddedSec: Long = 0,
+    /** File size in bytes, 0 if unknown. Used to keep the best copy when cleaning duplicates. */
+    val sizeBytes: Long = 0,
 )
