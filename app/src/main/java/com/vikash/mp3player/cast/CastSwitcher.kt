@@ -15,6 +15,7 @@ import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaSession
 import com.google.android.gms.cast.framework.CastContext
+import com.vikash.mp3player.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -73,7 +74,7 @@ class CastSwitcher(
         scope.launch {
             val items = withContext(Dispatchers.IO) { from.items.map { toCast(it) } }
             if (items.any { it == null }) {
-                Toast.makeText(context, "To cast songs from this phone, connect it to the same Wi-Fi as the TV or speaker.", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, context.getString(R.string.cast_needs_same_wifi), Toast.LENGTH_LONG).show()
                 return@launch
             }
             if (items.isNotEmpty()) {

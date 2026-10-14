@@ -35,8 +35,7 @@ class MainActivity : ComponentActivity() {
                     if (!billing.purchaseRemoveAds(this)) {
                         Toast.makeText(
                             this,
-                            if (BuildConfig.DEBUG) "Payments work once Ampli is on the Play Store. For now, use \"Test build: try Pro\" in Settings."
-                            else "Couldn't reach Google Play. Check your connection and try again.",
+                            getString(if (BuildConfig.DEBUG) R.string.pro_purchase_test_build else R.string.pro_purchase_failed),
                             Toast.LENGTH_LONG,
                         ).show()
                     }

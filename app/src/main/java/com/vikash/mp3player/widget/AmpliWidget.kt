@@ -11,6 +11,7 @@ import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
 import androidx.glance.Image
 import androidx.glance.ImageProvider
+import androidx.glance.LocalContext
 import androidx.glance.action.Action
 import androidx.glance.action.ActionParameters
 import androidx.glance.action.actionParametersOf
@@ -60,12 +61,13 @@ class AmpliWidget : GlanceAppWidget() {
     @Composable
     private fun Content(s: WidgetState) {
         val white = ColorProvider(Color.White)
+        val context = LocalContext.current
         Row(
             GlanceModifier.fillMaxSize().background(ImageProvider(R.drawable.widget_bg)).padding(horizontal = 12.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Image(
-                ImageProvider(R.drawable.ic_launcher_foreground), "Open Ampli",
+                ImageProvider(R.drawable.ic_launcher_foreground), context.getString(R.string.widget_open_app),
                 GlanceModifier.size(40.dp).clickable(actionStartActivity<MainActivity>()),
             )
             Spacer(GlanceModifier.width(8.dp))
@@ -75,18 +77,18 @@ class AmpliWidget : GlanceAppWidget() {
                     style = TextStyle(color = white, fontWeight = FontWeight.Bold, fontSize = 15.sp),
                 )
                 Text(
-                    s.artist.ifEmpty { "Tap play to resume your music" }, maxLines = 1,
+                    s.artist.ifEmpty { context.getString(R.string.widget_tap_play) }, maxLines = 1,
                     style = TextStyle(color = ColorProvider(Color.White.copy(alpha = 0.85f)), fontSize = 12.sp),
                 )
             }
-            Button(R.drawable.ic_widget_prev, "Previous", command(CMD_PREV))
+            Button(R.drawable.ic_widget_prev, context.getString(R.string.common_previous), command(CMD_PREV))
             // Nothing played yet (fresh install): play opens the app to pick music.
             Button(
                 if (s.playing) R.drawable.ic_widget_pause else R.drawable.ic_widget_play,
-                if (s.playing) "Pause" else "Play",
+                context.getString(if (s.playing) R.string.common_pause else R.string.common_play),
                 if (s.title.isEmpty()) actionStartActivity<MainActivity>() else command(CMD_TOGGLE),
             )
-            Button(R.drawable.ic_widget_next, "Next", command(CMD_NEXT))
+            Button(R.drawable.ic_widget_next, context.getString(R.string.common_next), command(CMD_NEXT))
         }
     }
 

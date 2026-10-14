@@ -3,6 +3,7 @@ package com.vikash.mp3player.data
 import android.content.Context
 import android.content.SharedPreferences
 import android.net.Uri
+import com.vikash.mp3player.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
@@ -61,16 +62,16 @@ object Backup {
                 },
             )
             context.contentResolver.openOutputStream(target, "wt")?.use { it.write(json.encodeToString(file).toByteArray()) }
-                ?: error("Couldn't write the backup file")
+                ?: error(context.getString(R.string.backup_write_failed))
         }
 
     /** Returns the restored listening history, favorites and playlists, with ids matched to this phone's songs. */
     suspend fun restore(context: Context, source: Uri, songs: List<Song>): Restored =
         withContext(Dispatchers.IO) {
             val text = context.contentResolver.openInputStream(source)?.use { it.readBytes().decodeToString() }
-                ?: error("Couldn't open the file")
+                ?: error(context.getString(R.string.backup_open_failed))
             val file = runCatching { json.decodeFromString<BackupFile>(text) }.getOrNull()
-                ?.takeIf { it.app == "Ampli" } ?: error("This isn't an Ampli backup file")
+                ?.takeIf { it.app == "Ampli" } ?: error(context.getString(R.string.backup_not_ampli))
 
             file.prefs.forEach { (name, values) ->
                 if (name in PREF_FILES) load(context.getSharedPreferences(name, Context.MODE_PRIVATE), values)

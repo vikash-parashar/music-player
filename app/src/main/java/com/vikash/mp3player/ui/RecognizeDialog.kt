@@ -40,6 +40,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.vikash.mp3player.R
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -62,10 +64,10 @@ fun RecognizeDialog(isPro: Boolean, onGetPro: () -> Unit, onDismiss: () -> Unit)
         AlertDialog(
             onDismissRequest = onDismiss,
             icon = { Icon(Icons.Default.Hearing, null) },
-            title = { Text("Name that song") },
-            text = { Text("Hear a song in a shop, a car or on TV? Ampli tells you what it is. Part of Ampli Pro, a one-time purchase.") },
-            confirmButton = { Button(onClick = { onDismiss(); onGetPro() }) { Text("Get Ampli Pro") } },
-            dismissButton = { TextButton(onClick = onDismiss) { Text("Not now") } },
+            title = { Text(stringResource(R.string.recognize_title)) },
+            text = { Text(stringResource(R.string.recognize_pro_text)) },
+            confirmButton = { Button(onClick = { onDismiss(); onGetPro() }) { Text(stringResource(R.string.pro_get)) } },
+            dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.common_not_now)) } },
         )
         return
     }
@@ -73,9 +75,9 @@ fun RecognizeDialog(isPro: Boolean, onGetPro: () -> Unit, onDismiss: () -> Unit)
         AlertDialog(
             onDismissRequest = onDismiss,
             icon = { Icon(Icons.Default.Hearing, null) },
-            title = { Text("Name that song") },
-            text = { Text("Song recognition is coming soon in an update.") },
-            confirmButton = { TextButton(onClick = onDismiss) { Text("OK") } },
+            title = { Text(stringResource(R.string.recognize_title)) },
+            text = { Text(stringResource(R.string.recognize_coming_soon)) },
+            confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.common_ok)) } },
         )
         return
     }
@@ -96,7 +98,7 @@ fun RecognizeDialog(isPro: Boolean, onGetPro: () -> Unit, onDismiss: () -> Unit)
         state = RecognizeState.Listening
         val sample = SongRecognizer.record(context)
         if (sample == null) {
-            state = RecognizeState.Done(SongRecognizer.Result.Failed("Couldn't use the microphone. Is another app using it?"))
+            state = RecognizeState.Done(SongRecognizer.Result.Failed(R.string.recognize_mic_failed))
             return@LaunchedEffect
         }
         state = RecognizeState.Searching
@@ -109,17 +111,17 @@ fun RecognizeDialog(isPro: Boolean, onGetPro: () -> Unit, onDismiss: () -> Unit)
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Name that song") },
+        title = { Text(stringResource(R.string.recognize_title)) },
         text = {
             Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 when (val s = state) {
                     RecognizeState.Idle, RecognizeState.Listening, RecognizeState.Searching -> {
                         if (denied) {
-                            Text("Ampli needs the microphone to hear the song. Allow it and try again.", textAlign = TextAlign.Center)
+                            Text(stringResource(R.string.recognize_mic_denied), textAlign = TextAlign.Center)
                         } else {
                             Pulse()
                             Text(
-                                if (s == RecognizeState.Searching) "Finding the song…" else "Listening… hold the phone near the music",
+                                if (s == RecognizeState.Searching) stringResource(R.string.recognize_searching) else stringResource(R.string.recognize_listening),
                                 textAlign = TextAlign.Center,
                             )
                         }
@@ -132,26 +134,26 @@ fun RecognizeDialog(isPro: Boolean, onGetPro: () -> Unit, onDismiss: () -> Unit)
                             m.album?.let { Text(it, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center) }
                             val q = Uri.encode("${m.title} ${m.artist}")
                             Column(verticalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.fillMaxWidth()) {
-                                OutlinedButton(onClick = { open("https://www.jiosaavn.com/search/$q") }, Modifier.fillMaxWidth()) { Text("Open in JioSaavn") }
-                                OutlinedButton(onClick = { open(m.spotifyUrl ?: "https://open.spotify.com/search/$q") }, Modifier.fillMaxWidth()) { Text("Open in Spotify") }
-                                OutlinedButton(onClick = { open("https://music.youtube.com/search?q=$q") }, Modifier.fillMaxWidth()) { Text("Open in YouTube Music") }
+                                OutlinedButton(onClick = { open("https://www.jiosaavn.com/search/$q") }, Modifier.fillMaxWidth()) { Text(stringResource(R.string.recognize_open_in, "JioSaavn")) }
+                                OutlinedButton(onClick = { open(m.spotifyUrl ?: "https://open.spotify.com/search/$q") }, Modifier.fillMaxWidth()) { Text(stringResource(R.string.recognize_open_in, "Spotify")) }
+                                OutlinedButton(onClick = { open("https://music.youtube.com/search?q=$q") }, Modifier.fillMaxWidth()) { Text(stringResource(R.string.recognize_open_in, "YouTube Music")) }
                                 m.appleMusicUrl?.let { url ->
-                                    OutlinedButton(onClick = { open(url) }, Modifier.fillMaxWidth()) { Text("Open in Apple Music") }
+                                    OutlinedButton(onClick = { open(url) }, Modifier.fillMaxWidth()) { Text(stringResource(R.string.recognize_open_in, "Apple Music")) }
                                 }
                             }
                         }
                         SongRecognizer.Result.NotFound ->
-                            Text("Couldn't recognise that one. Get closer to the music and try again.", textAlign = TextAlign.Center)
-                        is SongRecognizer.Result.Failed -> Text(r.message, textAlign = TextAlign.Center)
+                            Text(stringResource(R.string.recognize_not_found), textAlign = TextAlign.Center)
+                        is SongRecognizer.Result.Failed -> Text(stringResource(r.messageRes), textAlign = TextAlign.Center)
                     }
                 }
             }
         },
         confirmButton = {
             val done = state is RecognizeState.Done || denied
-            if (done) Button(onClick = { denied = false; state = RecognizeState.Idle; start() }) { Text("Listen again") }
+            if (done) Button(onClick = { denied = false; state = RecognizeState.Idle; start() }) { Text(stringResource(R.string.recognize_listen_again)) }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Close") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.common_close)) } },
     )
 }
 

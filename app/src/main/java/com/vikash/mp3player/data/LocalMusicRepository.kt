@@ -5,6 +5,7 @@ import android.content.Context
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
+import com.vikash.mp3player.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -36,6 +37,8 @@ class LocalMusicRepository(private val context: Context) {
         val args = arrayOf("10000")
         val sort = "${MediaStore.Audio.Media.TITLE} COLLATE NOCASE ASC"
 
+        val unknownTitle = context.getString(R.string.library_unknown_title)
+        val unknownArtist = context.getString(R.string.library_unknown_artist)
         val songs = mutableListOf<Song>()
         context.contentResolver.query(collection, projection, selection, args, sort)?.use { c ->
             val idCol = c.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
@@ -52,8 +55,8 @@ class LocalMusicRepository(private val context: Context) {
                 songs += Song(
                     id = "local:$id",
                     uri = ContentUris.withAppendedId(collection, id),
-                    title = c.getString(titleCol) ?: "Unknown",
-                    artist = c.getString(artistCol)?.takeUnless { it == "<unknown>" } ?: "Unknown artist",
+                    title = c.getString(titleCol) ?: unknownTitle,
+                    artist = c.getString(artistCol)?.takeUnless { it == "<unknown>" } ?: unknownArtist,
                     album = c.getString(albumCol) ?: "",
                     folder = folderOf(c.getString(folderCol).orEmpty()),
                     durationMs = c.getLong(durationCol),

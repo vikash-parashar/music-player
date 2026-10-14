@@ -58,6 +58,8 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.vikash.mp3player.R
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -145,21 +147,24 @@ fun RingtoneEditorScreen(song: Song, onClose: () -> Unit) {
         }
     }
 
-    fun successMessage(applied: Set<RingtoneTarget>) =
-        "Set as " + applied.sortedBy { it.ordinal }.joinToString(" and ") { it.what }
+    fun successMessage(applied: Set<RingtoneTarget>): String {
+        val joiner = " " + context.getString(R.string.ringtone_and) + " "
+        val what = applied.sortedBy { it.ordinal }.joinToString(joiner) { context.getString(it.whatRes) }
+        return context.getString(R.string.ringtone_set_as, what)
+    }
 
     fun applyDefaults(uri: Uri) {
         val ok = maker.setAsDefault(uri, targets)
         Toast.makeText(
             context,
-            if (ok) successMessage(targets) else "Saved, but this phone didn't let Ampli change the sound. Pick it in Sound settings.",
+            if (ok) successMessage(targets) else context.getString(R.string.ringtone_saved_not_set),
             Toast.LENGTH_LONG,
         ).show()
     }
 
     fun finish(uri: Uri) {
         if (targets.isEmpty()) {
-            Toast.makeText(context, "Saved to Ringtones", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.getString(R.string.ringtone_saved), Toast.LENGTH_SHORT).show()
             onClose()
         } else if (maker.canSetDefaults()) {
             applyDefaults(uri)
@@ -180,7 +185,7 @@ fun RingtoneEditorScreen(song: Song, onClose: () -> Unit) {
                 if (uri != null && maker.canSetDefaults()) {
                     applyDefaults(uri)
                 } else {
-                    Toast.makeText(context, "Saved. You can pick it any time in your phone's Sound settings.", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, context.getString(R.string.ringtone_saved_pick_later), Toast.LENGTH_LONG).show()
                 }
                 onClose()
             }
@@ -195,8 +200,8 @@ fun RingtoneEditorScreen(song: Song, onClose: () -> Unit) {
                 .padding(horizontal = 20.dp, vertical = 12.dp),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = onClose) { Icon(Icons.Default.Close, "Close ringtone maker") }
-                Text("Ringtone maker", style = MaterialTheme.typography.titleMedium)
+                IconButton(onClick = onClose) { Icon(Icons.Default.Close, stringResource(R.string.ringtone_close)) }
+                Text(stringResource(R.string.ringtone_title), style = MaterialTheme.typography.titleMedium)
             }
             Spacer(Modifier.height(8.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -224,28 +229,28 @@ fun RingtoneEditorScreen(song: Song, onClose: () -> Unit) {
             }
             Spacer(Modifier.height(12.dp))
 
-            TimeNudger("Start", startMs, onChange = ::setStart)
-            TimeNudger("End", endMs, onChange = ::setEnd)
+            TimeNudger(stringResource(R.string.ringtone_start), startMs, onChange = ::setStart)
+            TimeNudger(stringResource(R.string.ringtone_end), endMs, onChange = ::setEnd)
             Text(
-                "Length ${formatClipTime(endMs - startMs)}",
+                stringResource(R.string.ringtone_length, formatClipTime(endMs - startMs)),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(vertical = 4.dp),
             )
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 listOf(15, 30, 40).forEach { s ->
-                    AssistChip(onClick = { quickLength(s * 1000L) }, label = { Text("$s s") })
+                    AssistChip(onClick = { quickLength(s * 1000L) }, label = { Text(stringResource(R.string.settings_seconds, s)) })
                 }
             }
             Spacer(Modifier.height(8.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 GradientPlayButton(previewing, 52.dp) { previewing = !previewing }
                 Spacer(Modifier.width(12.dp))
-                Text(if (previewing) "Playing your selection" else "Preview selection")
+                Text(if (previewing) stringResource(R.string.ringtone_previewing) else stringResource(R.string.ringtone_preview))
             }
 
             Spacer(Modifier.height(20.dp))
-            Text("Use it as", style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.ringtone_use_as), style = MaterialTheme.typography.titleMedium)
             Spacer(Modifier.height(4.dp))
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 RingtoneTarget.entries.forEach { t ->
@@ -253,7 +258,7 @@ fun RingtoneEditorScreen(song: Song, onClose: () -> Unit) {
                     FilterChip(
                         selected = on,
                         onClick = { targets = if (on) targets - t else targets + t },
-                        label = { Text(t.label) },
+                        label = { Text(stringResource(t.labelRes)) },
                         leadingIcon = if (on) {
                             { Icon(Icons.Default.Check, null, Modifier.size(18.dp)) }
                         } else null,
@@ -262,7 +267,7 @@ fun RingtoneEditorScreen(song: Song, onClose: () -> Unit) {
                 FilterChip(
                     selected = targets.isEmpty(),
                     onClick = { targets = emptySet() },
-                    label = { Text("Save only") },
+                    label = { Text(stringResource(R.string.ringtone_save_only)) },
                     leadingIcon = if (targets.isEmpty()) {
                         { Icon(Icons.Default.Check, null, Modifier.size(18.dp)) }
                     } else null,
@@ -273,7 +278,7 @@ fun RingtoneEditorScreen(song: Song, onClose: () -> Unit) {
             if (saving) {
                 LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth())
                 Spacer(Modifier.height(8.dp))
-                Text("Cutting your ringtone…", style = MaterialTheme.typography.bodyMedium)
+                Text(stringResource(R.string.ringtone_cutting), style = MaterialTheme.typography.bodyMedium)
             } else {
                 Button(
                     onClick = {
@@ -289,12 +294,12 @@ fun RingtoneEditorScreen(song: Song, onClose: () -> Unit) {
                                 finish(uri)
                             }.onFailure { e ->
                                 saving = false
-                                error = e.message ?: "Couldn't make the ringtone. Try another song."
+                                error = e.message ?: context.getString(R.string.ringtone_err_generic)
                             }
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
-                ) { Text(if (targets.isEmpty()) "Save ringtone" else "Save and set") }
+                ) { Text(if (targets.isEmpty()) stringResource(R.string.ringtone_save) else stringResource(R.string.ringtone_save_and_set)) }
             }
             error?.let {
                 Spacer(Modifier.height(8.dp))
@@ -302,8 +307,7 @@ fun RingtoneEditorScreen(song: Song, onClose: () -> Unit) {
             }
             Spacer(Modifier.height(8.dp))
             Text(
-                "The clip is cut without re-encoding, so it sounds exactly like the song. " +
-                    "Works with MP3 and M4A/AAC files.",
+                stringResource(R.string.ringtone_footer),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -313,13 +317,9 @@ fun RingtoneEditorScreen(song: Song, onClose: () -> Unit) {
     if (askWriteSettings) {
         AlertDialog(
             onDismissRequest = { askWriteSettings = false; onClose() },
-            title = { Text("Allow Ampli to change sounds") },
+            title = { Text(stringResource(R.string.ringtone_permission_title)) },
             text = {
-                Text(
-                    "Your clip is saved. Android asks before an app changes the phone's ringtone, " +
-                        "notification or alarm sound. Turn on \"Allow modifying system settings\" for Ampli, " +
-                        "then come back and it will be set."
-                )
+                Text(stringResource(R.string.ringtone_permission_text))
             },
             confirmButton = {
                 TextButton(onClick = {
@@ -328,14 +328,14 @@ fun RingtoneEditorScreen(song: Song, onClose: () -> Unit) {
                     context.startActivity(
                         Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS, Uri.parse("package:${context.packageName}"))
                     )
-                }) { Text("Open settings") }
+                }) { Text(stringResource(R.string.ringtone_open_settings)) }
             },
             dismissButton = {
                 TextButton(onClick = {
                     askWriteSettings = false
-                    Toast.makeText(context, "Saved. You can pick it any time in your phone's Sound settings.", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, context.getString(R.string.ringtone_saved_pick_later), Toast.LENGTH_LONG).show()
                     onClose()
-                }) { Text("Not now") }
+                }) { Text(stringResource(R.string.common_not_now)) }
             },
         )
     }
@@ -414,9 +414,9 @@ private fun Waveform(
 private fun TimeNudger(label: String, ms: Long, onChange: (Long) -> Unit) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Text(label, Modifier.width(56.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
-        IconButton(onClick = { onChange(ms - NUDGE_MS) }) { Icon(Icons.Default.Remove, "$label 0.1 seconds earlier") }
+        IconButton(onClick = { onChange(ms - NUDGE_MS) }) { Icon(Icons.Default.Remove, stringResource(R.string.ringtone_nudge_earlier, label)) }
         Text(formatClipTime(ms), style = MaterialTheme.typography.titleMedium, color = Color.Unspecified)
-        IconButton(onClick = { onChange(ms + NUDGE_MS) }) { Icon(Icons.Default.Add, "$label 0.1 seconds later") }
+        IconButton(onClick = { onChange(ms + NUDGE_MS) }) { Icon(Icons.Default.Add, stringResource(R.string.ringtone_nudge_later, label)) }
     }
 }
 

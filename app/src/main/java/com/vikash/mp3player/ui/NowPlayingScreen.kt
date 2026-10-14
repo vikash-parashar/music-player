@@ -55,6 +55,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.vikash.mp3player.R
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -104,15 +106,15 @@ fun NowPlayingScreen(
     Surface(Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize().systemBarsPadding().padding(horizontal = 24.dp, vertical = 16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = onClose) { Icon(Icons.Default.KeyboardArrowDown, "Close player") }
-                Text(if (showQueue) "Queue" else "Now playing", Modifier.weight(1f), style = MaterialTheme.typography.titleMedium)
+                IconButton(onClick = onClose) { Icon(Icons.Default.KeyboardArrowDown, stringResource(R.string.player_close)) }
+                Text(if (showQueue) stringResource(R.string.player_queue) else stringResource(R.string.player_now_playing), Modifier.weight(1f), style = MaterialTheme.typography.titleMedium)
                 IconButton(onClick = { showCast = true }) {
-                    Icon(if (casting) Icons.Default.CastConnected else Icons.Default.Cast, "Play on TV or speaker",
+                    Icon(if (casting) Icons.Default.CastConnected else Icons.Default.Cast, stringResource(R.string.cast_play_on_tv),
                         tint = if (casting) MaterialTheme.colorScheme.primary else androidx.compose.material3.LocalContentColor.current)
                 }
-                IconButton(onClick = onCarMode) { Icon(Icons.Default.DirectionsCar, "Car mode") }
-                IconButton(onClick = onSetRingtone) { Icon(Icons.Default.RingVolume, "Set as ringtone") }
-                IconButton(onClick = { showQueue = !showQueue }) { Icon(Icons.Default.QueueMusic, "Queue") }
+                IconButton(onClick = onCarMode) { Icon(Icons.Default.DirectionsCar, stringResource(R.string.car_mode)) }
+                IconButton(onClick = onSetRingtone) { Icon(Icons.Default.RingVolume, stringResource(R.string.song_set_ringtone)) }
+                IconButton(onClick = { showQueue = !showQueue }) { Icon(Icons.Default.QueueMusic, stringResource(R.string.player_queue)) }
             }
 
             if (showQueue) {
@@ -122,13 +124,14 @@ fun NowPlayingScreen(
                         items(state.queues.size) { i ->
                             val q = state.queues[i]
                             val selected = i == state.activeQueue
+                            val queueName = if (q.name == ALL_SONGS_QUEUE) stringResource(R.string.library_all_songs) else q.name
                             FilterChip(
                                 selected = selected,
                                 onClick = { player.switchQueue(i) },
-                                label = { Text("${q.name} · ${q.size}", maxLines = 1) },
+                                label = { Text("$queueName · ${q.size}", maxLines = 1) },
                                 trailingIcon = {
                                     Icon(
-                                        Icons.Default.Close, "Remove queue",
+                                        Icons.Default.Close, stringResource(R.string.player_remove_queue),
                                         Modifier.size(16.dp).clickable { player.removeQueue(i) },
                                     )
                                 },
@@ -156,7 +159,7 @@ fun NowPlayingScreen(
                                 Text(item.artist, maxLines = 1, style = MaterialTheme.typography.bodySmall)
                             }
                             if (!isCurrent) IconButton(onClick = { player.removeFromQueue(i) }) {
-                                Icon(Icons.Default.Close, "Remove from queue")
+                                Icon(Icons.Default.Close, stringResource(R.string.player_remove_from_queue))
                             }
                         }
                     }
@@ -216,15 +219,15 @@ fun NowPlayingScreen(
                 val active = MaterialTheme.colorScheme.primary
                 val inactive = MaterialTheme.colorScheme.onSurfaceVariant
                 IconButton(onClick = player::toggleShuffle) {
-                    Icon(Icons.Default.Shuffle, "Shuffle", tint = if (state.shuffle) active else inactive)
+                    Icon(Icons.Default.Shuffle, stringResource(R.string.player_shuffle), tint = if (state.shuffle) active else inactive)
                 }
-                IconButton(onClick = { player.previous() }) { Icon(Icons.Default.SkipPrevious, "Previous", Modifier.size(36.dp)) }
+                IconButton(onClick = { player.previous() }) { Icon(Icons.Default.SkipPrevious, stringResource(R.string.common_previous), Modifier.size(36.dp)) }
                 GradientPlayButton(state.isPlaying, 76.dp, player::togglePlay)
-                IconButton(onClick = { player.next() }) { Icon(Icons.Default.SkipNext, "Next", Modifier.size(36.dp)) }
+                IconButton(onClick = { player.next() }) { Icon(Icons.Default.SkipNext, stringResource(R.string.common_next), Modifier.size(36.dp)) }
                 IconButton(onClick = player::cycleRepeat) {
                     Icon(
                         if (state.repeatMode == Player.REPEAT_MODE_ONE) Icons.Default.RepeatOne else Icons.Default.Repeat,
-                        "Repeat",
+                        stringResource(R.string.player_repeat),
                         tint = if (state.repeatMode == Player.REPEAT_MODE_OFF) inactive else active,
                     )
                 }
@@ -244,7 +247,7 @@ fun NowPlayingScreen(
                     selected = showLyrics,
                     onClick = { showLyrics = !showLyrics },
                     leadingIcon = { Icon(Icons.Default.Lyrics, null, Modifier.size(18.dp)) },
-                    label = { Text("Lyrics") },
+                    label = { Text(stringResource(R.string.lyrics_title)) },
                 )
                 Spacer(Modifier.width(8.dp))
                 FilterChip(
@@ -254,9 +257,9 @@ fun NowPlayingScreen(
                     label = {
                         Text(
                             when {
-                                abLoop.active -> "A-B on"
-                                abLoop.aMs != null -> "Set B"
-                                else -> "A-B repeat"
+                                abLoop.active -> stringResource(R.string.player_ab_on)
+                                abLoop.aMs != null -> stringResource(R.string.player_ab_set_b)
+                                else -> stringResource(R.string.player_ab_repeat)
                             }
                         )
                     },
@@ -273,10 +276,10 @@ fun NowPlayingScreen(
 private fun SpeedPitchDialog(speed: Float, pitch: Float, onChange: (Float, Float) -> Unit, onDismiss: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Speed and pitch") },
+        title = { Text(stringResource(R.string.player_speed_pitch)) },
         text = {
             Column {
-                Text("Speed: %.2fx".format(speed))
+                Text(stringResource(R.string.player_speed_value, "%.2f".format(speed)))
                 Slider(value = speed, onValueChange = { onChange(snap(it), pitch) }, valueRange = 0.5f..2f)
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     listOf(0.75f, 1f, 1.25f, 1.5f).forEach { v ->
@@ -284,12 +287,12 @@ private fun SpeedPitchDialog(speed: Float, pitch: Float, onChange: (Float, Float
                     }
                 }
                 Spacer(Modifier.height(12.dp))
-                Text("Pitch: %.2fx".format(pitch))
+                Text(stringResource(R.string.player_pitch_value, "%.2f".format(pitch)))
                 Slider(value = pitch, onValueChange = { onChange(speed, snap(it)) }, valueRange = 0.5f..2f)
             }
         },
-        confirmButton = { TextButton(onClick = onDismiss) { Text("Done") } },
-        dismissButton = { TextButton(onClick = { onChange(1f, 1f) }) { Text("Reset") } },
+        confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.common_done)) } },
+        dismissButton = { TextButton(onClick = { onChange(1f, 1f) }) { Text(stringResource(R.string.player_reset)) } },
     )
 }
 

@@ -29,6 +29,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.vikash.mp3player.R
 import androidx.compose.ui.unit.dp
 import androidx.mediarouter.media.MediaRouteSelector
 import androidx.mediarouter.media.MediaRouter
@@ -46,9 +48,9 @@ fun CastDialog(isPro: Boolean, onGetPro: () -> Unit, onDismiss: () -> Unit) {
     if (!castReady) {
         AlertDialog(
             onDismissRequest = onDismiss,
-            title = { Text("Casting isn't available") },
-            text = { Text("Casting needs Google Play services, which this device doesn't have.") },
-            confirmButton = { TextButton(onClick = onDismiss) { Text("OK") } },
+            title = { Text(stringResource(R.string.cast_unavailable_title)) },
+            text = { Text(stringResource(R.string.cast_unavailable_text)) },
+            confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.common_ok)) } },
         )
         return
     }
@@ -56,10 +58,10 @@ fun CastDialog(isPro: Boolean, onGetPro: () -> Unit, onDismiss: () -> Unit) {
         AlertDialog(
             onDismissRequest = onDismiss,
             icon = { Icon(Icons.Default.Cast, null) },
-            title = { Text("Play on your TV or speaker") },
-            text = { Text("Send your music to a Chromecast, Google/Nest speaker or Android TV. Casting is part of Ampli Pro, a one-time purchase.") },
-            confirmButton = { Button(onClick = { onDismiss(); onGetPro() }) { Text("Get Ampli Pro") } },
-            dismissButton = { TextButton(onClick = onDismiss) { Text("Not now") } },
+            title = { Text(stringResource(R.string.cast_pro_title)) },
+            text = { Text(stringResource(R.string.cast_pro_text)) },
+            confirmButton = { Button(onClick = { onDismiss(); onGetPro() }) { Text(stringResource(R.string.pro_get)) } },
+            dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.common_not_now)) } },
         )
         return
     }
@@ -91,7 +93,7 @@ fun CastDialog(isPro: Boolean, onGetPro: () -> Unit, onDismiss: () -> Unit) {
     val current = selected
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(if (current != null) "Playing on ${current.name}" else "Play on a device") },
+        title = { Text(if (current != null) stringResource(R.string.cast_playing_on, current.name) else stringResource(R.string.cast_pick_device)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 if (current == null) {
@@ -99,7 +101,7 @@ fun CastDialog(isPro: Boolean, onGetPro: () -> Unit, onDismiss: () -> Unit) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
                             Spacer(Modifier.width(12.dp))
-                            Text("Looking for TVs and speakers on your Wi-Fi…")
+                            Text(stringResource(R.string.cast_searching))
                         }
                     }
                     routes.forEach { route ->
@@ -121,7 +123,7 @@ fun CastDialog(isPro: Boolean, onGetPro: () -> Unit, onDismiss: () -> Unit) {
                         }
                     }
                     Text(
-                        "The phone and the TV or speaker need to be on the same Wi-Fi.",
+                        stringResource(R.string.cast_same_wifi),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(top = 8.dp),
@@ -130,16 +132,16 @@ fun CastDialog(isPro: Boolean, onGetPro: () -> Unit, onDismiss: () -> Unit) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.CastConnected, null, tint = MaterialTheme.colorScheme.primary)
                         Spacer(Modifier.width(12.dp))
-                        Text("Use the player as usual; the music plays on ${current.name}.")
+                        Text(stringResource(R.string.cast_connected_text, current.name))
                     }
                 }
             }
         },
         confirmButton = {
             if (current != null) {
-                OutlinedButton(onClick = { router.unselect(MediaRouter.UNSELECT_REASON_STOPPED); onDismiss() }) { Text("Stop casting") }
+                OutlinedButton(onClick = { router.unselect(MediaRouter.UNSELECT_REASON_STOPPED); onDismiss() }) { Text(stringResource(R.string.cast_stop)) }
             }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Close") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.common_close)) } },
     )
 }

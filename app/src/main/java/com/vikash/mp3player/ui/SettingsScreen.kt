@@ -1,6 +1,12 @@
 package com.vikash.mp3player.ui
 
+import android.app.LocaleManager
 import android.net.Uri
+import android.os.Build
+import android.os.LocaleList
+import androidx.annotation.RequiresApi
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -90,6 +96,7 @@ fun SettingsScreen(
     ) {
         ProCard(adsRemoved, price, onRemoveAds)
         if (BuildConfig.DEBUG) TestProCard(adsRemoved, onTestPro)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) LanguageCard()
         AppearanceCard(themeMode, onThemeMode)
         SeekStyleCard(seekStyle, isPro = adsRemoved, onPick = onSeekStyle, onGetPro = onRemoveAds)
         SleepTimerCard()
@@ -105,12 +112,13 @@ fun SettingsScreen(
 }
 
 /** What the one-time Ampli Pro purchase unlocks. Shared with the locked Videos screen. */
-val PRO_FEATURES = listOf(
-    "No ads, ever",
-    "Video player for camera clips and downloads",
-    "Play on your TV or speaker with Chromecast",
-    "Name that song: identify music playing around you" +
-        if (com.vikash.mp3player.recognize.SongRecognizer.isConfigured) "" else " (coming soon)",
+@Composable
+fun proFeatures(): List<String> = listOf(
+    stringResource(R.string.pro_feature_no_ads),
+    stringResource(R.string.pro_feature_videos),
+    stringResource(R.string.pro_feature_cast),
+    if (com.vikash.mp3player.recognize.SongRecognizer.isConfigured) stringResource(R.string.pro_feature_recognize)
+    else stringResource(R.string.pro_feature_recognize_soon),
 )
 
 @Composable
@@ -119,18 +127,18 @@ fun ProCard(isPro: Boolean, price: String?, onGetPro: () -> Unit, modifier: Modi
         Row(Modifier.padding(20.dp), verticalAlignment = Alignment.Top) {
             Column(Modifier.weight(1f)) {
                 Text(
-                    if (isPro) "You have Ampli Pro" else "Ampli Pro",
+                    if (isPro) stringResource(R.string.pro_you_have) else stringResource(R.string.pro_name),
                     style = MaterialTheme.typography.titleLarge,
                     color = Color.White,
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    if (isPro) "Everything is unlocked forever. Thanks for supporting Ampli!"
-                    else "Pay once, keep it forever. No monthly fee, on every phone with this Google account.",
+                    if (isPro) stringResource(R.string.pro_thanks)
+                    else stringResource(R.string.pro_pitch),
                     color = Color.White.copy(alpha = 0.9f),
                 )
                 Spacer(Modifier.height(10.dp))
-                PRO_FEATURES.forEach {
+                proFeatures().forEach {
                     Text("✓  $it", color = Color.White, style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.padding(vertical = 2.dp))
                 }
@@ -139,7 +147,7 @@ fun ProCard(isPro: Boolean, price: String?, onGetPro: () -> Unit, modifier: Modi
                     Button(
                         onClick = onGetPro,
                         colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Ampli.RoseDeep),
-                    ) { Text(if (price != null) "Get Pro for $price" else "Get Ampli Pro") }
+                    ) { Text(if (price != null) stringResource(R.string.pro_get_for_price, price) else stringResource(R.string.pro_get)) }
                 }
             }
             Spacer(Modifier.width(8.dp))
@@ -153,9 +161,9 @@ private fun TestProCard(isPro: Boolean, onTestPro: (Boolean) -> Unit) {
     Card(Modifier.fillMaxWidth()) {
         Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                Text("Test build: try Pro", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.settings_test_pro), style = MaterialTheme.typography.titleMedium)
                 Text(
-                    "Purchases only work in the Play Store version. This switch is not in the release app.",
+                    stringResource(R.string.settings_test_pro_desc),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
@@ -169,9 +177,9 @@ private fun TestProCard(isPro: Boolean, onTestPro: (Boolean) -> Unit) {
 private fun SeekStyleCard(current: SeekStyle, isPro: Boolean, onPick: (SeekStyle) -> Unit, onGetPro: () -> Unit) {
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(vertical = 16.dp)) {
-            Text("Progress bar style", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(horizontal = 16.dp))
+            Text(stringResource(R.string.settings_seek_style), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(horizontal = 16.dp))
             Text(
-                if (isPro) "Pick how the bar moves while a song plays." else "Classic and Squiggle are free. The rest come with Ampli Pro.",
+                if (isPro) stringResource(R.string.settings_seek_style_desc_pro) else stringResource(R.string.settings_seek_style_desc_free),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = 16.dp),
             )
@@ -187,10 +195,10 @@ private fun SeekStyleCard(current: SeekStyle, isPro: Boolean, onPick: (SeekStyle
                     RadioButton(selected = style == current, onClick = { if (locked) onGetPro() else onPick(style) }, enabled = !locked)
                     Column(Modifier.weight(1f)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(style.label, style = MaterialTheme.typography.bodyLarge)
+                            Text(stringResource(style.labelRes), style = MaterialTheme.typography.bodyLarge)
                             if (locked) {
                                 Spacer(Modifier.width(8.dp))
-                                Icon(Icons.Default.Lock, "Ampli Pro", Modifier.size(14.dp), tint = MaterialTheme.colorScheme.primary)
+                                Icon(Icons.Default.Lock, stringResource(R.string.pro_name), Modifier.size(14.dp), tint = MaterialTheme.colorScheme.primary)
                             }
                         }
                         AnimatedSeekBar(
@@ -211,9 +219,9 @@ private fun SeekStyleCard(current: SeekStyle, isPro: Boolean, onPick: (SeekStyle
 private fun AppearanceCard(mode: ThemeMode, onMode: (ThemeMode) -> Unit) {
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp)) {
-            Text("Day / Night mode", style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.settings_theme), style = MaterialTheme.typography.titleMedium)
             Text(
-                "Auto follows your phone's dark mode.",
+                stringResource(R.string.settings_theme_desc),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(10.dp))
@@ -234,7 +242,7 @@ private fun AppearanceCard(mode: ThemeMode, onMode: (ThemeMode) -> Unit) {
                                 Modifier.size(18.dp),
                             )
                         },
-                    ) { Text(m.label) }
+                    ) { Text(stringResource(m.labelRes)) }
                 }
             }
         }
@@ -251,13 +259,13 @@ private fun SleepTimerCard() {
     }
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp)) {
-            Text("Sleep timer", style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.settings_sleep_timer), style = MaterialTheme.typography.titleMedium)
             val remaining = endsAt?.let { it - now }
             Text(
                 when {
-                    afterSong -> "Music stops when this song ends."
-                    remaining != null -> "Music stops in ${formatDuration(remaining.coerceAtLeast(0))}"
-                    else -> "Stop the music after a while."
+                    afterSong -> stringResource(R.string.settings_sleep_after_song)
+                    remaining != null -> stringResource(R.string.settings_sleep_stops_in, formatDuration(remaining.coerceAtLeast(0)))
+                    else -> stringResource(R.string.settings_sleep_desc)
                 },
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -266,12 +274,12 @@ private fun SleepTimerCard() {
                 FilterChip(
                     selected = afterSong,
                     onClick = { SleepTimer.setStopAfterSong(!afterSong) },
-                    label = { Text("End of this song") },
+                    label = { Text(stringResource(R.string.settings_sleep_end_of_song)) },
                 )
                 listOf(15, 30, 45, 60, 90).forEach { m ->
-                    AssistChip(onClick = { SleepTimer.start(m) }, label = { Text("$m min") })
+                    AssistChip(onClick = { SleepTimer.start(m) }, label = { Text(stringResource(R.string.settings_minutes, m)) })
                 }
-                if (endsAt != null || afterSong) OutlinedButton(onClick = SleepTimer::cancel) { Text("Cancel") }
+                if (endsAt != null || afterSong) OutlinedButton(onClick = SleepTimer::cancel) { Text(stringResource(R.string.common_cancel)) }
             }
         }
     }
@@ -284,18 +292,18 @@ private fun EqualizerCard() {
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Equalizer", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                Text(stringResource(R.string.settings_equalizer), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
                 if (eq.available) Switch(checked = eq.enabled, onCheckedChange = { EqualizerController.setEnabled(context, it) })
             }
             if (!eq.available) {
                 Text(
-                    "Start playing a song to use the equalizer. Some phones don't support one.",
+                    stringResource(R.string.settings_equalizer_unavailable),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 return@Column
             }
             Text(
-                "Now adjusting: ${eq.outputLabel}. Speaker, headphones and each Bluetooth device (like your car) keep their own settings.",
+                stringResource(R.string.settings_equalizer_output, eq.outputLabel),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.bodySmall,
             )
@@ -338,16 +346,16 @@ private fun BackupCard(onBackup: (Uri) -> Unit, onRestore: (Uri) -> Unit) {
     }
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp)) {
-            Text("Backup and restore", style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.settings_backup), style = MaterialTheme.typography.titleMedium)
             Text(
-                "Keep your favorites, settings, equalizer and listening history safe. Save to Google Drive to move them to a new phone.",
+                stringResource(R.string.settings_backup_desc),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(10.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(onClick = { save.launch("ampli-backup-${java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(java.util.Date())}.json") }) { Text("Back up") }
+                Button(onClick = { save.launch("ampli-backup-${java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(java.util.Date())}.json") }) { Text(stringResource(R.string.settings_backup_button)) }
                 OutlinedButton(onClick = { open.launch(arrayOf("application/json", "application/octet-stream", "text/plain")) }) {
-                    Text("Restore")
+                    Text(stringResource(R.string.settings_restore_button))
                 }
             }
         }
@@ -359,13 +367,13 @@ private fun BackupCard(onBackup: (Uri) -> Unit, onRestore: (Uri) -> Unit) {
 private fun TransferCard(onOpen: () -> Unit) {
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp)) {
-            Text("Send songs from your computer", style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.transfer_title), style = MaterialTheme.typography.titleMedium)
             Text(
-                "No cable needed. Open an address on any laptop on the same Wi-Fi and drag your music in.",
+                stringResource(R.string.settings_transfer_desc),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(10.dp))
-            Button(onClick = onOpen) { Text("Start Wi-Fi transfer") }
+            Button(onClick = onOpen) { Text(stringResource(R.string.settings_transfer_start)) }
         }
     }
 }
@@ -375,13 +383,13 @@ private fun TransferCard(onOpen: () -> Unit) {
 private fun DuplicatesCard(onOpen: () -> Unit) {
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp)) {
-            Text("Clean up duplicates", style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.settings_duplicates), style = MaterialTheme.typography.titleMedium)
             Text(
-                "Find songs saved more than once, keep the best copy and free up space.",
+                stringResource(R.string.settings_duplicates_desc),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(10.dp))
-            Button(onClick = onOpen) { Text("Find duplicates") }
+            Button(onClick = onOpen) { Text(stringResource(R.string.settings_duplicates_button)) }
         }
     }
 }
@@ -394,9 +402,9 @@ private fun EvenVolumeCard() {
     Card(Modifier.fillMaxWidth()) {
         Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                Text("Even volume", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.settings_even_volume), style = MaterialTheme.typography.titleMedium)
                 Text(
-                    "Loud songs are turned down to match quieter ones, so you don't reach for the volume between tracks. Works with songs that have ReplayGain tags.",
+                    stringResource(R.string.settings_even_volume_desc),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
@@ -413,9 +421,9 @@ private fun FadeCard() {
     val seconds by remember { com.vikash.mp3player.playback.FadeSetting.seconds(context) }.collectAsState()
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp)) {
-            Text("Fade between songs", style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.settings_fade), style = MaterialTheme.typography.titleMedium)
             Text(
-                "Each song fades out at the end and the next one fades in, so nothing stops suddenly.",
+                stringResource(R.string.settings_fade_desc),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(8.dp))
@@ -424,7 +432,7 @@ private fun FadeCard() {
                     FilterChip(
                         selected = seconds == s,
                         onClick = { com.vikash.mp3player.playback.FadeSetting.set(context, s) },
-                        label = { Text(if (s == 0) "Off" else "$s s") },
+                        label = { Text(if (s == 0) stringResource(R.string.settings_off) else stringResource(R.string.settings_seconds, s)) },
                     )
                 }
             }
@@ -438,21 +446,21 @@ private fun FoldersCard(folders: List<Pair<String, Int>>, hidden: Set<String>, o
     var expanded by remember { mutableStateOf(false) }
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp)) {
-            Text("Music folders", style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.settings_folders), style = MaterialTheme.typography.titleMedium)
             Text(
-                if (hidden.isEmpty()) "Hide folders you don't want in your Library, like WhatsApp audio or call recordings."
-                else "${hidden.size} hidden. Their songs stay on the phone but don't show in Ampli.",
+                if (hidden.isEmpty()) stringResource(R.string.settings_folders_desc)
+                else stringResource(R.string.settings_folders_hidden, hidden.size),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(8.dp))
-            OutlinedButton(onClick = { expanded = !expanded }) { Text(if (expanded) "Done" else "Choose folders") }
+            OutlinedButton(onClick = { expanded = !expanded }) { Text(if (expanded) stringResource(R.string.common_done) else stringResource(R.string.settings_folders_choose)) }
             if (expanded) {
-                if (folders.isEmpty()) Text("No folders found yet.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                if (folders.isEmpty()) Text(stringResource(R.string.settings_folders_none), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 folders.forEach { (folder, count) ->
                     Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                         Column(Modifier.weight(1f)) {
-                            Text(folder, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
-                            Text("$count songs", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(groupLabel(folder), maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                            Text(pluralStringResource(R.plurals.library_song_count, count, count), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                         Switch(checked = folder !in hidden, onCheckedChange = { show -> onHidden(folder, !show) })
                     }
@@ -466,13 +474,60 @@ private fun FoldersCard(folders: List<Pair<String, Int>>, hidden: Set<String>, o
 private fun CarModeCard(onOpen: () -> Unit) {
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp)) {
-            Text("Car mode", style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.car_mode), style = MaterialTheme.typography.titleMedium)
             Text(
-                "Huge buttons, swipe to change songs, and say a song or artist to play it. Keep your eyes on the road.",
+                stringResource(R.string.settings_car_mode_desc),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(10.dp))
-            Button(onClick = onOpen) { Text("Start car mode") }
+            Button(onClick = onOpen) { Text(stringResource(R.string.settings_car_mode_start)) }
+        }
+    }
+}
+
+/**
+ * App language (Android 13+). Older phones simply follow the phone's language. Android restarts
+ * the screen in the new language by itself.
+ */
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+@Composable
+private fun LanguageCard() {
+    val context = LocalContext.current
+    val localeManager = remember(context) { context.getSystemService(LocaleManager::class.java) }
+    var current by remember {
+        mutableStateOf(localeManager?.applicationLocales?.let { if (it.isEmpty()) "" else it.get(0).language }.orEmpty())
+    }
+    fun pick(tag: String) {
+        current = tag
+        localeManager?.applicationLocales =
+            if (tag.isEmpty()) LocaleList.getEmptyLocaleList() else LocaleList.forLanguageTags(tag)
+    }
+    val choices = listOf(
+        "" to stringResource(R.string.settings_language_system),
+        "en" to stringResource(R.string.settings_language_english),
+        "hi" to stringResource(R.string.settings_language_hindi),
+    )
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(vertical = 16.dp)) {
+            Text(
+                stringResource(R.string.settings_language), style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(horizontal = 16.dp),
+            )
+            Text(
+                stringResource(R.string.settings_language_desc),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 16.dp),
+            )
+            Spacer(Modifier.height(6.dp))
+            choices.forEach { (tag, label) ->
+                Row(
+                    Modifier.fillMaxWidth().clickable { pick(tag) }.padding(horizontal = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    RadioButton(selected = current == tag, onClick = { pick(tag) })
+                    Text(label, style = MaterialTheme.typography.bodyLarge)
+                }
+            }
         }
     }
 }

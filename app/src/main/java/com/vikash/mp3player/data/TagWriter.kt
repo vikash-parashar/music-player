@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.IntentSender
 import android.os.Build
 import android.provider.MediaStore
+import com.vikash.mp3player.R
 import java.io.File
 
 /** Saves new title, artist and album into an MP3 on the phone, and updates the Library. */
@@ -26,14 +27,14 @@ object TagWriter {
 
     fun write(context: Context, song: Song, title: String, artist: String, album: String): Result {
         val resolver = context.contentResolver
-        if (!isEditable(context, song)) return Result.Failed("Only MP3 files can be edited for now.")
+        if (!isEditable(context, song)) return Result.Failed(context.getString(R.string.tags_only_mp3))
 
         val original = File(context.cacheDir, "tag-original.mp3")
         val edited = File(context.cacheDir, "tag-edited.mp3")
         try {
             // 1. Copy the file and build the edited version in the cache, away from the real file.
             resolver.openInputStream(song.uri)?.use { input -> original.outputStream().use { input.copyTo(it) } }
-                ?: return Result.Failed("Couldn't open this song.")
+                ?: return Result.Failed(context.getString(R.string.tags_open_failed))
             val frames = linkedMapOf("TIT2" to title, "TPE1" to artist, "TALB" to album)
             original.inputStream().buffered().use { input ->
                 edited.outputStream().buffered().use { out -> Id3Editor.rewrite(input, out, frames) }
@@ -44,13 +45,13 @@ object TagWriter {
                 resolver.openOutputStream(song.uri, "wt")
             } catch (e: SecurityException) {
                 return consentFor(context, song, e)
-            } ?: return Result.Failed("Couldn't save this song.")
+            } ?: return Result.Failed(context.getString(R.string.tags_save_failed))
 
             // 3. Write. If it breaks halfway, put the original back.
             val ok = runCatching { out.use { o -> edited.inputStream().use { it.copyTo(o) } } }.isSuccess
             if (!ok) {
                 runCatching { resolver.openOutputStream(song.uri, "wt")?.use { o -> original.inputStream().use { it.copyTo(o) } } }
-                return Result.Failed("Couldn't save this song. It was left unchanged.")
+                return Result.Failed(context.getString(R.string.tags_save_failed_unchanged))
             }
 
             // 4. Tell the Library right away instead of waiting for Android's next scan.
@@ -63,11 +64,11 @@ object TagWriter {
             }
             return Result.Saved
         } catch (e: Id3Editor.UnsupportedTagException) {
-            return Result.Failed("This file's tags use a format Ampli can't edit yet.")
+            return Result.Failed(context.getString(R.string.tags_unsupported))
         } catch (e: SecurityException) {
             return consentFor(context, song, e)
         } catch (e: Exception) {
-            return Result.Failed("Couldn't save this song.")
+            return Result.Failed(context.getString(R.string.tags_save_failed))
         } finally {
             original.delete()
             edited.delete()
@@ -80,6 +81,6 @@ object TagWriter {
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && e is RecoverableSecurityException ->
             Result.NeedsConsent(e.userAction.actionIntent.intentSender)
         Build.VERSION.SDK_INT < Build.VERSION_CODES.Q -> Result.NeedsStoragePermission
-        else -> Result.Failed("Android didn't allow editing this file.")
+        else -> Result.Failed(context.getString(R.string.tags_not_allowed))
     }
 }

@@ -34,6 +34,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.vikash.mp3player.R
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -65,7 +67,7 @@ fun LyricsView(songId: String, positionMs: Long, onSeek: (Long) -> Unit, modifie
     fun saveText(text: String?) {
         scope.launch {
             val ok = text != null && LyricsRepository.save(context, songId, text)
-            message = if (ok) null else "That file has no lyrics in it."
+            message = if (ok) null else context.getString(R.string.lyrics_file_empty)
             if (ok) reload++
         }
     }
@@ -83,15 +85,15 @@ fun LyricsView(songId: String, positionMs: Long, onSeek: (Long) -> Unit, modifie
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                Text("No lyrics for this song yet", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.lyrics_none), style = MaterialTheme.typography.titleMedium)
                 Text(
-                    "Add a .lrc file for words that scroll along with the music, or paste plain lyrics.",
+                    stringResource(R.string.lyrics_none_desc),
                     textAlign = TextAlign.Center,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Button(onClick = { pick.launch(arrayOf("*/*")) }) { Text("Choose file") }
-                    OutlinedButton(onClick = { pasting = true }) { Text("Paste") }
+                    Button(onClick = { pick.launch(arrayOf("*/*")) }) { Text(stringResource(R.string.lyrics_choose_file)) }
+                    OutlinedButton(onClick = { pasting = true }) { Text(stringResource(R.string.lyrics_paste)) }
                 }
                 message?.let { Text(it, color = MaterialTheme.colorScheme.error) }
             }
@@ -108,18 +110,18 @@ fun LyricsView(songId: String, positionMs: Long, onSeek: (Long) -> Unit, modifie
         var text by remember { mutableStateOf("") }
         AlertDialog(
             onDismissRequest = { pasting = false },
-            title = { Text("Paste lyrics") },
+            title = { Text(stringResource(R.string.lyrics_paste_title)) },
             text = {
                 OutlinedTextField(
                     text, { text = it },
-                    placeholder = { Text("Plain lyrics, or LRC lines like [01:02.50] words") },
+                    placeholder = { Text(stringResource(R.string.lyrics_paste_hint)) },
                     modifier = Modifier.fillMaxWidth().heightIn(min = 160.dp, max = 320.dp),
                 )
             },
             confirmButton = {
-                Button(onClick = { saveText(text); pasting = false }, enabled = text.isNotBlank()) { Text("Save") }
+                Button(onClick = { saveText(text); pasting = false }, enabled = text.isNotBlank()) { Text(stringResource(R.string.common_save)) }
             },
-            dismissButton = { TextButton(onClick = { pasting = false }) { Text("Cancel") } },
+            dismissButton = { TextButton(onClick = { pasting = false }) { Text(stringResource(R.string.common_cancel)) } },
         )
     }
 }
@@ -156,7 +158,7 @@ private fun SyncedLines(lyrics: Lyrics, positionMs: Long, onSeek: (Long) -> Unit
             )
         }
         if (onRemove != null) item {
-            TextButton(onClick = onRemove, modifier = Modifier.padding(top = 16.dp)) { Text("Remove these lyrics") }
+            TextButton(onClick = onRemove, modifier = Modifier.padding(top = 16.dp)) { Text(stringResource(R.string.lyrics_remove)) }
         }
     }
 }

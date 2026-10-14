@@ -17,6 +17,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.vikash.mp3player.R
 import androidx.compose.ui.unit.dp
 import com.vikash.mp3player.data.Song
 
@@ -33,49 +35,53 @@ fun OnlineScreen(
     onDownload: (Song) -> Unit,
 ) {
     if (!state.configured) {
-        EmptyMessage("Online music is off in this build. Add JAMENDO_CLIENT_ID to local.properties (see README).")
+        EmptyMessage(stringResource(R.string.online_not_configured))
         return
     }
     LaunchedEffect(Unit) { if (state.results.isEmpty() && state.query.isBlank()) onLoadPopular() }
+    val onlineQueue = stringResource(R.string.nav_online)
+    val playNextLabel = stringResource(R.string.song_play_next)
+    val addToQueueLabel = stringResource(R.string.song_add_to_queue)
+    val downloadLabel = stringResource(R.string.online_download)
 
     Column(Modifier.fillMaxSize()) {
         OutlinedTextField(
             value = state.query,
             onValueChange = onQueryChange,
-            placeholder = { Text("Search songs, artists, genres") },
+            placeholder = { Text(stringResource(R.string.online_search_hint)) },
             leadingIcon = { Icon(Icons.Default.Search, null) },
             trailingIcon = {
-                if (state.query.isNotEmpty()) IconButton(onClick = { onQueryChange("") }) { Icon(Icons.Default.Clear, "Clear") }
+                if (state.query.isNotEmpty()) IconButton(onClick = { onQueryChange("") }) { Icon(Icons.Default.Clear, stringResource(R.string.common_clear)) }
             },
             singleLine = true,
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
         )
         if (state.loading) LinearProgressIndicator(Modifier.fillMaxWidth())
         Text(
-            if (state.query.isBlank()) "Popular this week" else "Results",
+            if (state.query.isBlank()) stringResource(R.string.online_popular) else stringResource(R.string.online_results),
             style = MaterialTheme.typography.titleSmall,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
         )
         when {
-            state.error != null -> EmptyMessage("Couldn't reach the music catalog. Check your connection.\n(${state.error})")
-            !state.loading && state.results.isEmpty() -> EmptyMessage("No songs found.")
+            state.error != null -> EmptyMessage(stringResource(R.string.online_error, state.error.orEmpty()))
+            !state.loading && state.results.isEmpty() -> EmptyMessage(stringResource(R.string.online_no_results))
             else -> LazyColumn(Modifier.fillMaxSize()) {
                 items(state.results.size, key = { state.results[it].id }) { i ->
                     val song = state.results[i]
                     SongRow(
                         song = song,
                         isCurrent = song.id == currentId,
-                        onClick = { onPlay(state.results, i, "Online") },
+                        onClick = { onPlay(state.results, i, onlineQueue) },
                         actions = buildList {
-                            add(SongAction("Play next") { onPlayNext(song) })
-                            add(SongAction("Add to queue") { onAddToQueue(song) })
-                            if (song.downloadUrl != null) add(SongAction("Download") { onDownload(song) })
+                            add(SongAction(playNextLabel) { onPlayNext(song) })
+                            add(SongAction(addToQueueLabel) { onAddToQueue(song) })
+                            if (song.downloadUrl != null) add(SongAction(downloadLabel) { onDownload(song) })
                         },
                     )
                 }
                 item {
                     Text(
-                        "Music provided by Jamendo under Creative Commons licenses.",
+                        stringResource(R.string.online_credit),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(16.dp),

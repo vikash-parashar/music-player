@@ -27,6 +27,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
+import com.vikash.mp3player.R
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.vikash.mp3player.data.Song
@@ -52,9 +55,9 @@ fun AddToPlaylistDialog(
     var creating by remember { mutableStateOf(playlists.isEmpty()) }
     if (creating) {
         PlaylistNameDialog(
-            title = "New playlist",
+            title = stringResource(R.string.playlist_new),
             initial = "",
-            confirm = "Create",
+            confirm = stringResource(R.string.common_create),
             onConfirm = { actions.create(it, songs); onDismiss() },
             onDismiss = onDismiss,
         )
@@ -62,11 +65,16 @@ fun AddToPlaylistDialog(
     }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(if (songs.size == 1) "Add to playlist" else "Add ${songs.size} songs to playlist") },
+        title = {
+            Text(
+                if (songs.size == 1) stringResource(R.string.playlist_add_title)
+                else pluralStringResource(R.plurals.playlist_add_songs_title, songs.size, songs.size)
+            )
+        },
         text = {
             LazyColumn(Modifier.heightIn(max = 360.dp)) {
                 item {
-                    DialogRow("New playlist", Icons.Default.Add) { creating = true }
+                    DialogRow(stringResource(R.string.playlist_new), Icons.Default.Add) { creating = true }
                 }
                 items(playlists, key = { it.id }) { p ->
                     DialogRow("${p.name}  ·  ${p.songIds.size}", Icons.AutoMirrored.Filled.QueueMusic) {
@@ -77,7 +85,7 @@ fun AddToPlaylistDialog(
             }
         },
         confirmButton = {},
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.common_cancel)) } },
     )
 }
 
@@ -109,7 +117,7 @@ fun PlaylistNameDialog(
         text = {
             Column {
                 OutlinedTextField(
-                    name, { name = it }, label = { Text("Playlist name") }, singleLine = true,
+                    name, { name = it }, label = { Text(stringResource(R.string.playlist_name_label)) }, singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
@@ -117,6 +125,6 @@ fun PlaylistNameDialog(
         confirmButton = {
             Button(onClick = { onConfirm(name.trim()) }, enabled = name.isNotBlank()) { Text(confirm) }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.common_cancel)) } },
     )
 }

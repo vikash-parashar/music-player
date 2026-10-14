@@ -3,7 +3,9 @@ package com.vikash.mp3player.recognize
 import android.content.Context
 import android.media.MediaRecorder
 import android.os.Build
+import androidx.annotation.StringRes
 import com.vikash.mp3player.BuildConfig
+import com.vikash.mp3player.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -36,7 +38,8 @@ object SongRecognizer {
     sealed interface Result {
         data class Found(val match: Match) : Result
         data object NotFound : Result
-        data class Failed(val message: String) : Result
+        /** [messageRes] is a string resource, shown translated by the UI. */
+        data class Failed(@StringRes val messageRes: Int) : Result
     }
 
     /** False in builds without the AudD key (added as a GitHub secret, never in the code). */
@@ -69,7 +72,7 @@ object SongRecognizer {
     }
 
     suspend fun identify(sample: File): Result = withContext(Dispatchers.IO) {
-        if (!isConfigured) return@withContext Result.Failed("Song recognition is coming soon.")
+        if (!isConfigured) return@withContext Result.Failed(R.string.recognize_coming_soon_short)
         val boundary = "----ampli" + UUID.randomUUID().toString().replace("-", "")
         val conn = (URL("https://api.audd.io/").openConnection() as HttpURLConnection).apply {
             requestMethod = "POST"
@@ -89,11 +92,11 @@ object SongRecognizer {
                 sample.inputStream().use { it.copyTo(out) }
                 out.writeBytes("\r\n--$boundary--\r\n")
             }
-            if (conn.responseCode !in 200..299) return@withContext Result.Failed("Couldn't reach the recognition service. Try again.")
+            if (conn.responseCode !in 200..299) return@withContext Result.Failed(R.string.recognize_service_error)
             val body = conn.inputStream.bufferedReader().use { it.readText() }
             parse(body)
         } catch (e: Exception) {
-            Result.Failed("No internet connection? Try again.")
+            Result.Failed(R.string.recognize_no_internet)
         } finally {
             conn.disconnect()
             sample.delete()
@@ -102,8 +105,8 @@ object SongRecognizer {
 
     internal fun parse(body: String): Result {
         val root = runCatching { Json.parseToJsonElement(body).jsonObject }.getOrNull()
-            ?: return Result.Failed("Couldn't understand the answer. Try again.")
-        if (root.str("status") != "success") return Result.Failed("Recognition isn't working right now. Try again later.")
+            ?: return Result.Failed(R.string.recognize_bad_answer)
+        if (root.str("status") != "success") return Result.Failed(R.string.recognize_not_working)
         val result = root["result"] as? JsonObject ?: return Result.NotFound
         val title = result.str("title") ?: return Result.NotFound
         return Result.Found(

@@ -21,6 +21,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
+import com.vikash.mp3player.R
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.vikash.mp3player.data.Song
@@ -46,13 +49,13 @@ fun DeleteSongsDialog(songs: List<Song>, onDismiss: () -> Unit, onDeleted: (coun
 
     val consent = rememberLauncherForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
         when {
-            result.resultCode != Activity.RESULT_OK -> if (SongDeleter.systemConfirms) onDismiss() else { working = false; error = "Ampli needs your OK to delete this file." }
+            result.resultCode != Activity.RESULT_OK -> if (SongDeleter.systemConfirms) onDismiss() else { working = false; error = context.getString(R.string.delete_needs_ok) }
             deletesItself -> onDeleted(songs.size)
             else -> start()
         }
     }
     val storage = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        if (granted) start() else { working = false; error = "Ampli needs storage access to delete files." }
+        if (granted) start() else { working = false; error = context.getString(R.string.delete_needs_storage) }
     }
 
     start = {
@@ -66,7 +69,7 @@ fun DeleteSongsDialog(songs: List<Song>, onDismiss: () -> Unit, onDeleted: (coun
                     consent.launch(IntentSenderRequest.Builder(result.sender).build())
                 }
                 SongDeleter.Result.NeedsStoragePermission ->
-                    if (askedOnce) { working = false; error = "Ampli needs storage access to delete files." }
+                    if (askedOnce) { working = false; error = context.getString(R.string.delete_needs_storage) }
                     else { askedOnce = true; storage.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE) }
                 is SongDeleter.Result.Failed -> if (SongDeleter.systemConfirms) onDismiss() else { working = false; error = result.message }
             }
@@ -80,13 +83,13 @@ fun DeleteSongsDialog(songs: List<Song>, onDismiss: () -> Unit, onDeleted: (coun
 
     AlertDialog(
         onDismissRequest = { if (!working) onDismiss() },
-        title = { Text(if (songs.size == 1) "Delete this song?" else "Delete ${songs.size} songs?") },
+        title = { Text(pluralStringResource(R.plurals.delete_title, songs.size, songs.size)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 songs.take(5).forEach { Text("• ${it.title}", maxLines = 1, overflow = TextOverflow.Ellipsis) }
-                if (songs.size > 5) Text("and ${songs.size - 5} more")
+                if (songs.size > 5) Text(stringResource(R.string.delete_and_more, songs.size - 5))
                 Text(
-                    "The files are removed from this phone. This can't be undone.",
+                    stringResource(R.string.delete_warning),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -98,8 +101,8 @@ fun DeleteSongsDialog(songs: List<Song>, onDismiss: () -> Unit, onDeleted: (coun
                 onClick = { askedOnce = false; start() },
                 enabled = !working,
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
-            ) { Text(if (working) "Deleting…" else "Delete") }
+            ) { Text(if (working) stringResource(R.string.delete_deleting) else stringResource(R.string.common_delete)) }
         },
-        dismissButton = { TextButton(onClick = onDismiss, enabled = !working) { Text("Cancel") } },
+        dismissButton = { TextButton(onClick = onDismiss, enabled = !working) { Text(stringResource(R.string.common_cancel)) } },
     )
 }

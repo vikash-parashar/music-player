@@ -4,18 +4,19 @@ import android.app.DownloadManager
 import android.content.Context
 import android.net.Uri
 import android.os.Environment
+import com.vikash.mp3player.R
 
 /**
  * Saves an online track into the phone's Music/MP3 Player folder using the system
  * DownloadManager, so downloads survive the app closing and show progress in the
  * notification shade. Finished files are indexed by Android and appear in the Library tab.
  */
-class SongDownloader(context: Context) {
+class SongDownloader(private val context: Context) {
 
     private val manager = context.getSystemService(DownloadManager::class.java)
 
     fun download(song: Song): Long {
-        val url = requireNotNull(song.downloadUrl) { "This track's license does not allow downloads" }
+        val url = requireNotNull(song.downloadUrl) { context.getString(R.string.online_license_no_download) }
         val fileName = "${song.artist} - ${song.title}".replace(Regex("[\\\\/:*?\"<>|]"), "_").take(120) + ".mp3"
         val request = DownloadManager.Request(Uri.parse(url))
             .setTitle(song.title)

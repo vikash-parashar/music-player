@@ -1,13 +1,15 @@
 package com.vikash.mp3player.data
 
 import android.content.Context
+import androidx.annotation.StringRes
+import com.vikash.mp3player.R
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 /** How the Songs list (and folder, album, artist lists) are ordered. */
-enum class SongSort(val label: String) {
-    Title("Title"), Artist("Artist"), Recent("Recently added"), Longest("Longest first");
+enum class SongSort(@StringRes val labelRes: Int) {
+    Title(R.string.sort_title), Artist(R.string.sort_artist), Recent(R.string.sort_recent), Longest(R.string.sort_longest);
 
     fun apply(songs: List<com.vikash.mp3player.data.Song>): List<com.vikash.mp3player.data.Song> = when (this) {
         Title -> songs.sortedBy { it.title.lowercase() }
@@ -17,7 +19,9 @@ enum class SongSort(val label: String) {
     }
 }
 
-enum class ThemeMode(val label: String) { System("Auto"), Light("Day"), Dark("Night") }
+enum class ThemeMode(@StringRes val labelRes: Int) {
+    System(R.string.settings_theme_auto), Light(R.string.settings_theme_day), Dark(R.string.settings_theme_night)
+}
 
 /** Small settings + the "My Favorites" playlist, kept in SharedPreferences. */
 class AppPrefs(context: Context) {
