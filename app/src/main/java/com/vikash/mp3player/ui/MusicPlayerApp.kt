@@ -83,6 +83,16 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     // Ringtone maker: the song stays set while the panel slides away.
     var ringtoneSong by remember { mutableStateOf<Song?>(null) }
     var tagSong by remember { mutableStateOf<Song?>(null) }
+    val playlists by vm.playlists.collectAsStateWithLifecycle()
+    val playlistActions = remember(vm) {
+        PlaylistActions(
+            create = vm::createPlaylist,
+            addTo = vm::addToPlaylist,
+            removeFrom = vm::removeFromPlaylist,
+            rename = vm::renamePlaylist,
+            delete = vm::deletePlaylist,
+        )
+    }
     var showRingtone by remember { mutableStateOf(false) }
     var showStats by rememberSaveable { mutableStateOf(false) }
     var showTransfer by rememberSaveable { mutableStateOf(false) }
@@ -150,6 +160,10 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                         onEditTags = { tagSong = it },
                         stats = stats,
                         onOpenStats = { showStats = true },
+                        playlists = playlists,
+                        playlistActions = playlistActions,
+                        onAddAllToQueue = vm::addAllToQueue,
+                        onAddFavorites = vm::addFavorites,
                     )
                     1 -> OnlineScreen(
                         state = online,

@@ -58,6 +58,52 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     }
 
 
+    /** Hearts several songs at once (multi-select). Songs already liked stay as they are. */
+    fun addFavorites(songs: List<Song>) {
+        val new = songs.filterNot { prefs.isFavorite(it.id) }
+        new.asReversed().forEach { prefs.toggleFavorite(it.id) }
+        _messages.tryEmit(if (new.isEmpty()) "Already in My Favorites" else "Added ${new.size} songs to My Favorites")
+    }
+
+    // ------------------------------------------------------------------ your playlists
+
+    val playlists = musicApp.playlists.playlists
+
+    fun createPlaylist(name: String, songs: List<Song>) {
+        musicApp.playlists.create(name, songs.map { it.id })
+        _messages.tryEmit(if (songs.isEmpty()) "Playlist created" else "Created playlist with ${songs.size} songs")
+    }
+
+    fun addToPlaylist(id: String, songs: List<Song>) {
+        val name = playlists.value.firstOrNull { it.id == id }?.name ?: return
+        val added = musicApp.playlists.add(id, songs.map { it.id })
+        _messages.tryEmit(
+            when (added) {
+                0 -> "Already in $name"
+                1 -> "Added to $name"
+                else -> "Added $added songs to $name"
+            }
+        )
+    }
+
+    fun removeFromPlaylist(id: String, song: Song) {
+        musicApp.playlists.remove(id, song.id)
+        _messages.tryEmit("Removed \"${song.title}\"")
+    }
+
+    fun renamePlaylist(id: String, name: String) = musicApp.playlists.rename(id, name)
+
+    fun deletePlaylist(id: String) {
+        musicApp.playlists.delete(id)
+        _messages.tryEmit("Playlist deleted")
+    }
+
+    /** Several songs at once, in list order (multi-select). */
+    fun addAllToQueue(songs: List<Song>) {
+        songs.forEach { player.addToQueue(it) }
+        _messages.tryEmit("Added ${songs.size} songs to the queue")
+    }
+
     private var searchJob: Job? = null
 
     val stats = musicApp.playStats.data
@@ -157,7 +203,10 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     fun exportBackup(target: android.net.Uri) {
         viewModelScope.launch {
             runCatching {
-                Backup.export(getApplication(), target, _library.value.songs, stats.value, prefs.favorites.value)
+                Backup.export(
+                    getApplication(), target, _library.value.songs, stats.value, prefs.favorites.value,
+                    musicApp.playlists.playlists.value,
+                )
             }
                 .onSuccess { _messages.tryEmit("Backup saved") }
                 .onFailure { _messages.tryEmit(it.message ?: "Backup failed") }
@@ -167,11 +216,17 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     fun restoreBackup(source: android.net.Uri) {
         viewModelScope.launch {
             runCatching { Backup.restore(getApplication(), source, _library.value.songs) }
-                .onSuccess { (restoredStats, favorites) ->
-                    musicApp.playStats.replaceAll(restoredStats)
-                    prefs.reloadAfterRestore(favorites)
+                .onSuccess { restored ->
+                    musicApp.playStats.replaceAll(restored.stats)
+                    prefs.reloadAfterRestore(restored.favorites)
+                    // Keep playlists made on this phone; add the ones from the backup that aren't here yet.
+                    val here = musicApp.playlists.playlists.value
+                    val names = here.map { it.name.lowercase() }.toSet()
+                    musicApp.playlists.replaceAll(here + restored.playlists.filterNot { it.name.lowercase() in names })
                     EqualizerController.reload()
-                    _messages.tryEmit("Restored ${favorites.size} favorites and your settings")
+                    _messages.tryEmit(
+                        "Restored ${restored.favorites.size} favorites, ${restored.playlists.size} playlists and your settings"
+                    )
                 }
                 .onFailure { _messages.tryEmit(it.message ?: "Restore failed") }
         }
