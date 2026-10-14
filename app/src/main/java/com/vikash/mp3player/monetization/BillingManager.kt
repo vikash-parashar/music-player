@@ -72,6 +72,11 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
         return true
     }
 
+    /** "Restore purchase": asks Play again which products this Google account owns. */
+    fun restore() {
+        if (client.isReady) refreshPurchases() else start()
+    }
+
     override fun onPurchasesUpdated(result: BillingResult, purchases: MutableList<Purchase>?) {
         if (result.responseCode == BillingClient.BillingResponseCode.OK) {
             purchases?.forEach(::handlePurchase)

@@ -147,7 +147,7 @@ fun ProCard(isPro: Boolean, price: String?, onGetPro: () -> Unit, modifier: Modi
                     Button(
                         onClick = onGetPro,
                         colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Ampli.RoseDeep),
-                    ) { Text(if (price != null) stringResource(R.string.pro_get_for_price, price) else stringResource(R.string.pro_get)) }
+                    ) { Text(stringResource(R.string.pro_get_for_price, price ?: stringResource(R.string.pro_display_price))) }
                 }
             }
             Spacer(Modifier.width(8.dp))
