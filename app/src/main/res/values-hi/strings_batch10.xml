@@ -64,7 +64,7 @@
         <item quantity="other">%1$d गाने ले जाए गए</item>
     </plurals>
 
-    <string name="help_title">मदद और सुझाव</string>
+    <string name="help_title">मदद &amp; सुझाव</string>
     <string name="help_card_desc">कोई समस्या बताएं, नया फ़ीचर मांगें, या Ampli Pro के बारे में हमसे संपर्क करें।</string>
     <string name="help_open">खोलें</string>
     <string name="help_bug">गड़बड़ी बताएं</string>

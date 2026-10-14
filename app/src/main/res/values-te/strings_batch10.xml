@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="discover_music">మ్యూజిక్</string>
+    <string name="discover_audiobooks">ఆడియోబుక్స్</string>
+    <string name="discover_podcasts">పాడ్‌కాస్ట్‌లు</string>
+    <string name="discover_offline">లోడ్ కాలేదు. ఇంటర్నెట్ చెక్ చేసి మళ్లీ ప్రయత్నించండి.</string>
+    <string name="books_search_hint">పుస్తకాలు లేదా రచయితలను వెతకండి</string>
+    <string name="books_intro">వాలంటీర్లు చదివిన ఉచిత ఆడియోబుక్స్. ప్రతి పుస్తకం పబ్లిక్ డొమైన్‌లో ఉంది, కాబట్టి ఉచితంగా వినవచ్చు, డౌన్‌లోడ్ చేసుకోవచ్చు.</string>
+    <string name="books_try">ప్రయత్నించండి</string>
+    <string name="books_chapters">అధ్యాయాలు: %1$d</string>
+    <string name="books_credit">LibriVox.org నుంచి ఆడియోబుక్స్, పబ్లిక్ డొమైన్.</string>
+    <string name="books_play">ప్లే</string>
+    <string name="books_download_all">అన్నీ డౌన్‌లోడ్ చేయి</string>
+    <string name="books_resume_note">ప్రతి అధ్యాయంలో మీరు ఎక్కడ ఆపారో Ampli గుర్తుంచుకుంటుంది.</string>
+    <string name="podcasts_search_hint">పాడ్‌కాస్ట్‌లు వెతకండి</string>
+    <string name="podcasts_following">ఫాలో అవుతున్నవి</string>
+    <string name="podcasts_top">భారత్‌లో టాప్ పాడ్‌కాస్ట్‌లు</string>
+    <string name="podcasts_credit">పాడ్‌కాస్ట్ డైరెక్టరీ Apple Podcasts నుంచి. ఎపిసోడ్‌లు ప్రతి షో సొంత ఫీడ్ నుంచి నేరుగా ప్లే అవుతాయి.</string>
+    <string name="podcasts_follow">ఫాలో చేయి</string>
+    <string name="podcasts_unfollow">అన్‌ఫాలో చేయి</string>
+    <string name="podcasts_no_episodes">ఎపిసోడ్‌లు ఏవీ దొరకలేదు</string>
+
+    <string name="convert_title">Ampli Convert</string>
+    <string name="convert_desc">మీ వీడియో నుంచి సౌండ్ తీసి మ్యూజిక్ ఫైల్‌గా ఉంచుకోండి. వేగంగా, క్వాలిటీ తగ్గకుండా.</string>
+    <string name="convert_pick">వీడియో ఎంచుకోండి</string>
+    <string name="convert_working">సౌండ్ తీస్తోంది…</string>
+    <string name="convert_saved">\"%1$s\" Music/%2$s లో సేవ్ అయింది. ఇప్పుడు మీ లైబ్రరీలో ఉంది.</string>
+    <string name="convert_no_sound">ఈ వీడియోలో సౌండ్ లేదు.</string>
+    <string name="convert_unsupported">ఈ వీడియో సౌండ్ ఫార్మాట్‌ను ఇంకా కాపీ చేయలేము.</string>
+    <string name="convert_failed">కన్వర్ట్ కాలేదు: %1$s</string>
+
+    <string name="ringtone_fade_in">ఫేడ్ ఇన్</string>
+    <string name="ringtone_fade_out">ఫేడ్ అవుట్</string>
+    <string name="ringtone_fade_off">ఆఫ్</string>
+    <string name="ringtone_fade_seconds">%1$d సె</string>
+    <string name="ringtone_target_contact">ఒక కాంటాక్ట్</string>
+    <string name="ringtone_contact_set">ఆ కాంటాక్ట్‌కు రింగ్‌టోన్ సెట్ అయింది</string>
+    <string name="ringtone_contact_failed">ఆ కాంటాక్ట్‌కు రింగ్‌టోన్ సెట్ చేయలేకపోయింది</string>
+    <string name="ringtone_contact_needs_permission">ఒక వ్యక్తికి రింగ్‌టోన్ సెట్ చేయడానికి Ampli కి కాంటాక్ట్స్ అనుమతి కావాలి</string>
+
+    <string name="settings_headset_clicks">ఇయర్‌ఫోన్ బటన్</string>
+    <string name="settings_headset_clicks_desc">ఒకసారి నొక్కితే ప్లే లేదా పాజ్, రెండుసార్లు నొక్కితే తర్వాతి పాట, మూడుసార్లు నొక్కితే మునుపటి పాట.</string>
+
+    <string name="bookmarks_title">బుక్‌మార్క్‌లు</string>
+    <string name="bookmarks_note_hint">నోట్ (ఐచ్ఛికం)</string>
+    <string name="bookmarks_add_at">%1$s వద్ద బుక్‌మార్క్ జోడించు</string>
+    <string name="bookmarks_empty">ఇంకా బుక్‌మార్క్‌లు లేవు. తర్వాత ఇదే చోటుకు తిరిగి రావడానికి ఒకటి జోడించండి.</string>
+    <string name="bookmarks_untitled">బుక్‌మార్క్</string>
+
+    <string name="song_move">ఫోల్డర్‌కు తరలించు</string>
+    <string name="library_move_selected">ఎంచుకున్నవి ఒక ఫోల్డర్‌కు తరలించు</string>
+    <plurals name="move_title">
+        <item quantity="one">%1$d పాటను తరలించు</item>
+        <item quantity="other">%1$d పాటలను తరలించు</item>
+    </plurals>
+    <string name="move_new_folder">కొత్త ఫోల్డర్</string>
+    <string name="move_folder_hint">ఉదాహరణకు Music/Old songs</string>
+    <string name="move_button">తరలించు</string>
+    <string name="move_moving">తరలిస్తోంది…</string>
+    <string name="move_needs_ok">ఈ పాటలను తరలించడానికి Android కి మీ అనుమతి కావాలి</string>
+    <string name="move_failed">పాటలను తరలించలేకపోయింది</string>
+    <plurals name="msg_songs_moved">
+        <item quantity="one">%1$d పాట తరలించబడింది</item>
+        <item quantity="other">%1$d పాటలు తరలించబడ్డాయి</item>
+    </plurals>
+
+    <string name="help_title">సహాయం &amp; ఫీడ్‌బ్యాక్</string>
+    <string name="help_card_desc">సమస్యను తెలియజేయండి, కొత్త ఫీచర్ అడగండి, లేదా Ampli Pro గురించి మమ్మల్ని సంప్రదించండి.</string>
+    <string name="help_open">తెరువు</string>
+    <string name="help_bug">బగ్ రిపోర్ట్ చేయి</string>
+    <string name="help_bug_desc">ఏదైనా పనిచేయడం లేదా? ఏమైందో మాకు చెప్పండి.</string>
+    <string name="help_feature">ఫీచర్ అడగండి</string>
+    <string name="help_feature_desc">కొత్తది ఏదైనా అడగండి, ఐడియాలకు ఓటు వేయండి.</string>
+    <string name="help_support">సపోర్ట్‌ను సంప్రదించండి</string>
+    <string name="help_support_desc">Ampli Pro లేదా మీ కొనుగోలు గురించి ప్రశ్నలు.</string>
+    <string name="help_mine">నా రిక్వెస్ట్‌లు</string>
+    <string name="help_mine_desc">మీ రిక్వెస్ట్‌లు, మా జవాబులు చూడండి.</string>
+    <string name="help_privacy">మీరు ఇక్కడ టైప్ చేసినది, యాప్ వెర్షన్, ఫోన్ మోడల్ మాత్రమే Ampli పంపుతుంది. ఇంకేమీ కాదు.</string>
+    <string name="help_field_title">టైటిల్</string>
+    <string name="help_field_subject">విషయం</string>
+    <string name="help_field_what_happened">ఏమైంది?</string>
+    <string name="help_field_describe">ఫీచర్ గురించి వివరించండి</string>
+    <string name="help_field_message">మెసేజ్</string>
+    <string name="help_field_contact">మీ ఇమెయిల్ (ఐచ్ఛికం, జవాబు కోసం)</string>
+    <string name="help_field_order">Play ఆర్డర్ ID (ఐచ్ఛికం)</string>
+    <string name="help_add_screenshot">స్క్రీన్‌షాట్ జోడించు</string>
+    <string name="help_screenshot_added">స్క్రీన్‌షాట్ జోడించబడింది ✓</string>
+    <string name="help_attach_logs">యాప్ లాగ్‌లు జతచేయి</string>
+    <string name="help_send">పంపు</string>
+    <string name="help_send_email">ఇమెయిల్ ద్వారా పంపు</string>
+    <string name="help_sent">ధన్యవాదాలు, మీ రిఫరెన్స్ నంబర్ %1$s</string>
+    <string name="help_queued">మీరు ఆఫ్‌లైన్‌లో ఉన్నారు. మళ్లీ ఆన్‌లైన్‌కు రాగానే Ampli దీన్ని పంపుతుంది.</string>
+    <string name="help_queue_sent">సేవ్ చేసిన మీ రిపోర్ట్‌లు పంపబడ్డాయి</string>
+    <string name="help_rate_limited">ఈరోజు మీరు చాలా పంపారు. దయచేసి రేపు మళ్లీ ప్రయత్నించండి.</string>
+    <string name="help_failed">పంపలేకపోయింది: %1$s</string>
+    <string name="help_no_email_app">ఈ ఫోన్‌లో ఇమెయిల్ యాప్ ఏదీ లేదు</string>
+    <string name="help_top_requests">టాప్ రిక్వెస్ట్‌లు</string>
+    <string name="help_no_requests_yet">ఇంకా రిక్వెస్ట్‌లు లేవు. మొదట మీరే అడగండి!</string>
+    <string name="help_vote">ఓటు వేయి</string>
+    <string name="help_mine_email">ప్రస్తుతం మీ రిక్వెస్ట్‌లు ఇమెయిల్ ద్వారా వెళ్తాయి, కాబట్టి మా జవాబులు మీ ఇన్‌బాక్స్‌కు వస్తాయి.</string>
+    <string name="help_mine_empty">మీరు ఇంకా ఏ రిక్వెస్ట్ పంపలేదు.</string>
+    <string name="help_reply">జవాబు: %1$s</string>
+</resources>
