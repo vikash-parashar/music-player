@@ -2,7 +2,10 @@ package com.vikash.mp3player.ui
 
 import android.net.Uri
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.material3.Checkbox
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -109,9 +112,13 @@ fun SongRow(
     onToggleFavorite: () -> Unit = {},
     /** Swipe the row to the right to play the song next (a common Musicolet request). */
     onSwipePlayNext: (() -> Unit)? = null,
+    /** Long-press starts multi-select. */
+    onLongClick: (() -> Unit)? = null,
+    /** Non-null while multi-select is on: shows a checkbox instead of the heart and menu. */
+    selected: Boolean? = null,
 ) {
-    if (onSwipePlayNext == null) {
-        SongRowContent(song, isCurrent, onClick, actions, isFavorite, onToggleFavorite)
+    if (onSwipePlayNext == null || selected != null) {
+        SongRowContent(song, isCurrent, onClick, actions, isFavorite, onToggleFavorite, onLongClick, selected)
         return
     }
     val onSwipe by rememberUpdatedState(onSwipePlayNext)
@@ -137,10 +144,11 @@ fun SongRow(
             }
         },
     ) {
-        Surface { SongRowContent(song, isCurrent, onClick, actions, isFavorite, onToggleFavorite) }
+        Surface { SongRowContent(song, isCurrent, onClick, actions, isFavorite, onToggleFavorite, onLongClick, null) }
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun SongRowContent(
     song: Song,
@@ -149,10 +157,15 @@ private fun SongRowContent(
     actions: List<SongAction>,
     isFavorite: Boolean?,
     onToggleFavorite: () -> Unit,
+    onLongClick: (() -> Unit)?,
+    selected: Boolean?,
 ) {
     var menuOpen by remember { mutableStateOf(false) }
     Row(
-        Modifier.fillMaxWidth().clickable(onClick = onClick).padding(start = 16.dp, top = 8.dp, bottom = 8.dp),
+        Modifier.fillMaxWidth()
+            .background(if (selected == true) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent)
+            .combinedClickable(onClick = onClick, onLongClick = onLongClick)
+            .padding(start = 16.dp, top = 8.dp, bottom = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Artwork(song.artworkUri, 48.dp)
@@ -173,15 +186,19 @@ private fun SongRowContent(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-        if (isFavorite != null) FavoriteButton(isFavorite, onToggleFavorite)
-        Box {
-            IconButton(onClick = { menuOpen = true }) { Icon(Icons.Default.MoreVert, "More options") }
-            DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
-                actions.forEach { action ->
-                    DropdownMenuItem(
-                        text = { Text(action.label) },
-                        onClick = { menuOpen = false; action.onClick() },
-                    )
+        if (selected != null) {
+            Checkbox(checked = selected, onCheckedChange = { onClick() }, modifier = Modifier.padding(end = 8.dp))
+        } else {
+            if (isFavorite != null) FavoriteButton(isFavorite, onToggleFavorite)
+            Box {
+                IconButton(onClick = { menuOpen = true }) { Icon(Icons.Default.MoreVert, "More options") }
+                DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+                    actions.forEach { action ->
+                        DropdownMenuItem(
+                            text = { Text(action.label) },
+                            onClick = { menuOpen = false; action.onClick() },
+                        )
+                    }
                 }
             }
         }

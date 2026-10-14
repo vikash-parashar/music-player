@@ -10,6 +10,7 @@ import com.vikash.mp3player.data.JamendoRepository
 import com.vikash.mp3player.data.LocalMusicRepository
 import com.vikash.mp3player.data.LocalVideoRepository
 import com.vikash.mp3player.data.PlayStats
+import com.vikash.mp3player.data.PlaylistStore
 import com.vikash.mp3player.data.SongDownloader
 import com.vikash.mp3player.monetization.BillingManager
 
@@ -23,6 +24,7 @@ class MusicApp : Application(), SingletonImageLoader.Factory {
     val billing by lazy { BillingManager(this) }
     val prefs by lazy { AppPrefs(this) }
     val playStats by lazy { PlayStats(this) }
+    val playlists by lazy { PlaylistStore(this) }
 
     override fun newImageLoader(context: PlatformContext): ImageLoader =
         ImageLoader.Builder(context).crossfade(true).build()

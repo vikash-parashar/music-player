@@ -1,6 +1,19 @@
 package com.vikash.mp3player.ui
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.material.icons.automirrored.filled.PlaylistAdd
+import androidx.compose.material.icons.automirrored.filled.QueueMusic
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.SelectAll
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Surface
+import androidx.compose.material3.TextButton
+import com.vikash.mp3player.data.UserPlaylist
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -41,6 +54,7 @@ import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -62,6 +76,9 @@ private enum class LibraryTab(val label: String, val key: (Song) -> String) {
 }
 
 const val MY_FAVORITES = "My Favorites"
+
+/** openGroup prefix for one of the user's own playlists. */
+private const val USER_PLAYLIST = "playlist:"
 
 /** Built-in lists that fill themselves from favorites, play history and date added. */
 private enum class SmartList(val title: String, val icon: ImageVector, val emptyText: String) {
@@ -106,6 +123,10 @@ fun LibraryScreen(
     onEditTags: (Song) -> Unit,
     stats: StatsData,
     onOpenStats: () -> Unit,
+    playlists: List<UserPlaylist>,
+    playlistActions: PlaylistActions,
+    onAddAllToQueue: (List<Song>) -> Unit,
+    onAddFavorites: (List<Song>) -> Unit,
 ) {
     if (!hasPermission) {
         EmptyMessage("Allow Ampli to see the music on this phone.") {
@@ -120,6 +141,12 @@ fun LibraryScreen(
     val current = LibraryTab.entries[tab]
 
     BackHandler(enabled = openGroup != null) { openGroup = null }
+
+    var addingSongs by remember { mutableStateOf<List<Song>?>(null) }
+    var creatingPlaylist by remember { mutableStateOf(false) }
+    var renaming by remember { mutableStateOf<UserPlaylist?>(null) }
+    var deleting by remember { mutableStateOf<UserPlaylist?>(null) }
+    val onAddToPlaylist: (List<Song>) -> Unit = { addingSongs = it }
 
     val filtered = remember(state.songs, filter) {
         if (filter.isBlank()) state.songs else state.songs.filter {
@@ -173,6 +200,68 @@ fun LibraryScreen(
                             onClick = { openGroup = list.title },
                         )
                     }
+                    item {
+                        Text(
+                            "Your playlists", style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 4.dp),
+                        )
+                    }
+                    item {
+                        PlaylistRow("New playlist", "Make your own mix", Icons.Default.Add, onClick = { creatingPlaylist = true })
+                    }
+                    items(playlists, key = { it.id }) { p ->
+                        PlaylistRow(
+                            p.name,
+                            if (p.songIds.isEmpty()) "Empty" else "${p.songIds.size} songs",
+                            Icons.AutoMirrored.Filled.QueueMusic,
+                            onClick = { openGroup = USER_PLAYLIST + p.id },
+                        )
+                    }
+                }
+            }
+            current == LibraryTab.Playlists && openGroup?.startsWith(USER_PLAYLIST) == true -> {
+                val playlist = playlists.firstOrNull { it.id == openGroup?.removePrefix(USER_PLAYLIST) }
+                if (playlist == null) {
+                    LaunchedEffect(Unit) { openGroup = null } // it was just deleted
+                } else {
+                    val songs = remember(filtered, playlist) {
+                        val byId = filtered.associateBy { it.id }
+                        playlist.songIds.mapNotNull { byId[it] }
+                    }
+                    val headerActions: @Composable () -> Unit = {
+                        IconButton(onClick = { renaming = playlist }) { Icon(Icons.Default.Edit, "Rename playlist") }
+                        IconButton(onClick = { deleting = playlist }) { Icon(Icons.Default.Delete, "Delete playlist") }
+                    }
+                    if (songs.isEmpty()) {
+                        Column(Modifier.fillMaxSize()) {
+                            Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                                IconButton(onClick = { openGroup = null }) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back") }
+                                Text(playlist.name, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                                headerActions()
+                            }
+                            EmptyMessage("This playlist is empty. Use \"Add to playlist\" in any song's menu, or long-press songs to add several at once.")
+                        }
+                    } else {
+                        SongList(
+                            title = playlist.name,
+                            songs = songs,
+                            currentId = currentId,
+                            onBack = { openGroup = null },
+                            onPlay = onPlay,
+                            onPlayNext = onPlayNext,
+                            onAddToQueue = onAddToQueue,
+                            favorites = favorites,
+                            onToggleFavorite = onToggleFavorite,
+                            onSetRingtone = onSetRingtone,
+                            onEditTags = onEditTags,
+                            onAddToPlaylist = onAddToPlaylist,
+                            onAddAllToQueue = onAddAllToQueue,
+                            onAddFavorites = onAddFavorites,
+                            onRemove = { playlistActions.removeFrom(playlist.id, it) },
+                            headerActions = headerActions,
+                        )
+                    }
                 }
             }
             current == LibraryTab.Playlists && openGroup != null -> {
@@ -199,6 +288,9 @@ fun LibraryScreen(
                         onToggleFavorite = onToggleFavorite,
                         onSetRingtone = onSetRingtone,
                         onEditTags = onEditTags,
+                        onAddToPlaylist = onAddToPlaylist,
+                        onAddAllToQueue = onAddAllToQueue,
+                        onAddFavorites = onAddFavorites,
                     )
                 }
             }
@@ -216,6 +308,9 @@ fun LibraryScreen(
                     onToggleFavorite = onToggleFavorite,
                     onSetRingtone = onSetRingtone,
                     onEditTags = onEditTags,
+                    onAddToPlaylist = onAddToPlaylist,
+                    onAddAllToQueue = onAddAllToQueue,
+                    onAddFavorites = onAddFavorites,
                 )
             }
             else -> {
@@ -244,6 +339,31 @@ fun LibraryScreen(
             }
         }
     }
+
+    addingSongs?.let { list ->
+        AddToPlaylistDialog(list, playlists, playlistActions, onDismiss = { addingSongs = null })
+    }
+    if (creatingPlaylist) {
+        PlaylistNameDialog("New playlist", "", "Create",
+            onConfirm = { playlistActions.create(it, emptyList()); creatingPlaylist = false },
+            onDismiss = { creatingPlaylist = false })
+    }
+    renaming?.let { p ->
+        PlaylistNameDialog("Rename playlist", p.name, "Save",
+            onConfirm = { playlistActions.rename(p.id, it); renaming = null },
+            onDismiss = { renaming = null })
+    }
+    deleting?.let { p ->
+        AlertDialog(
+            onDismissRequest = { deleting = null },
+            title = { Text("Delete \"${p.name}\"?") },
+            text = { Text("The playlist goes away. Your songs stay on the phone.") },
+            confirmButton = {
+                Button(onClick = { playlistActions.delete(p.id); deleting = null; openGroup = null }) { Text("Delete") }
+            },
+            dismissButton = { TextButton(onClick = { deleting = null }) { Text("Cancel") } },
+        )
+    }
 }
 
 @Composable
@@ -270,6 +390,7 @@ private fun PlaylistRow(title: String, subtitle: String, icon: ImageVector, onCl
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun SongList(
     title: String?,
@@ -283,20 +404,60 @@ private fun SongList(
     onToggleFavorite: (Song) -> Unit,
     onSetRingtone: (Song) -> Unit,
     onEditTags: (Song) -> Unit,
+    onAddToPlaylist: (List<Song>) -> Unit,
+    onAddAllToQueue: (List<Song>) -> Unit,
+    onAddFavorites: (List<Song>) -> Unit,
+    /** Set inside one of the user's playlists: adds "Remove from playlist". */
+    onRemove: ((Song) -> Unit)? = null,
+    /** Extra buttons in the header, e.g. rename/delete for a playlist. */
+    headerActions: (@Composable () -> Unit)? = null,
 ) {
+    // Multi-select: long-press a song to start, tap to add or remove more.
+    var selected by remember(title) { mutableStateOf(emptySet<String>()) }
+    val selecting = selected.isNotEmpty()
+    val picked = remember(selected, songs) { songs.filter { it.id in selected } }
+    BackHandler(enabled = selecting) { selected = emptySet() }
+    fun toggle(song: Song) { selected = if (song.id in selected) selected - song.id else selected + song.id }
+    val source = title ?: "All songs"
+
     LazyColumn(Modifier.fillMaxSize()) {
-        item {
-            Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                if (title != null) {
-                    IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back") }
-                    Text(title, style = MaterialTheme.typography.titleMedium, maxLines = 1,
-                        overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+        stickyHeader {
+            Surface(tonalElevation = if (selecting) 3.dp else 0.dp) {
+                if (selecting) {
+                    Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(onClick = { selected = emptySet() }) { Icon(Icons.Default.Close, "Cancel selection") }
+                        Text("${selected.size} selected", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                        IconButton(onClick = { selected = if (selected.size == songs.size) emptySet() else songs.map { it.id }.toSet() }) {
+                            Icon(Icons.Default.SelectAll, "Select all")
+                        }
+                        IconButton(onClick = { onPlay(picked, 0, source); selected = emptySet() }) {
+                            Icon(Icons.Default.PlayArrow, "Play selected")
+                        }
+                        IconButton(onClick = { onAddAllToQueue(picked); selected = emptySet() }) {
+                            Icon(Icons.AutoMirrored.Filled.QueueMusic, "Add selected to queue")
+                        }
+                        IconButton(onClick = { onAddToPlaylist(picked); selected = emptySet() }) {
+                            Icon(Icons.AutoMirrored.Filled.PlaylistAdd, "Add selected to a playlist")
+                        }
+                        IconButton(onClick = { onAddFavorites(picked); selected = emptySet() }) {
+                            Icon(Icons.Default.Favorite, "Add selected to My Favorites")
+                        }
+                    }
                 } else {
-                    Text("${songs.size} songs", modifier = Modifier.weight(1f).padding(start = 8.dp),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-                IconButton(onClick = { if (songs.isNotEmpty()) onPlay(songs.shuffled(), 0, title ?: "All songs") }) {
-                    Icon(Icons.Default.Shuffle, "Shuffle all")
+                    Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                        if (title != null) {
+                            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back") }
+                            Text(title, style = MaterialTheme.typography.titleMedium, maxLines = 1,
+                                overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+                        } else {
+                            Text("${songs.size} songs · long-press to select", modifier = Modifier.weight(1f).padding(start = 8.dp),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                        }
+                        headerActions?.invoke()
+                        IconButton(onClick = { if (songs.isNotEmpty()) onPlay(songs.shuffled(), 0, source) }) {
+                            Icon(Icons.Default.Shuffle, "Shuffle all")
+                        }
+                    }
                 }
             }
         }
@@ -306,17 +467,21 @@ private fun SongList(
             SongRow(
                 song = song,
                 isCurrent = song.id == currentId,
-                onClick = { onPlay(songs, i, title ?: "All songs") },
-                actions = listOf(
-                    SongAction("Play next") { onPlayNext(song) },
-                    SongAction("Add to queue") { onAddToQueue(song) },
-                    SongAction(if (fav) "Remove from $MY_FAVORITES" else "Add to $MY_FAVORITES") { onToggleFavorite(song) },
-                    SongAction("Set as ringtone") { onSetRingtone(song) },
-                    SongAction("Edit song info") { onEditTags(song) },
-                ),
+                onClick = { if (selecting) toggle(song) else onPlay(songs, i, source) },
+                actions = buildList {
+                    add(SongAction("Play next") { onPlayNext(song) })
+                    add(SongAction("Add to queue") { onAddToQueue(song) })
+                    add(SongAction("Add to playlist…") { onAddToPlaylist(listOf(song)) })
+                    if (onRemove != null) add(SongAction("Remove from this playlist") { onRemove(song) })
+                    add(SongAction(if (fav) "Remove from $MY_FAVORITES" else "Add to $MY_FAVORITES") { onToggleFavorite(song) })
+                    add(SongAction("Set as ringtone") { onSetRingtone(song) })
+                    add(SongAction("Edit song info") { onEditTags(song) })
+                },
                 isFavorite = fav,
                 onToggleFavorite = { onToggleFavorite(song) },
                 onSwipePlayNext = { onPlayNext(song) },
+                onLongClick = { toggle(song) },
+                selected = if (selecting) song.id in selected else null,
             )
         }
     }

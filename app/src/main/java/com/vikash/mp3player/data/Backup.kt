@@ -36,9 +36,19 @@ object Backup {
         val prefs: Map<String, Map<String, PrefValue>> = emptyMap(),
         val favorites: List<SongRef> = emptyList(),
         val stats: StatsData = StatsData(),
+        val playlists: List<PlaylistRef> = emptyList(),
     )
 
-    suspend fun export(context: Context, target: Uri, songs: List<Song>, stats: StatsData, favorites: List<String>) =
+    @Serializable
+    private data class PlaylistRef(val name: String, val songs: List<SongRef>)
+
+    /** What a restore brings back, with song ids matched to this phone. */
+    data class Restored(val stats: StatsData, val favorites: List<String>, val playlists: List<UserPlaylist>)
+
+    suspend fun export(
+        context: Context, target: Uri, songs: List<Song>, stats: StatsData, favorites: List<String>,
+        playlists: List<UserPlaylist>,
+    ) =
         withContext(Dispatchers.IO) {
             val byId = songs.associateBy { it.id }
             val file = BackupFile(
@@ -46,13 +56,16 @@ object Backup {
                 prefs = PREF_FILES.associateWith { name -> dump(context.getSharedPreferences(name, Context.MODE_PRIVATE)) },
                 favorites = favorites.mapNotNull { id -> byId[id]?.let { SongRef(id, it.title, it.artist) } },
                 stats = stats,
+                playlists = playlists.map { p ->
+                    PlaylistRef(p.name, p.songIds.mapNotNull { id -> byId[id]?.let { SongRef(id, it.title, it.artist) } })
+                },
             )
             context.contentResolver.openOutputStream(target, "wt")?.use { it.write(json.encodeToString(file).toByteArray()) }
                 ?: error("Couldn't write the backup file")
         }
 
-    /** Returns the restored listening history and favorites, with ids matched to this phone's songs. */
-    suspend fun restore(context: Context, source: Uri, songs: List<Song>): Pair<StatsData, List<String>> =
+    /** Returns the restored listening history, favorites and playlists, with ids matched to this phone's songs. */
+    suspend fun restore(context: Context, source: Uri, songs: List<Song>): Restored =
         withContext(Dispatchers.IO) {
             val text = context.contentResolver.openInputStream(source)?.use { it.readBytes().decodeToString() }
                 ?: error("Couldn't open the file")
@@ -76,7 +89,13 @@ object Backup {
                     newId?.let { it to s }
                 }.toMap(),
             )
-            stats to favorites
+            val playlists = file.playlists.map { p ->
+                UserPlaylist(
+                    java.util.UUID.randomUUID().toString(), p.name,
+                    p.songs.mapNotNull { localId(it.id, it.title, it.artist) }.distinct(),
+                )
+            }
+            Restored(stats, favorites, playlists)
         }
 
     private fun matchKey(title: String, artist: String) = "${title.trim().lowercase()}|${artist.trim().lowercase()}"
