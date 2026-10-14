@@ -75,6 +75,7 @@ fun SettingsScreen(
     onSeekStyle: (SeekStyle) -> Unit,
     onBackup: (Uri) -> Unit,
     onRestore: (Uri) -> Unit,
+    onOpenTransfer: () -> Unit,
 ) {
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
@@ -86,6 +87,7 @@ fun SettingsScreen(
         SeekStyleCard(seekStyle, isPro = adsRemoved, onPick = onSeekStyle, onGetPro = onRemoveAds)
         SleepTimerCard()
         EqualizerCard()
+        TransferCard(onOpenTransfer)
         BackupCard(onBackup, onRestore)
     }
 }
@@ -324,6 +326,22 @@ private fun BackupCard(onBackup: (Uri) -> Unit, onRestore: (Uri) -> Unit) {
                     Text("Restore")
                 }
             }
+        }
+    }
+}
+
+/** Opens the Wi-Fi transfer screen: drop songs on a laptop browser, they land on the phone. */
+@Composable
+private fun TransferCard(onOpen: () -> Unit) {
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(16.dp)) {
+            Text("Send songs from your computer", style = MaterialTheme.typography.titleMedium)
+            Text(
+                "No cable needed. Open an address on any laptop on the same Wi-Fi and drag your music in.",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(10.dp))
+            Button(onClick = onOpen) { Text("Start Wi-Fi transfer") }
         }
     }
 }

@@ -82,8 +82,10 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     var showPlayer by rememberSaveable { mutableStateOf(false) }
     // Ringtone maker: the song stays set while the panel slides away.
     var ringtoneSong by remember { mutableStateOf<Song?>(null) }
+    var tagSong by remember { mutableStateOf<Song?>(null) }
     var showRingtone by remember { mutableStateOf(false) }
     var showStats by rememberSaveable { mutableStateOf(false) }
+    var showTransfer by rememberSaveable { mutableStateOf(false) }
     val snackbar = remember { SnackbarHostState() }
 
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
@@ -145,6 +147,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                         favorites = favorites,
                         onToggleFavorite = { vm.toggleFavorite(it.id, it.title) },
                         onSetRingtone = { ringtoneSong = it; showRingtone = true },
+                        onEditTags = { tagSong = it },
                         stats = stats,
                         onOpenStats = { showStats = true },
                     )
@@ -166,6 +169,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                         seekStyle = seekStyle, onSeekStyle = { vm.prefs.setSeekStyle(it.name) },
                         themeMode = themeMode, onThemeMode = vm.prefs::setThemeMode,
                         onBackup = vm::exportBackup, onRestore = vm::restoreBackup,
+                        onOpenTransfer = { showTransfer = true },
                     )
                 }
             }
@@ -199,12 +203,35 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
         }
 
         AnimatedVisibility(
+            visible = showTransfer,
+            enter = slideInVertically { it },
+            exit = slideOutVertically { it },
+        ) {
+            // New songs show up in the Library as soon as the screen closes.
+            WifiTransferScreen(onClose = { showTransfer = false; vm.loadLibrary() })
+        }
+
+        AnimatedVisibility(
             visible = showRingtone && ringtoneSong != null,
             enter = slideInVertically { it },
             exit = slideOutVertically { it },
         ) {
             ringtoneSong?.let { song ->
                 key(song.id) { RingtoneEditorScreen(song, onClose = { showRingtone = false }) }
+            }
+        }
+
+        tagSong?.let { song ->
+            key(song.id) {
+                TagEditorDialog(
+                    song,
+                    onDismiss = { tagSong = null },
+                    onSaved = {
+                        tagSong = null
+                        vm.loadLibrary()
+                        Toast.makeText(context, "Song info saved", Toast.LENGTH_SHORT).show()
+                    },
+                )
             }
         }
     }
