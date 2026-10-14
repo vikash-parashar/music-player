@@ -1,6 +1,11 @@
 package com.vikash.mp3player.ui
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.material.icons.automirrored.filled.Sort
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import com.vikash.mp3player.data.SongSort
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.material.icons.automirrored.filled.PlaylistAdd
 import androidx.compose.material.icons.automirrored.filled.QueueMusic
@@ -127,6 +132,8 @@ fun LibraryScreen(
     playlistActions: PlaylistActions,
     onAddAllToQueue: (List<Song>) -> Unit,
     onAddFavorites: (List<Song>) -> Unit,
+    sort: SongSort,
+    onSort: (SongSort) -> Unit,
 ) {
     if (!hasPermission) {
         EmptyMessage("Allow Ampli to see the music on this phone.") {
@@ -148,10 +155,26 @@ fun LibraryScreen(
     var deleting by remember { mutableStateOf<UserPlaylist?>(null) }
     val onAddToPlaylist: (List<Song>) -> Unit = { addingSongs = it }
 
-    val filtered = remember(state.songs, filter) {
-        if (filter.isBlank()) state.songs else state.songs.filter {
+    val filtered = remember(state.songs, filter, sort) {
+        val matching = if (filter.isBlank()) state.songs else state.songs.filter {
             it.title.contains(filter, true) || it.artist.contains(filter, true) ||
                 it.album.contains(filter, true) || it.folder.contains(filter, true)
+        }
+        sort.apply(matching)
+    }
+    val sortMenu: @Composable () -> Unit = {
+        var open by remember { mutableStateOf(false) }
+        Box {
+            IconButton(onClick = { open = true }) { Icon(Icons.AutoMirrored.Filled.Sort, "Sort songs") }
+            DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+                SongSort.entries.forEach { option ->
+                    DropdownMenuItem(
+                        text = { Text(option.label) },
+                        leadingIcon = { if (option == sort) Icon(Icons.Default.Check, null) },
+                        onClick = { onSort(option); open = false },
+                    )
+                }
+            }
         }
     }
 
@@ -297,6 +320,7 @@ fun LibraryScreen(
             current == LibraryTab.Songs || openGroup != null -> {
                 val songs = if (openGroup == null) filtered else filtered.filter { current.key(it) == openGroup }
                 SongList(
+                    headerActions = sortMenu,
                     title = openGroup,
                     songs = songs,
                     currentId = currentId,

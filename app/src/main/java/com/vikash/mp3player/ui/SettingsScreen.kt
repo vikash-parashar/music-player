@@ -54,6 +54,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -77,6 +78,9 @@ fun SettingsScreen(
     onBackup: (Uri) -> Unit,
     onRestore: (Uri) -> Unit,
     onOpenTransfer: () -> Unit,
+    folders: List<Pair<String, Int>>,
+    hiddenFolders: Set<String>,
+    onFolderHidden: (String, Boolean) -> Unit,
 ) {
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
@@ -90,6 +94,7 @@ fun SettingsScreen(
         FadeCard()
         EqualizerCard()
         TransferCard(onOpenTransfer)
+        FoldersCard(folders, hiddenFolders, onFolderHidden)
         BackupCard(onBackup, onRestore)
     }
 }
@@ -232,6 +237,7 @@ private fun AppearanceCard(mode: ThemeMode, onMode: (ThemeMode) -> Unit) {
 @Composable
 private fun SleepTimerCard() {
     val endsAt by SleepTimer.endsAtMillis.collectAsState()
+    val afterSong by SleepTimer.stopAfterSong.collectAsState()
     var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
     LaunchedEffect(endsAt) {
         while (endsAt != null) { now = System.currentTimeMillis(); delay(1000) }
@@ -241,15 +247,24 @@ private fun SleepTimerCard() {
             Text("Sleep timer", style = MaterialTheme.typography.titleMedium)
             val remaining = endsAt?.let { it - now }
             Text(
-                if (remaining != null) "Music stops in ${formatDuration(remaining.coerceAtLeast(0))}" else "Stop the music after a while.",
+                when {
+                    afterSong -> "Music stops when this song ends."
+                    remaining != null -> "Music stops in ${formatDuration(remaining.coerceAtLeast(0))}"
+                    else -> "Stop the music after a while."
+                },
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(8.dp))
             Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                FilterChip(
+                    selected = afterSong,
+                    onClick = { SleepTimer.setStopAfterSong(!afterSong) },
+                    label = { Text("End of this song") },
+                )
                 listOf(15, 30, 45, 60, 90).forEach { m ->
                     AssistChip(onClick = { SleepTimer.start(m) }, label = { Text("$m min") })
                 }
-                if (endsAt != null) OutlinedButton(onClick = SleepTimer::cancel) { Text("Cancel") }
+                if (endsAt != null || afterSong) OutlinedButton(onClick = SleepTimer::cancel) { Text("Cancel") }
             }
         }
     }
@@ -368,6 +383,36 @@ private fun FadeCard() {
                         onClick = { com.vikash.mp3player.playback.FadeSetting.set(context, s) },
                         label = { Text(if (s == 0) "Off" else "$s s") },
                     )
+                }
+            }
+        }
+    }
+}
+
+/** Hide folders full of non-music audio (WhatsApp voice notes, call recordings) from the Library. */
+@Composable
+private fun FoldersCard(folders: List<Pair<String, Int>>, hidden: Set<String>, onHidden: (String, Boolean) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(16.dp)) {
+            Text("Music folders", style = MaterialTheme.typography.titleMedium)
+            Text(
+                if (hidden.isEmpty()) "Hide folders you don't want in your Library, like WhatsApp audio or call recordings."
+                else "${hidden.size} hidden. Their songs stay on the phone but don't show in Ampli.",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(8.dp))
+            OutlinedButton(onClick = { expanded = !expanded }) { Text(if (expanded) "Done" else "Choose folders") }
+            if (expanded) {
+                if (folders.isEmpty()) Text("No folders found yet.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                folders.forEach { (folder, count) ->
+                    Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text(folder, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                            Text("$count songs", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        Switch(checked = folder !in hidden, onCheckedChange = { show -> onHidden(folder, !show) })
+                    }
                 }
             }
         }

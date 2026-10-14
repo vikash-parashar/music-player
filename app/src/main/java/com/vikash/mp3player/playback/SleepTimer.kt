@@ -13,7 +13,16 @@ object SleepTimer {
         _endsAtMillis.value = System.currentTimeMillis() + minutes * 60_000L
     }
 
+    /** "End of this song": pause when the current song finishes. */
+    private val _stopAfterSong = MutableStateFlow(false)
+    val stopAfterSong: StateFlow<Boolean> = _stopAfterSong.asStateFlow()
+
+    fun setStopAfterSong(on: Boolean) {
+        _stopAfterSong.value = on
+    }
+
     fun cancel() {
         _endsAtMillis.value = null
+        _stopAfterSong.value = false
     }
 }
