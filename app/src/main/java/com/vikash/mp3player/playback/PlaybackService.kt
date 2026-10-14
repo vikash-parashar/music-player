@@ -146,6 +146,18 @@ class PlaybackService : MediaLibraryService() {
             }
         }
 
+        // "End of this song": ExoPlayer pauses by itself at the end of the current item.
+        scope.launch {
+            SleepTimer.stopAfterSong.collect { on -> player.pauseAtEndOfMediaItems = on }
+        }
+        player.addListener(object : Player.Listener {
+            override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+                if (!playWhenReady && reason == Player.PLAY_WHEN_READY_CHANGE_REASON_END_OF_MEDIA_ITEM) {
+                    SleepTimer.setStopAfterSong(false)
+                }
+            }
+        })
+
         scope.launch {
             SleepTimer.endsAtMillis.collectLatest { endsAt ->
                 if (endsAt == null) return@collectLatest

@@ -16,6 +16,10 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 data class LibraryState(
@@ -42,8 +46,16 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     val player = PlayerConnection(app).also { it.connect() }
     val billing = musicApp.billing
     val prefs = musicApp.prefs
+    /** Every song on the phone, before hidden folders are taken out. */
     private val _library = MutableStateFlow(LibraryState())
-    val library: StateFlow<LibraryState> = _library.asStateFlow()
+    val library: StateFlow<LibraryState> = combine(_library, prefs.hiddenFolders) { lib, hidden ->
+        if (hidden.isEmpty()) lib else lib.copy(songs = lib.songs.filterNot { it.folder.ifBlank { "Internal storage" } in hidden })
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, LibraryState())
+
+    /** All folders with their song counts, hidden ones included, for Settings. */
+    val folders: StateFlow<List<Pair<String, Int>>> = _library.map { lib ->
+        lib.songs.groupingBy { it.folder.ifBlank { "Internal storage" } }.eachCount().toList().sortedBy { it.first.lowercase() }
+    }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     private val _online = MutableStateFlow(OnlineState(configured = musicApp.jamendo.isConfigured))
     val online: StateFlow<OnlineState> = _online.asStateFlow()

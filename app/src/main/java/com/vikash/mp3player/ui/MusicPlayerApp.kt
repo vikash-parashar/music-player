@@ -84,6 +84,9 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     var ringtoneSong by remember { mutableStateOf<Song?>(null) }
     var tagSong by remember { mutableStateOf<Song?>(null) }
     val playlists by vm.playlists.collectAsStateWithLifecycle()
+    val songSort by vm.prefs.songSort.collectAsStateWithLifecycle()
+    val folders by vm.folders.collectAsStateWithLifecycle()
+    val hiddenFolders by vm.prefs.hiddenFolders.collectAsStateWithLifecycle()
     val playlistActions = remember(vm) {
         PlaylistActions(
             create = vm::createPlaylist,
@@ -164,6 +167,8 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                         playlistActions = playlistActions,
                         onAddAllToQueue = vm::addAllToQueue,
                         onAddFavorites = vm::addFavorites,
+                        sort = songSort,
+                        onSort = vm.prefs::setSongSort,
                     )
                     1 -> OnlineScreen(
                         state = online,
@@ -184,6 +189,9 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                         themeMode = themeMode, onThemeMode = vm.prefs::setThemeMode,
                         onBackup = vm::exportBackup, onRestore = vm::restoreBackup,
                         onOpenTransfer = { showTransfer = true },
+                        folders = folders,
+                        hiddenFolders = hiddenFolders,
+                        onFolderHidden = vm.prefs::setFolderHidden,
                     )
                 }
             }
