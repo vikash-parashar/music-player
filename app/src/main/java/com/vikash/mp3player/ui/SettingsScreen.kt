@@ -94,6 +94,7 @@ fun SettingsScreen(
         SeekStyleCard(seekStyle, isPro = adsRemoved, onPick = onSeekStyle, onGetPro = onRemoveAds)
         SleepTimerCard()
         FadeCard()
+        EvenVolumeCard()
         EqualizerCard()
         CarModeCard(onOpenCarMode)
         TransferCard(onOpenTransfer)
@@ -381,6 +382,26 @@ private fun DuplicatesCard(onOpen: () -> Unit) {
             )
             Spacer(Modifier.height(10.dp))
             Button(onClick = onOpen) { Text("Find duplicates") }
+        }
+    }
+}
+
+/** "Even volume": uses ReplayGain tags so every song plays at about the same loudness. */
+@Composable
+private fun EvenVolumeCard() {
+    val context = LocalContext.current
+    val on by remember { com.vikash.mp3player.playback.EvenVolume.enabled(context) }.collectAsState()
+    Card(Modifier.fillMaxWidth()) {
+        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text("Even volume", style = MaterialTheme.typography.titleMedium)
+                Text(
+                    "Loud songs are turned down to match quieter ones, so you don't reach for the volume between tracks. Works with songs that have ReplayGain tags.",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Spacer(Modifier.width(12.dp))
+            Switch(checked = on == true, onCheckedChange = { com.vikash.mp3player.playback.EvenVolume.set(context, it) })
         }
     }
 }

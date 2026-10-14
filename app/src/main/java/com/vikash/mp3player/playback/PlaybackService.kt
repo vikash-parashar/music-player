@@ -154,6 +154,14 @@ class PlaybackService : MediaLibraryService() {
         // Fade between songs: lower the volume over the last seconds of a song and raise it over
         // the first seconds of the next. A plain volume ramp, so it works with any file.
         val fade = FadeSetting.seconds(this)
+        // Even volume: read each song's ReplayGain tag once its tracks are known.
+        val even = EvenVolume.enabled(this)
+        var gain = 1f
+        fun refreshGain() { gain = if (even.value == true) EvenVolume.factor(player.currentTracks) else 1f }
+        player.addListener(object : Player.Listener {
+            override fun onTracksChanged(tracks: androidx.media3.common.Tracks) = refreshGain()
+        })
+        scope.launch { even.collect { refreshGain() } }
         scope.launch {
             while (true) {
                 val fadeMs = fade.value * 1000L
@@ -162,8 +170,8 @@ class PlaybackService : MediaLibraryService() {
                     val pos = player.currentPosition
                     val fadeIn = (pos.toFloat() / fadeMs).coerceIn(0f, 1f)
                     val fadeOut = ((duration - pos).toFloat() / fadeMs).coerceIn(0f, 1f)
-                    minOf(fadeIn, fadeOut)
-                } else 1f
+                    minOf(fadeIn, fadeOut) * gain
+                } else gain
                 if (player.volume != target) player.volume = target
                 delay(if (fadeMs > 0) 50 else 500)
             }
