@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Discover: audiobooks and podcasts -->
+    <string name="discover_music">Music</string>
+    <string name="discover_audiobooks">Audiobooks</string>
+    <string name="discover_podcasts">Podcasts</string>
+    <string name="discover_offline">Couldn\'t load. Check your internet and try again.</string>
+    <string name="books_search_hint">Search books or authors</string>
+    <string name="books_intro">Free audiobooks read by volunteers. Every book is in the public domain, so you can listen and download for free.</string>
+    <string name="books_try">Try</string>
+    <string name="books_chapters">Chapters: %1$d</string>
+    <string name="books_credit">Audiobooks from LibriVox.org, public domain.</string>
+    <string name="books_play">Play</string>
+    <string name="books_download_all">Download all</string>
+    <string name="books_resume_note">Ampli remembers where you stopped in every chapter.</string>
+    <string name="podcasts_search_hint">Search podcasts</string>
+    <string name="podcasts_following">Following</string>
+    <string name="podcasts_top">Top podcasts in India</string>
+    <string name="podcasts_credit">Podcast directory from Apple Podcasts. Episodes play straight from each show\'s own feed.</string>
+    <string name="podcasts_follow">Follow</string>
+    <string name="podcasts_unfollow">Unfollow</string>
+    <string name="podcasts_no_episodes">No episodes found</string>
+
+    <!-- Ampli Convert -->
+    <string name="convert_title">Ampli Convert</string>
+    <string name="convert_desc">Get the sound out of one of your videos and keep it as a music file. Fast, with no loss in quality.</string>
+    <string name="convert_pick">Pick a video</string>
+    <string name="convert_working">Getting the sound…</string>
+    <string name="convert_saved">Saved \"%1$s\" in Music/%2$s. It\'s in your Library now.</string>
+    <string name="convert_no_sound">This video has no sound.</string>
+    <string name="convert_unsupported">This video\'s sound format can\'t be copied yet.</string>
+    <string name="convert_failed">Couldn\'t convert: %1$s</string>
+
+    <!-- Ringtone Studio -->
+    <string name="ringtone_fade_in">Fade in</string>
+    <string name="ringtone_fade_out">Fade out</string>
+    <string name="ringtone_fade_off">Off</string>
+    <string name="ringtone_fade_seconds">%1$ds</string>
+    <string name="ringtone_target_contact">One contact</string>
+    <string name="ringtone_contact_set">Ringtone set for that contact</string>
+    <string name="ringtone_contact_failed">Couldn\'t set the ringtone for that contact</string>
+    <string name="ringtone_contact_needs_permission">Ampli needs Contacts access to set a ringtone for one person</string>
+
+    <!-- Earphone clicks -->
+    <string name="settings_headset_clicks">Earphone button</string>
+    <string name="settings_headset_clicks_desc">Press once to play or pause, twice for the next song, three times for the previous one.</string>
+
+    <!-- Bookmarks -->
+    <string name="bookmarks_title">Bookmarks</string>
+    <string name="bookmarks_note_hint">Note (optional)</string>
+    <string name="bookmarks_add_at">Add bookmark at %1$s</string>
+    <string name="bookmarks_empty">No bookmarks yet. Add one to jump back to this spot later.</string>
+    <string name="bookmarks_untitled">Bookmark</string>
+
+    <!-- Move songs -->
+    <string name="song_move">Move to folder</string>
+    <string name="library_move_selected">Move selected to a folder</string>
+    <plurals name="move_title">
+        <item quantity="one">Move %1$d song</item>
+        <item quantity="other">Move %1$d songs</item>
+    </plurals>
+    <string name="move_new_folder">New folder</string>
+    <string name="move_folder_hint">For example Music/Old songs</string>
+    <string name="move_button">Move</string>
+    <string name="move_moving">Moving…</string>
+    <string name="move_needs_ok">Android needs your OK to move these songs</string>
+    <string name="move_failed">Couldn\'t move the songs</string>
+    <plurals name="msg_songs_moved">
+        <item quantity="one">Moved %1$d song</item>
+        <item quantity="other">Moved %1$d songs</item>
+    </plurals>
+
+    <!-- Help & feedback -->
+    <string name="help_title">Help &amp; feedback</string>
+    <string name="help_card_desc">Report a problem, ask for a feature, or contact us about Ampli Pro.</string>
+    <string name="help_open">Open</string>
+    <string name="help_bug">Report a bug</string>
+    <string name="help_bug_desc">Something not working? Tell us what happened.</string>
+    <string name="help_feature">Request a feature</string>
+    <string name="help_feature_desc">Ask for something new and vote for ideas.</string>
+    <string name="help_support">Contact support</string>
+    <string name="help_support_desc">Questions about Ampli Pro or your purchase.</string>
+    <string name="help_mine">My requests</string>
+    <string name="help_mine_desc">See your requests and our replies.</string>
+    <string name="help_privacy">Ampli only sends what you type here, plus the app version and phone model. Nothing else.</string>
+    <string name="help_field_title">Title</string>
+    <string name="help_field_subject">Subject</string>
+    <string name="help_field_what_happened">What happened?</string>
+    <string name="help_field_describe">Describe the feature</string>
+    <string name="help_field_message">Message</string>
+    <string name="help_field_contact">Your email (optional, for a reply)</string>
+    <string name="help_field_order">Play order ID (optional)</string>
+    <string name="help_add_screenshot">Add screenshot</string>
+    <string name="help_screenshot_added">Screenshot added ✓</string>
+    <string name="help_attach_logs">Attach app logs</string>
+    <string name="help_send">Send</string>
+    <string name="help_send_email">Send by email</string>
+    <string name="help_sent">Thanks, your reference is %1$s</string>
+    <string name="help_queued">You\'re offline. Ampli will send this when you\'re back online.</string>
+    <string name="help_queue_sent">Your saved reports were sent</string>
+    <string name="help_rate_limited">You\'ve sent a lot today. Please try again tomorrow.</string>
+    <string name="help_failed">Couldn\'t send: %1$s</string>
+    <string name="help_no_email_app">No email app found on this phone</string>
+    <string name="help_top_requests">Top requests</string>
+    <string name="help_no_requests_yet">No requests yet. Be the first!</string>
+    <string name="help_vote">Vote</string>
+    <string name="help_mine_email">Your requests go by email for now, so our replies will come to your inbox.</string>
+    <string name="help_mine_empty">You haven\'t sent any requests yet.</string>
+    <string name="help_reply">Reply: %1$s</string>
+</resources>

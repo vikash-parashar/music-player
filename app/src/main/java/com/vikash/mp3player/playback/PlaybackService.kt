@@ -55,6 +55,7 @@ class PlaybackService : MediaLibraryService() {
     private val resume by lazy { ResumePositions(this) }
     private var cast: CastSwitcher? = null
     private var phonePlayer: ExoPlayer? = null
+    private val clicks = HeadsetClicks { session?.player ?: phonePlayer!! }
 
     /** Cached local songs for the car browse tree; reloaded when the root is requested. */
     private var songs: List<Song> = emptyList()
@@ -249,6 +250,7 @@ class PlaybackService : MediaLibraryService() {
                 WidgetState.update(applicationContext, meta?.title?.toString().orEmpty(), meta?.artist?.toString().orEmpty(), false)
             }
         }
+        clicks.release()
         cast?.release()
         cast = null
         scope.cancel()
@@ -359,6 +361,19 @@ class PlaybackService : MediaLibraryService() {
                 else -> return Futures.immediateFuture(SessionResult(SessionResult.RESULT_ERROR_NOT_SUPPORTED))
             }
             return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
+        }
+
+        // Earphone button: 2 presses = next, 3 = previous (see HeadsetClicks).
+        @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
+        override fun onMediaButtonEvent(
+            session: MediaSession,
+            controllerInfo: MediaSession.ControllerInfo,
+            intent: Intent,
+        ): Boolean {
+            if (session.isMediaNotificationController(controllerInfo)) return false
+            if (controllerInfo.controllerVersion != MediaSession.ControllerInfo.LEGACY_CONTROLLER_VERSION) return false
+            if (!HeadsetClicks.enabled(this@PlaybackService).value) return false
+            return clicks.onMediaButton(intent)
         }
 
         override fun onGetLibraryRoot(

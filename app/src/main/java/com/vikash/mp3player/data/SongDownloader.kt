@@ -15,15 +15,26 @@ class SongDownloader(private val context: Context) {
 
     private val manager = context.getSystemService(DownloadManager::class.java)
 
-    fun download(song: Song): Long {
+    /** [folder] is a path under Music, e.g. "Audiobooks/Gitanjali" for spoken audio. */
+    fun download(song: Song, folder: String = DEFAULT_FOLDER): Long {
         val url = requireNotNull(song.downloadUrl) { context.getString(R.string.online_license_no_download) }
-        val fileName = "${song.artist} - ${song.title}".replace(Regex("[\\\\/:*?\"<>|]"), "_").take(120) + ".mp3"
+        val ext = Uri.parse(url).lastPathSegment?.substringAfterLast('.', "")?.lowercase()
+            ?.takeIf { it in setOf("mp3", "m4a", "aac", "ogg", "opus", "flac") } ?: "mp3"
+        val mime = when (ext) { "m4a", "aac" -> "audio/mp4"; "ogg", "opus" -> "audio/ogg"; "flac" -> "audio/flac"; else -> "audio/mpeg" }
+        val fileName = "${song.artist} - ${song.title}".safeName().take(120) + ".$ext"
+        val dir = folder.split('/').joinToString("/") { it.safeName().take(60).trim().ifEmpty { "_" } }
         val request = DownloadManager.Request(Uri.parse(url))
             .setTitle(song.title)
             .setDescription(song.artist)
-            .setMimeType("audio/mpeg")
+            .setMimeType(mime)
             .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-            .setDestinationInExternalPublicDir(Environment.DIRECTORY_MUSIC, "MP3 Player/$fileName")
+            .setDestinationInExternalPublicDir(Environment.DIRECTORY_MUSIC, "$dir/$fileName")
         return manager.enqueue(request)
+    }
+
+    private fun String.safeName() = replace(Regex("[\\\\/:*?\"<>|]"), "_")
+
+    companion object {
+        const val DEFAULT_FOLDER = "MP3 Player"
     }
 }

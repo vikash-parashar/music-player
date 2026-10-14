@@ -89,6 +89,8 @@ fun SettingsScreen(
     folders: List<Pair<String, Int>>,
     hiddenFolders: Set<String>,
     onFolderHidden: (String, Boolean) -> Unit,
+    onLibraryChanged: () -> Unit,
+    onOpenHelp: () -> Unit,
 ) {
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
@@ -103,11 +105,14 @@ fun SettingsScreen(
         FadeCard()
         EvenVolumeCard()
         EqualizerCard()
+        HeadsetClicksCard()
         CarModeCard(onOpenCarMode)
         TransferCard(onOpenTransfer)
         FoldersCard(folders, hiddenFolders, onFolderHidden)
         DuplicatesCard(onOpenDuplicates)
+        ConvertCard(onConverted = onLibraryChanged)
         BackupCard(onBackup, onRestore)
+        HelpCard(onOpenHelp)
     }
 }
 
@@ -394,6 +399,34 @@ private fun DuplicatesCard(onOpen: () -> Unit) {
     }
 }
 
+/** Earphone button: press twice for next, three times for previous. */
+@Composable
+private fun HeadsetClicksCard() {
+    val context = LocalContext.current
+    val on by remember { com.vikash.mp3player.playback.HeadsetClicks.enabled(context) }.collectAsState()
+    Card(Modifier.fillMaxWidth()) {
+        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text(stringResource(R.string.settings_headset_clicks), style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.settings_headset_clicks_desc), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            androidx.compose.material3.Switch(checked = on, onCheckedChange = { com.vikash.mp3player.playback.HeadsetClicks.setEnabled(context, it) })
+        }
+    }
+}
+
+@Composable
+private fun HelpCard(onOpen: () -> Unit) {
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(16.dp)) {
+            Text(stringResource(R.string.help_title), style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.help_card_desc), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Spacer(Modifier.height(10.dp))
+            Button(onClick = onOpen) { Text(stringResource(R.string.help_open)) }
+        }
+    }
+}
+
 /** "Even volume": uses ReplayGain tags so every song plays at about the same loudness. */
 @Composable
 private fun EvenVolumeCard() {
@@ -506,6 +539,10 @@ private fun LanguageCard() {
         "" to stringResource(R.string.settings_language_system),
         "en" to stringResource(R.string.settings_language_english),
         "hi" to stringResource(R.string.settings_language_hindi),
+        "ta" to stringResource(R.string.settings_language_tamil),
+        "te" to stringResource(R.string.settings_language_telugu),
+        "bn" to stringResource(R.string.settings_language_bengali),
+        "mr" to stringResource(R.string.settings_language_marathi),
     )
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(vertical = 16.dp)) {

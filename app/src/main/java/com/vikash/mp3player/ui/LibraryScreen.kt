@@ -18,6 +18,7 @@ import androidx.compose.material.icons.automirrored.filled.QueueMusic
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DriveFileMove
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.SelectAll
@@ -137,6 +138,7 @@ fun LibraryScreen(
     onSetRingtone: (Song) -> Unit,
     onEditTags: (Song) -> Unit,
     onDelete: (List<Song>) -> Unit,
+    onMove: (List<Song>) -> Unit,
     stats: StatsData,
     onOpenStats: () -> Unit,
     playlists: List<UserPlaylist>,
@@ -291,6 +293,7 @@ fun LibraryScreen(
                             onSetRingtone = onSetRingtone,
                             onEditTags = onEditTags,
                             onDelete = onDelete,
+                            onMove = onMove,
                             onAddToPlaylist = onAddToPlaylist,
                             onAddAllToQueue = onAddAllToQueue,
                             onAddFavorites = onAddFavorites,
@@ -326,6 +329,7 @@ fun LibraryScreen(
                         onSetRingtone = onSetRingtone,
                         onEditTags = onEditTags,
                         onDelete = onDelete,
+                        onMove = onMove,
                         onAddToPlaylist = onAddToPlaylist,
                         onAddAllToQueue = onAddAllToQueue,
                         onAddFavorites = onAddFavorites,
@@ -348,6 +352,7 @@ fun LibraryScreen(
                     onSetRingtone = onSetRingtone,
                     onEditTags = onEditTags,
                     onDelete = onDelete,
+                    onMove = onMove,
                     onAddToPlaylist = onAddToPlaylist,
                     onAddAllToQueue = onAddAllToQueue,
                     onAddFavorites = onAddFavorites,
@@ -445,6 +450,7 @@ private fun SongList(
     onSetRingtone: (Song) -> Unit,
     onEditTags: (Song) -> Unit,
     onDelete: (List<Song>) -> Unit,
+    onMove: (List<Song>) -> Unit,
     onAddToPlaylist: (List<Song>) -> Unit,
     onAddAllToQueue: (List<Song>) -> Unit,
     onAddFavorites: (List<Song>) -> Unit,
@@ -469,6 +475,7 @@ private fun SongList(
     val setRingtoneLabel = stringResource(R.string.song_set_ringtone)
     val editInfoLabel = stringResource(R.string.song_edit_info)
     val deleteLabel = stringResource(R.string.song_delete_from_phone)
+    val moveLabel = stringResource(R.string.song_move)
 
     LazyColumn(Modifier.fillMaxSize()) {
         stickyHeader {
@@ -491,6 +498,9 @@ private fun SongList(
                         }
                         IconButton(onClick = { onAddFavorites(picked); selected = emptySet() }) {
                             Icon(Icons.Default.Favorite, stringResource(R.string.library_favorite_selected))
+                        }
+                        IconButton(onClick = { onMove(picked.filter { !it.isOnline }); selected = emptySet() }) {
+                            Icon(Icons.Default.DriveFileMove, stringResource(R.string.library_move_selected))
                         }
                         IconButton(onClick = { onDelete(picked.filter { !it.isOnline }); selected = emptySet() }) {
                             Icon(Icons.Default.Delete, stringResource(R.string.library_delete_selected))
@@ -529,6 +539,7 @@ private fun SongList(
                     add(SongAction(if (fav) removeFavoriteLabel else addFavoriteLabel) { onToggleFavorite(song) })
                     add(SongAction(setRingtoneLabel) { onSetRingtone(song) })
                     add(SongAction(editInfoLabel) { onEditTags(song) })
+                    if (!song.isOnline) add(SongAction(moveLabel) { onMove(listOf(song)) })
                     if (!song.isOnline) add(SongAction(deleteLabel) { onDelete(listOf(song)) })
                 },
                 isFavorite = fav,

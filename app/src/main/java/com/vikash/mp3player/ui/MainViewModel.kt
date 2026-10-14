@@ -215,8 +215,8 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    fun download(song: Song) {
-        runCatching { musicApp.downloader.download(song) }
+    fun download(song: Song, folder: String = com.vikash.mp3player.data.SongDownloader.DEFAULT_FOLDER) {
+        runCatching { musicApp.downloader.download(song, folder) }
             .onSuccess { _messages.tryEmit(str(R.string.msg_downloading, song.title)) }
             .onFailure { _messages.tryEmit(it.message ?: str(R.string.msg_download_failed)) }
     }

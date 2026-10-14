@@ -136,6 +136,8 @@ class RingtoneMaker(private val context: Context) {
         endMs: Long,
         targets: Set<RingtoneTarget>,
         onProgress: (Float) -> Unit,
+        fadeInMs: Long = 0,
+        fadeOutMs: Long = 0,
     ): Uri = withContext(Dispatchers.IO) {
         val mime = MediaExtractor().run {
             try {
@@ -152,12 +154,29 @@ class RingtoneMaker(private val context: Context) {
         val title = "${song.title} (Ampli)"
         val temp = File(context.cacheDir, "ringtone-${System.currentTimeMillis()}.tmp")
         try {
-            val (ext, outMime) = when (mime) {
-                MediaFormat.MIMETYPE_AUDIO_AAC -> {
+            val lossless = mime == MediaFormat.MIMETYPE_AUDIO_AAC || mime == MediaFormat.MIMETYPE_AUDIO_MPEG
+            val (ext, outMime) = when {
+                // Fades (and formats we can't cut as is) need a re-encode to AAC.
+                fadeInMs > 0 || fadeOutMs > 0 || (!lossless && mime.startsWith("audio/")) -> {
+                    try {
+                        ClipEncoder.encode(context, song.uri, startMs * 1000, endMs * 1000, fadeInMs, fadeOutMs, temp, onProgress)
+                    } catch (e: kotlinx.coroutines.CancellationException) {
+                        throw e
+                    } catch (e: Exception) {
+                        throw UnsupportedClipFormat(
+                            mime.substringAfter('/').uppercase().let { format ->
+                                if (format.isBlank()) context.getString(R.string.ringtone_err_format_unknown)
+                                else context.getString(R.string.ringtone_err_format, format)
+                            }
+                        )
+                    }
+                    "m4a" to "audio/mp4"
+                }
+                mime == MediaFormat.MIMETYPE_AUDIO_AAC -> {
                     cutAac(song.uri, startMs * 1000, endMs * 1000, temp, onProgress)
                     "m4a" to "audio/mp4"
                 }
-                MediaFormat.MIMETYPE_AUDIO_MPEG -> {
+                mime == MediaFormat.MIMETYPE_AUDIO_MPEG -> {
                     temp.outputStream().buffered().use { out ->
                         out.write(id3Tag(title, song.artist))
                         cutMp3(song.uri, startMs * 1000, endMs * 1000, out, onProgress)
@@ -185,6 +204,12 @@ class RingtoneMaker(private val context: Context) {
     fun setAsDefault(uri: Uri, targets: Set<RingtoneTarget>): Boolean = runCatching {
         targets.forEach { RingtoneManager.setActualDefaultRingtoneUri(context, it.type, uri) }
     }.isSuccess
+
+    /** Gives one contact their own ringtone. Needs the contacts permission. */
+    fun setForContact(contact: Uri, clip: Uri): Boolean = runCatching {
+        val values = ContentValues().apply { put(android.provider.ContactsContract.Contacts.CUSTOM_RINGTONE, clip.toString()) }
+        context.contentResolver.update(contact, values, null, null) > 0
+    }.getOrDefault(false)
 
     private fun audioTrack(extractor: MediaExtractor): Int =
         (0 until extractor.trackCount).firstOrNull {

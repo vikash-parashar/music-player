@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="discover_music">म्यूज़िक</string>
+    <string name="discover_audiobooks">ऑडियोबुक</string>
+    <string name="discover_podcasts">पॉडकास्ट</string>
+    <string name="discover_offline">लोड नहीं हो पाया। इंटरनेट चेक करके फिर कोशिश करें।</string>
+    <string name="books_search_hint">किताबें या लेखक खोजें</string>
+    <string name="books_intro">वॉलंटियर्स की आवाज़ में मुफ़्त ऑडियोबुक। हर किताब पब्लिक डोमेन में है, इसलिए आप मुफ़्त में सुन और डाउनलोड कर सकते हैं।</string>
+    <string name="books_try">आज़माएं</string>
+    <string name="books_chapters">अध्याय: %1$d</string>
+    <string name="books_credit">LibriVox.org से ऑडियोबुक, पब्लिक डोमेन।</string>
+    <string name="books_play">चलाएं</string>
+    <string name="books_download_all">सब डाउनलोड करें</string>
+    <string name="books_resume_note">Ampli हर अध्याय में याद रखता है कि आपने कहां छोड़ा था।</string>
+    <string name="podcasts_search_hint">पॉडकास्ट खोजें</string>
+    <string name="podcasts_following">फ़ॉलो कर रहे हैं</string>
+    <string name="podcasts_top">भारत के टॉप पॉडकास्ट</string>
+    <string name="podcasts_credit">पॉडकास्ट की सूची Apple Podcasts से। एपिसोड सीधे हर शो की अपनी फ़ीड से चलते हैं।</string>
+    <string name="podcasts_follow">फ़ॉलो करें</string>
+    <string name="podcasts_unfollow">अनफ़ॉलो करें</string>
+    <string name="podcasts_no_episodes">कोई एपिसोड नहीं मिला</string>
+
+    <string name="convert_title">Ampli Convert</string>
+    <string name="convert_desc">अपने किसी वीडियो से आवाज़ निकालें और उसे म्यूज़िक फ़ाइल के रूप में रखें। तेज़, और क्वालिटी में कोई कमी नहीं।</string>
+    <string name="convert_pick">वीडियो चुनें</string>
+    <string name="convert_working">आवाज़ निकाली जा रही है…</string>
+    <string name="convert_saved">\"%1$s\" Music/%2$s में सेव हो गया। अब यह आपकी लाइब्रेरी में है।</string>
+    <string name="convert_no_sound">इस वीडियो में आवाज़ नहीं है।</string>
+    <string name="convert_unsupported">इस वीडियो की आवाज़ का फ़ॉर्मेट अभी कॉपी नहीं हो सकता।</string>
+    <string name="convert_failed">कन्वर्ट नहीं हो पाया: %1$s</string>
+
+    <string name="ringtone_fade_in">फ़ेड इन</string>
+    <string name="ringtone_fade_out">फ़ेड आउट</string>
+    <string name="ringtone_fade_off">बंद</string>
+    <string name="ringtone_fade_seconds">%1$d सेकंड</string>
+    <string name="ringtone_target_contact">एक कॉन्टैक्ट</string>
+    <string name="ringtone_contact_set">उस कॉन्टैक्ट के लिए रिंगटोन सेट हो गई</string>
+    <string name="ringtone_contact_failed">उस कॉन्टैक्ट के लिए रिंगटोन सेट नहीं हो पाई</string>
+    <string name="ringtone_contact_needs_permission">किसी एक व्यक्ति के लिए रिंगटोन सेट करने के लिए Ampli को कॉन्टैक्ट्स की अनुमति चाहिए</string>
+
+    <string name="settings_headset_clicks">ईयरफ़ोन का बटन</string>
+    <string name="settings_headset_clicks_desc">एक बार दबाएं तो चलाएं या रोकें, दो बार दबाएं तो अगला गाना, तीन बार दबाएं तो पिछला गाना।</string>
+
+    <string name="bookmarks_title">बुकमार्क</string>
+    <string name="bookmarks_note_hint">नोट (ज़रूरी नहीं)</string>
+    <string name="bookmarks_add_at">%1$s पर बुकमार्क जोड़ें</string>
+    <string name="bookmarks_empty">अभी कोई बुकमार्क नहीं। बाद में इसी जगह पर लौटने के लिए एक बुकमार्क जोड़ें।</string>
+    <string name="bookmarks_untitled">बुकमार्क</string>
+
+    <string name="song_move">फ़ोल्डर में ले जाएं</string>
+    <string name="library_move_selected">चुने हुए गाने किसी फ़ोल्डर में ले जाएं</string>
+    <plurals name="move_title">
+        <item quantity="one">%1$d गाना ले जाएं</item>
+        <item quantity="other">%1$d गाने ले जाएं</item>
+    </plurals>
+    <string name="move_new_folder">नया फ़ोल्डर</string>
+    <string name="move_folder_hint">जैसे Music/Old songs</string>
+    <string name="move_button">ले जाएं</string>
+    <string name="move_moving">ले जा रहे हैं…</string>
+    <string name="move_needs_ok">इन गानों को ले जाने के लिए Android को आपकी मंज़ूरी चाहिए</string>
+    <string name="move_failed">गाने नहीं ले जा पाए</string>
+    <plurals name="msg_songs_moved">
+        <item quantity="one">%1$d गाना ले जाया गया</item>
+        <item quantity="other">%1$d गाने ले जाए गए</item>
+    </plurals>
+
+    <string name="help_title">मदद &amp; सुझाव</string>
+    <string name="help_card_desc">कोई समस्या बताएं, नया फ़ीचर मांगें, या Ampli Pro के बारे में हमसे संपर्क करें।</string>
+    <string name="help_open">खोलें</string>
+    <string name="help_bug">गड़बड़ी बताएं</string>
+    <string name="help_bug_desc">कुछ काम नहीं कर रहा? हमें बताएं क्या हुआ।</string>
+    <string name="help_feature">फ़ीचर मांगें</string>
+    <string name="help_feature_desc">कुछ नया मांगें और दूसरों के आइडिया पर वोट करें।</string>
+    <string name="help_support">सपोर्ट से संपर्क करें</string>
+    <string name="help_support_desc">Ampli Pro या आपकी खरीदारी के बारे में सवाल।</string>
+    <string name="help_mine">मेरी रिक्वेस्ट</string>
+    <string name="help_mine_desc">अपनी रिक्वेस्ट और हमारे जवाब देखें।</string>
+    <string name="help_privacy">Ampli सिर्फ़ वही भेजता है जो आप यहां लिखते हैं, साथ में ऐप वर्ज़न और फ़ोन मॉडल। और कुछ नहीं।</string>
+    <string name="help_field_title">टाइटल</string>
+    <string name="help_field_subject">विषय</string>
+    <string name="help_field_what_happened">क्या हुआ?</string>
+    <string name="help_field_describe">फ़ीचर के बारे में बताएं</string>
+    <string name="help_field_message">मैसेज</string>
+    <string name="help_field_contact">आपका ईमेल (ज़रूरी नहीं, जवाब के लिए)</string>
+    <string name="help_field_order">Play ऑर्डर ID (ज़रूरी नहीं)</string>
+    <string name="help_add_screenshot">स्क्रीनशॉट जोड़ें</string>
+    <string name="help_screenshot_added">स्क्रीनशॉट जुड़ गया ✓</string>
+    <string name="help_attach_logs">ऐप लॉग जोड़ें</string>
+    <string name="help_send">भेजें</string>
+    <string name="help_send_email">ईमेल से भेजें</string>
+    <string name="help_sent">धन्यवाद, आपका रेफ़रेंस नंबर %1$s है</string>
+    <string name="help_queued">आप ऑफ़लाइन हैं। इंटरनेट आते ही Ampli इसे भेज देगा।</string>
+    <string name="help_queue_sent">आपकी सेव की गई रिपोर्ट भेज दी गईं</string>
+    <string name="help_rate_limited">आज आपने बहुत भेज दिया है। कृपया कल फिर कोशिश करें।</string>
+    <string name="help_failed">भेजा नहीं जा सका: %1$s</string>
+    <string name="help_no_email_app">इस फ़ोन में कोई ईमेल ऐप नहीं मिला</string>
+    <string name="help_top_requests">टॉप रिक्वेस्ट</string>
+    <string name="help_no_requests_yet">अभी कोई रिक्वेस्ट नहीं। पहले आप करें!</string>
+    <string name="help_vote">वोट करें</string>
+    <string name="help_mine_email">अभी आपकी रिक्वेस्ट ईमेल से जाती हैं, इसलिए हमारे जवाब आपके इनबॉक्स में आएंगे।</string>
+    <string name="help_mine_empty">आपने अभी तक कोई रिक्वेस्ट नहीं भेजी है।</string>
+    <string name="help_reply">जवाब: %1$s</string>
+</resources>

@@ -240,6 +240,10 @@
     <string name="settings_language_system">Phone default</string>
     <string name="settings_language_english">English</string>
     <string name="settings_language_hindi">हिंदी</string>
+    <string name="settings_language_tamil">தமிழ்</string>
+    <string name="settings_language_telugu">తెలుగు</string>
+    <string name="settings_language_bengali">বাংলা</string>
+    <string name="settings_language_marathi">मराठी</string>
     <string name="pro_purchase_test_build">Payments work once Ampli is on the Play Store. For now, use \"Test build: try Pro\" in Settings.</string>
     <string name="pro_purchase_failed">Couldn\'t reach Google Play. Check your connection and try again.</string>
 

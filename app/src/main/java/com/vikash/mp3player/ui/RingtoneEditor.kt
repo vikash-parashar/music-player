@@ -1,5 +1,9 @@
 package com.vikash.mp3player.ui
 
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.compose.rememberLauncherForActivityResult
+import android.Manifest
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
@@ -99,6 +103,11 @@ fun RingtoneEditorScreen(song: Song, onClose: () -> Unit) {
     var endMs by remember { mutableLongStateOf(minOf(30_000L, duration)) }
     var waveform by remember { mutableStateOf<FloatArray?>(null) }
     var targets by remember { mutableStateOf(setOf(RingtoneTarget.Call)) }
+    // Ringtone for one person: after saving, pick them from Contacts.
+    var forContact by remember { mutableStateOf(false) }
+    var fadeInSec by remember { mutableIntStateOf(0) }
+    var fadeOutSec by remember { mutableIntStateOf(0) }
+    var contactClip by remember { mutableStateOf<Uri?>(null) }
     var saving by remember { mutableStateOf(false) }
     var progress by remember { mutableFloatStateOf(0f) }
     var error by remember { mutableStateOf<String?>(null) }
@@ -142,6 +151,10 @@ fun RingtoneEditorScreen(song: Song, onClose: () -> Unit) {
         while (previewing) {
             val pos = preview.currentPosition
             playhead = pos
+            // Hear the fades in the preview too.
+            val fin = if (fadeInSec > 0) ((pos - startMs).toFloat() / (fadeInSec * 1000)).coerceIn(0f, 1f) else 1f
+            val fout = if (fadeOutSec > 0) ((endMs - pos).toFloat() / (fadeOutSec * 1000)).coerceIn(0f, 1f) else 1f
+            preview.volume = minOf(fin, fout)
             if (pos >= endMs || (!preview.playWhenReady)) previewing = false
             delay(40)
         }
@@ -173,6 +186,31 @@ fun RingtoneEditorScreen(song: Song, onClose: () -> Unit) {
             pendingUri = uri
             askWriteSettings = true
         }
+    }
+
+    // Per-contact ringtone: ask for Contacts access, let the user pick a person, then carry on.
+    val pickContact = rememberLauncherForActivityResult(ActivityResultContracts.PickContact()) { contact ->
+        val clip = contactClip
+        contactClip = null
+        if (clip == null) return@rememberLauncherForActivityResult
+        if (contact != null) {
+            val ok = maker.setForContact(contact, clip)
+            Toast.makeText(context, context.getString(if (ok) R.string.ringtone_contact_set else R.string.ringtone_contact_failed), Toast.LENGTH_LONG).show()
+        }
+        finish(clip)
+    }
+    val contactsPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted ->
+        if (granted.values.all { it }) pickContact.launch(null)
+        else {
+            Toast.makeText(context, context.getString(R.string.ringtone_contact_needs_permission), Toast.LENGTH_LONG).show()
+            contactClip?.let { finish(it) }
+            contactClip = null
+        }
+    }
+    fun afterSave(uri: Uri) {
+        if (!forContact) return finish(uri)
+        contactClip = uri
+        contactsPermission.launch(arrayOf(Manifest.permission.READ_CONTACTS, Manifest.permission.WRITE_CONTACTS))
     }
 
     // Back from the system settings page: apply if the switch was turned on.
@@ -249,6 +287,10 @@ fun RingtoneEditorScreen(song: Song, onClose: () -> Unit) {
                 Text(if (previewing) stringResource(R.string.ringtone_previewing) else stringResource(R.string.ringtone_preview))
             }
 
+            Spacer(Modifier.height(16.dp))
+            FadePicker(stringResource(R.string.ringtone_fade_in), fadeInSec) { fadeInSec = it }
+            FadePicker(stringResource(R.string.ringtone_fade_out), fadeOutSec) { fadeOutSec = it }
+
             Spacer(Modifier.height(20.dp))
             Text(stringResource(R.string.ringtone_use_as), style = MaterialTheme.typography.titleMedium)
             Spacer(Modifier.height(4.dp))
@@ -265,10 +307,18 @@ fun RingtoneEditorScreen(song: Song, onClose: () -> Unit) {
                     )
                 }
                 FilterChip(
-                    selected = targets.isEmpty(),
-                    onClick = { targets = emptySet() },
+                    selected = forContact,
+                    onClick = { forContact = !forContact },
+                    label = { Text(stringResource(R.string.ringtone_target_contact)) },
+                    leadingIcon = if (forContact) {
+                        { Icon(Icons.Default.Check, null, Modifier.size(18.dp)) }
+                    } else null,
+                )
+                FilterChip(
+                    selected = targets.isEmpty() && !forContact,
+                    onClick = { targets = emptySet(); forContact = false },
                     label = { Text(stringResource(R.string.ringtone_save_only)) },
-                    leadingIcon = if (targets.isEmpty()) {
+                    leadingIcon = if (targets.isEmpty() && !forContact) {
                         { Icon(Icons.Default.Check, null, Modifier.size(18.dp)) }
                     } else null,
                 )
@@ -288,10 +338,13 @@ fun RingtoneEditorScreen(song: Song, onClose: () -> Unit) {
                         progress = 0f
                         scope.launch {
                             runCatching {
-                                maker.makeClip(song, startMs, endMs, targets) { p -> progress = p }
+                                maker.makeClip(
+                                    song, startMs, endMs, targets, onProgress = { p -> progress = p },
+                                    fadeInMs = fadeInSec * 1000L, fadeOutMs = fadeOutSec * 1000L,
+                                )
                             }.onSuccess { uri ->
                                 saving = false
-                                finish(uri)
+                                afterSave(uri)
                             }.onFailure { e ->
                                 saving = false
                                 error = e.message ?: context.getString(R.string.ringtone_err_generic)
@@ -338,6 +391,21 @@ fun RingtoneEditorScreen(song: Song, onClose: () -> Unit) {
                 }) { Text(stringResource(R.string.common_not_now)) }
             },
         )
+    }
+}
+
+/** "Fade in: Off 1s 2s 3s" chips. */
+@Composable
+private fun FadePicker(label: String, seconds: Int, onPick: (Int) -> Unit) {
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        Text(label, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.width(80.dp))
+        listOf(0, 1, 2, 3).forEach { s ->
+            FilterChip(
+                selected = seconds == s,
+                onClick = { onPick(s) },
+                label = { Text(if (s == 0) stringResource(R.string.ringtone_fade_off) else stringResource(R.string.ringtone_fade_seconds, s)) },
+            )
+        }
     }
 }
 

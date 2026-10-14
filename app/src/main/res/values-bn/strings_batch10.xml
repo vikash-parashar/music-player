@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="discover_music">মিউজিক</string>
+    <string name="discover_audiobooks">অডিওবুক</string>
+    <string name="discover_podcasts">পডকাস্ট</string>
+    <string name="discover_offline">লোড হয়নি। ইন্টারনেট দেখে আবার চেষ্টা করুন।</string>
+    <string name="books_search_hint">বই বা লেখক খুঁজুন</string>
+    <string name="books_intro">স্বেচ্ছাসেবকদের পড়া ফ্রি অডিওবুক। প্রতিটি বই পাবলিক ডোমেনে, তাই ফ্রিতে শুনতে আর ডাউনলোড করতে পারবেন।</string>
+    <string name="books_try">শুনে দেখুন</string>
+    <string name="books_chapters">অধ্যায়: %1$d</string>
+    <string name="books_credit">LibriVox.org থেকে অডিওবুক, পাবলিক ডোমেন।</string>
+    <string name="books_play">চালান</string>
+    <string name="books_download_all">সব ডাউনলোড করুন</string>
+    <string name="books_resume_note">প্রতিটি অধ্যায়ে আপনি কোথায় থেমেছিলেন Ampli তা মনে রাখে।</string>
+    <string name="podcasts_search_hint">পডকাস্ট খুঁজুন</string>
+    <string name="podcasts_following">ফলো করছেন</string>
+    <string name="podcasts_top">ভারতের সেরা পডকাস্ট</string>
+    <string name="podcasts_credit">পডকাস্টের তালিকা Apple Podcasts থেকে। এপিসোড সরাসরি প্রতিটি শো-এর নিজের ফিড থেকে চলে।</string>
+    <string name="podcasts_follow">ফলো করুন</string>
+    <string name="podcasts_unfollow">আনফলো করুন</string>
+    <string name="podcasts_no_episodes">কোনো এপিসোড পাওয়া যায়নি</string>
+
+    <string name="convert_title">Ampli Convert</string>
+    <string name="convert_desc">আপনার কোনো ভিডিও থেকে আওয়াজ বের করে মিউজিক ফাইল হিসেবে রাখুন। দ্রুত, কোয়ালিটি একটুও কমে না।</string>
+    <string name="convert_pick">একটা ভিডিও বাছুন</string>
+    <string name="convert_working">আওয়াজ বের করা হচ্ছে…</string>
+    <string name="convert_saved">\"%1$s\" Music/%2$s-এ সেভ হয়েছে। এখন এটা আপনার লাইব্রেরিতে আছে।</string>
+    <string name="convert_no_sound">এই ভিডিওতে কোনো আওয়াজ নেই।</string>
+    <string name="convert_unsupported">এই ভিডিওর আওয়াজের ফরম্যাট এখনও কপি করা যায় না।</string>
+    <string name="convert_failed">কনভার্ট করা গেল না: %1$s</string>
+
+    <string name="ringtone_fade_in">ফেড ইন</string>
+    <string name="ringtone_fade_out">ফেড আউট</string>
+    <string name="ringtone_fade_off">বন্ধ</string>
+    <string name="ringtone_fade_seconds">%1$d সেকেন্ড</string>
+    <string name="ringtone_target_contact">একজন কন্ট্যাক্ট</string>
+    <string name="ringtone_contact_set">ওই কন্ট্যাক্টের জন্য রিংটোন সেট হয়েছে</string>
+    <string name="ringtone_contact_failed">ওই কন্ট্যাক্টের জন্য রিংটোন সেট করা গেল না</string>
+    <string name="ringtone_contact_needs_permission">একজনের জন্য রিংটোন সেট করতে Ampli-র কন্ট্যাক্টস অনুমতি দরকার</string>
+
+    <string name="settings_headset_clicks">ইয়ারফোনের বোতাম</string>
+    <string name="settings_headset_clicks_desc">একবার চাপলে চালু বা থামবে, দুবার চাপলে পরের গান, তিনবার চাপলে আগের গান।</string>
+
+    <string name="bookmarks_title">বুকমার্ক</string>
+    <string name="bookmarks_note_hint">নোট (ঐচ্ছিক)</string>
+    <string name="bookmarks_add_at">%1$s-এ বুকমার্ক যোগ করুন</string>
+    <string name="bookmarks_empty">এখনও কোনো বুকমার্ক নেই। পরে এই জায়গায় ফিরে আসতে একটা যোগ করুন।</string>
+    <string name="bookmarks_untitled">বুকমার্ক</string>
+
+    <string name="song_move">ফোল্ডারে সরান</string>
+    <string name="library_move_selected">বাছাই করা গান একটা ফোল্ডারে সরান</string>
+    <plurals name="move_title">
+        <item quantity="one">%1$dটি গান সরান</item>
+        <item quantity="other">%1$dটি গান সরান</item>
+    </plurals>
+    <string name="move_new_folder">নতুন ফোল্ডার</string>
+    <string name="move_folder_hint">যেমন Music/Old songs</string>
+    <string name="move_button">সরান</string>
+    <string name="move_moving">সরানো হচ্ছে…</string>
+    <string name="move_needs_ok">এই গানগুলো সরাতে Android-এর আপনার অনুমতি দরকার</string>
+    <string name="move_failed">গানগুলো সরানো গেল না</string>
+    <plurals name="msg_songs_moved">
+        <item quantity="one">%1$dটি গান সরানো হয়েছে</item>
+        <item quantity="other">%1$dটি গান সরানো হয়েছে</item>
+    </plurals>
+
+    <string name="help_title">সাহায্য &amp; মতামত</string>
+    <string name="help_card_desc">সমস্যা জানান, নতুন ফিচার চান, বা Ampli Pro নিয়ে আমাদের সাথে যোগাযোগ করুন।</string>
+    <string name="help_open">খুলুন</string>
+    <string name="help_bug">সমস্যা জানান</string>
+    <string name="help_bug_desc">কিছু কাজ করছে না? কী হয়েছে আমাদের বলুন।</string>
+    <string name="help_feature">ফিচার চান</string>
+    <string name="help_feature_desc">নতুন কিছু চান আর আইডিয়াতে ভোট দিন।</string>
+    <string name="help_support">সাপোর্টে যোগাযোগ করুন</string>
+    <string name="help_support_desc">Ampli Pro বা আপনার কেনাকাটা নিয়ে প্রশ্ন।</string>
+    <string name="help_mine">আমার অনুরোধ</string>
+    <string name="help_mine_desc">আপনার অনুরোধ আর আমাদের উত্তর দেখুন।</string>
+    <string name="help_privacy">আপনি এখানে যা লেখেন, সাথে অ্যাপ ভার্সন আর ফোনের মডেল, Ampli শুধু এটুকুই পাঠায়। আর কিছু না।</string>
+    <string name="help_field_title">শিরোনাম</string>
+    <string name="help_field_subject">বিষয়</string>
+    <string name="help_field_what_happened">কী হয়েছে?</string>
+    <string name="help_field_describe">ফিচারটা বুঝিয়ে বলুন</string>
+    <string name="help_field_message">মেসেজ</string>
+    <string name="help_field_contact">আপনার ইমেল (ঐচ্ছিক, উত্তরের জন্য)</string>
+    <string name="help_field_order">Play অর্ডার ID (ঐচ্ছিক)</string>
+    <string name="help_add_screenshot">স্ক্রিনশট যোগ করুন</string>
+    <string name="help_screenshot_added">স্ক্রিনশট যোগ হয়েছে ✓</string>
+    <string name="help_attach_logs">অ্যাপ লগ যুক্ত করুন</string>
+    <string name="help_send">পাঠান</string>
+    <string name="help_send_email">ইমেলে পাঠান</string>
+    <string name="help_sent">ধন্যবাদ, আপনার রেফারেন্স নম্বর %1$s</string>
+    <string name="help_queued">আপনি অফলাইনে আছেন। আবার অনলাইনে এলে Ampli এটা পাঠিয়ে দেবে।</string>
+    <string name="help_queue_sent">আপনার সেভ করা রিপোর্টগুলো পাঠানো হয়েছে</string>
+    <string name="help_rate_limited">আজ আপনি অনেক পাঠিয়েছেন। দয়া করে কাল আবার চেষ্টা করুন।</string>
+    <string name="help_failed">পাঠানো গেল না: %1$s</string>
+    <string name="help_no_email_app">এই ফোনে কোনো ইমেল অ্যাপ পাওয়া যায়নি</string>
+    <string name="help_top_requests">সেরা অনুরোধ</string>
+    <string name="help_no_requests_yet">এখনও কোনো অনুরোধ নেই। আপনিই প্রথম হোন!</string>
+    <string name="help_vote">ভোট দিন</string>
+    <string name="help_mine_email">আপাতত আপনার অনুরোধ ইমেলে যায়, তাই আমাদের উত্তর আপনার ইনবক্সে আসবে।</string>
+    <string name="help_mine_empty">আপনি এখনও কোনো অনুরোধ পাঠাননি।</string>
+    <string name="help_reply">উত্তর: %1$s</string>
+</resources>

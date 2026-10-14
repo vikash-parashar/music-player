@@ -20,6 +20,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.QueueMusic
+import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.RingVolume
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -85,6 +86,9 @@ fun NowPlayingScreen(
     var showQueue by remember { mutableStateOf(false) }
     var showSpeed by remember { mutableStateOf(false) }
     var showLyrics by rememberSaveable { mutableStateOf(false) }
+    var showBookmarks by remember { mutableStateOf(false) }
+    val bookmarkStore = (androidx.compose.ui.platform.LocalContext.current.applicationContext as com.vikash.mp3player.MusicApp).bookmarks
+    val allBookmarks by bookmarkStore.all.collectAsState()
     BackHandler { if (showQueue) showQueue = false else onClose() }
     val current = state.current
     if (current == null) {
@@ -250,6 +254,14 @@ fun NowPlayingScreen(
                     label = { Text(stringResource(R.string.lyrics_title)) },
                 )
                 Spacer(Modifier.width(8.dp))
+                val marks = allBookmarks[current.mediaId].orEmpty()
+                FilterChip(
+                    selected = marks.isNotEmpty(),
+                    onClick = { showBookmarks = true },
+                    leadingIcon = { Icon(Icons.Default.Bookmark, null, Modifier.size(18.dp)) },
+                    label = { Text(if (marks.isEmpty()) stringResource(R.string.bookmarks_title) else "${stringResource(R.string.bookmarks_title)} · ${marks.size}") },
+                )
+                Spacer(Modifier.width(8.dp))
                 FilterChip(
                     selected = abLoop.aMs != null,
                     onClick = onCycleAb,
@@ -270,6 +282,14 @@ fun NowPlayingScreen(
 
     if (showSpeed) SpeedPitchDialog(state.speed, state.pitch, player::setSpeedAndPitch) { showSpeed = false }
     if (showCast) CastDialog(isPro, onGetPro) { showCast = false }
+    if (showBookmarks) BookmarksDialog(
+        positionMs = position,
+        bookmarks = allBookmarks[current.mediaId].orEmpty(),
+        onAdd = { at, note -> bookmarkStore.add(current.mediaId, at, note) },
+        onJump = { player.seekTo(it); position = it },
+        onRemove = { bookmarkStore.remove(current.mediaId, it) },
+        onDismiss = { showBookmarks = false },
+    )
 }
 
 @Composable
