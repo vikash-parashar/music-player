@@ -44,10 +44,42 @@ jobs:
       - name: Rename APK
         run: cp app/build/outputs/apk/debug/app-debug.apk "Ampli-${GITHUB_RUN_NUMBER}.apk"
 
+      # Play Store bundle. Always built (so release-only problems show up early), but only
+      # signed and attached when the upload key secrets exist. Test Pro switch is debug-only.
+      - name: Build Play release bundle (AAB)
+        env:
+          UPLOAD_KEYSTORE_B64: ${{ secrets.UPLOAD_KEYSTORE_B64 }}
+          UPLOAD_STORE_PASSWORD: ${{ secrets.UPLOAD_STORE_PASSWORD }}
+          UPLOAD_KEY_ALIAS: ${{ secrets.UPLOAD_KEY_ALIAS }}
+          UPLOAD_KEY_PASSWORD: ${{ secrets.UPLOAD_KEY_PASSWORD }}
+          ADMOB_APP_ID: ${{ vars.ADMOB_APP_ID }}
+          ADMOB_BANNER_ID: ${{ vars.ADMOB_BANNER_ID }}
+        run: |
+          if [ -n "$ADMOB_APP_ID" ]; then echo "ADMOB_APP_ID=${ADMOB_APP_ID}" >> local.properties; fi
+          if [ -n "$ADMOB_BANNER_ID" ]; then echo "ADMOB_BANNER_ID=${ADMOB_BANNER_ID}" >> local.properties; fi
+          if [ -n "$UPLOAD_KEYSTORE_B64" ]; then
+            echo "$UPLOAD_KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/upload.jks"
+            {
+              echo "UPLOAD_STORE_FILE=$RUNNER_TEMP/upload.jks"
+              echo "UPLOAD_STORE_PASSWORD=${UPLOAD_STORE_PASSWORD}"
+              echo "UPLOAD_KEY_ALIAS=${UPLOAD_KEY_ALIAS}"
+              echo "UPLOAD_KEY_PASSWORD=${UPLOAD_KEY_PASSWORD}"
+            } >> local.properties
+          fi
+          ./gradlew --no-daemon bundleRelease
+          if [ -n "$UPLOAD_KEYSTORE_B64" ]; then
+            cp app/build/outputs/bundle/release/app-release.aab "Ampli-${GITHUB_RUN_NUMBER}.aab"
+          else
+            echo "::notice::No upload key secrets yet, so the Play bundle was built but not signed or attached."
+          fi
+          rm -f "$RUNNER_TEMP/upload.jks"
+
       - uses: actions/upload-artifact@v4
         with:
           name: Ampli-apk
-          path: Ampli-*.apk
+          path: |
+            Ampli-*.apk
+            Ampli-*.aab
 
       # A release gives a direct download link that opens on the phone.
       - uses: softprops/action-gh-release@v2
@@ -55,4 +87,6 @@ jobs:
           tag_name: build-${{ github.run_number }}
           name: Ampli test build ${{ github.run_number }}
           prerelease: true
-          files: Ampli-*.apk
+          files: |
+            Ampli-*.apk
+            Ampli-*.aab

@@ -45,6 +45,16 @@ android {
             keyAlias = "androiddebugkey"
             keyPassword = "android"
         }
+        // Play upload key. CI writes it from the UPLOAD_KEYSTORE_B64 / UPLOAD_* repo secrets;
+        // without them no release bundle is signed, so the public test key never reaches Play.
+        if (prop("UPLOAD_STORE_FILE").isNotEmpty()) {
+            create("upload") {
+                storeFile = file(prop("UPLOAD_STORE_FILE"))
+                storePassword = prop("UPLOAD_STORE_PASSWORD")
+                keyAlias = prop("UPLOAD_KEY_ALIAS")
+                keyPassword = prop("UPLOAD_KEY_PASSWORD")
+            }
+        }
     }
 
     buildTypes {
@@ -52,15 +62,19 @@ android {
             signingConfig = signingConfigs.getByName("debug")
             manifestPlaceholders["admobAppId"] = "ca-app-pub-3940256099942544~3347511713"
             buildConfigField("String", "ADMOB_BANNER_ID", "\"ca-app-pub-3940256099942544/9214589741\"")
+            buildConfigField("boolean", "ONLINE_MUSIC", "true")
         }
         release {
-            isMinifyEnabled = true
-            isShrinkResources = true
+            signingConfig = signingConfigs.findByName("upload")
+            // R8 stays off for the first Play builds: it has never been tested with Media3/Cast/
+            // serialization here, and a crash in closed testing costs more than ~5 MB of APK size.
+            isMinifyEnabled = false
+            isShrinkResources = false
+            // Jamendo needs a paid licence for an ad-supported app, so v1 ships without it.
+            buildConfigField("boolean", "ONLINE_MUSIC", prop("ONLINE_MUSIC_IN_RELEASE", "false"))
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             manifestPlaceholders["admobAppId"] = prop("ADMOB_APP_ID", "ca-app-pub-3940256099942544~3347511713")
             buildConfigField("String", "ADMOB_BANNER_ID", "\"${prop("ADMOB_BANNER_ID", "ca-app-pub-3940256099942544/9214589741")}\"")
-            // Signing: create a keystore in Android Studio (Build > Generate Signed Bundle) and
-            // Play App Signing will handle the rest.
         }
     }
 

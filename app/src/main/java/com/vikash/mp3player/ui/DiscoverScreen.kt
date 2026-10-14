@@ -67,14 +67,20 @@ class DiscoverActions(
 fun DiscoverScreen(
     currentId: String?,
     actions: DiscoverActions,
+    /** False hides the Music tab (no music licence in this build). */
+    showMusic: Boolean,
     music: @Composable () -> Unit,
 ) {
-    var section by rememberSaveable { mutableIntStateOf(0) }
+    val first = if (showMusic) 0 else 1
+    var picked by rememberSaveable { mutableIntStateOf(first) }
+    val section = picked.coerceAtLeast(first)
     Column(Modifier.fillMaxSize()) {
-        TabRow(selectedTabIndex = section) {
-            Tab(selected = section == 0, onClick = { section = 0 }, text = { Text(stringResource(R.string.discover_music)) })
-            Tab(selected = section == 1, onClick = { section = 1 }, text = { Text(stringResource(R.string.discover_audiobooks)) })
-            Tab(selected = section == 2, onClick = { section = 2 }, text = { Text(stringResource(R.string.discover_podcasts)) })
+        TabRow(selectedTabIndex = section - first) {
+            if (showMusic) {
+                Tab(selected = section == 0, onClick = { picked = 0 }, text = { Text(stringResource(R.string.discover_music)) })
+            }
+            Tab(selected = section == 1, onClick = { picked = 1 }, text = { Text(stringResource(R.string.discover_audiobooks)) })
+            Tab(selected = section == 2, onClick = { picked = 2 }, text = { Text(stringResource(R.string.discover_podcasts)) })
         }
         when (section) {
             0 -> music()
