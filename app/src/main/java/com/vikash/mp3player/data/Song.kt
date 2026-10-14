@@ -16,4 +16,6 @@ data class Song(
     val isOnline: Boolean = false,
     /** Set only for online tracks whose license allows downloading. */
     val downloadUrl: String? = null,
+    /** When the file was added to the phone (seconds), for "Recently added". 0 for online tracks. */
+    val dateAddedSec: Long = 0,
 )

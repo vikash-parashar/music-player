@@ -25,7 +25,12 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.SkipNext
+import androidx.compose.material.icons.automirrored.filled.PlaylistPlay
 import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
+import androidx.compose.material3.rememberSwipeToDismissBoxState
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -102,6 +107,48 @@ fun SongRow(
     actions: List<SongAction>,
     isFavorite: Boolean? = null,
     onToggleFavorite: () -> Unit = {},
+    /** Swipe the row to the right to play the song next (a common Musicolet request). */
+    onSwipePlayNext: (() -> Unit)? = null,
+) {
+    if (onSwipePlayNext == null) {
+        SongRowContent(song, isCurrent, onClick, actions, isFavorite, onToggleFavorite)
+        return
+    }
+    val onSwipe by rememberUpdatedState(onSwipePlayNext)
+    val swipeState = rememberSwipeToDismissBoxState(
+        confirmValueChange = { value ->
+            if (value == SwipeToDismissBoxValue.StartToEnd) onSwipe()
+            false // always spring back; the song stays in the list
+        },
+        positionalThreshold = { it * 0.35f },
+    )
+    SwipeToDismissBox(
+        state = swipeState,
+        enableDismissFromStartToEnd = true,
+        enableDismissFromEndToStart = false,
+        backgroundContent = {
+            Row(
+                Modifier.fillMaxSize().background(MaterialTheme.colorScheme.primaryContainer).padding(horizontal = 24.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(Icons.AutoMirrored.Filled.PlaylistPlay, null, tint = MaterialTheme.colorScheme.onPrimaryContainer)
+                Spacer(Modifier.width(8.dp))
+                Text("Play next", color = MaterialTheme.colorScheme.onPrimaryContainer)
+            }
+        },
+    ) {
+        Surface { SongRowContent(song, isCurrent, onClick, actions, isFavorite, onToggleFavorite) }
+    }
+}
+
+@Composable
+private fun SongRowContent(
+    song: Song,
+    isCurrent: Boolean,
+    onClick: () -> Unit,
+    actions: List<SongAction>,
+    isFavorite: Boolean?,
+    onToggleFavorite: () -> Unit,
 ) {
     var menuOpen by remember { mutableStateOf(false) }
     Row(

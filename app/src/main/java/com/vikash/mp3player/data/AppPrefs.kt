@@ -49,6 +49,14 @@ class AppPrefs(context: Context) {
         return added
     }
 
+    /** Re-reads everything after a restore from backup, then applies the matched favorites. */
+    fun reloadAfterRestore(favorites: List<String>) {
+        _themeMode.value = runCatching { ThemeMode.valueOf(prefs.getString(KEY_THEME, null) ?: "") }.getOrDefault(ThemeMode.System)
+        _seekStyle.value = prefs.getString(KEY_SEEK_STYLE, null) ?: "Classic"
+        _favorites.value = favorites
+        prefs.edit().putString(KEY_FAVORITES, favorites.joinToString("\n")).apply()
+    }
+
     private companion object {
         const val KEY_THEME = "theme_mode"
         const val KEY_FAVORITES = "favorites"

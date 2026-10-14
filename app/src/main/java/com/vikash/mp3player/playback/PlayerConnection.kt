@@ -8,6 +8,7 @@ import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.PlaybackException
+import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
@@ -36,6 +37,8 @@ data class PlayerUiState(
     val repeatMode: Int = Player.REPEAT_MODE_OFF,
     val queue: List<NowPlaying> = emptyList(),
     val currentIndex: Int = 0,
+    val speed: Float = 1f,
+    val pitch: Float = 1f,
 )
 
 /**
@@ -125,6 +128,11 @@ class PlayerConnection(private val context: Context) {
     fun removeFromQueue(index: Int) { controller?.removeMediaItem(index) }
     fun positionMs(): Long = controller?.currentPosition ?: 0L
 
+    /** Playback speed and pitch, each 0.5x to 2x. Handy for practice, podcasts and audiobooks. */
+    fun setSpeedAndPitch(speed: Float, pitch: Float) {
+        controller?.playbackParameters = PlaybackParameters(speed.coerceIn(0.5f, 2f), pitch.coerceIn(0.5f, 2f))
+    }
+
     fun toggleShuffle() {
         val c = controller ?: return
         c.shuffleModeEnabled = !c.shuffleModeEnabled
@@ -150,6 +158,8 @@ class PlayerConnection(private val context: Context) {
             repeatMode = c.repeatMode,
             queue = (0 until c.mediaItemCount).map { c.getMediaItemAt(it).toNowPlaying() },
             currentIndex = c.currentMediaItemIndex,
+            speed = c.playbackParameters.speed,
+            pitch = c.playbackParameters.pitch,
         )
     }
 

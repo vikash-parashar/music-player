@@ -25,7 +25,12 @@ import androidx.compose.material.icons.filled.RepeatOne
 import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
+import androidx.compose.material.icons.filled.Loop
+import androidx.compose.material.icons.filled.Speed
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
@@ -57,9 +62,12 @@ fun NowPlayingScreen(
     onToggleFavorite: (id: String, title: String) -> Unit,
     seekStyle: SeekStyle,
     onSetRingtone: () -> Unit,
+    abLoop: AbLoop,
+    onCycleAb: () -> Unit,
     onClose: () -> Unit,
 ) {
     var showQueue by remember { mutableStateOf(false) }
+    var showSpeed by remember { mutableStateOf(false) }
     BackHandler { if (showQueue) showQueue = false else onClose() }
     val current = state.current
     if (current == null) {
@@ -172,6 +180,61 @@ fun NowPlayingScreen(
                     )
                 }
             }
+
+            // Extra tools: speed/pitch and A-B repeat.
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                val normal = state.speed == 1f && state.pitch == 1f
+                FilterChip(
+                    selected = !normal,
+                    onClick = { showSpeed = true },
+                    leadingIcon = { Icon(Icons.Default.Speed, null, Modifier.size(18.dp)) },
+                    label = { Text("%.2f".format(java.util.Locale.US, state.speed).trimEnd('0').trimEnd('.') + "x") },
+                )
+                Spacer(Modifier.width(12.dp))
+                FilterChip(
+                    selected = abLoop.aMs != null,
+                    onClick = onCycleAb,
+                    leadingIcon = { Icon(Icons.Default.Loop, null, Modifier.size(18.dp)) },
+                    label = {
+                        Text(
+                            when {
+                                abLoop.active -> "A-B on"
+                                abLoop.aMs != null -> "Set B"
+                                else -> "A-B repeat"
+                            }
+                        )
+                    },
+                )
+            }
         }
     }
+
+    if (showSpeed) SpeedPitchDialog(state.speed, state.pitch, player::setSpeedAndPitch) { showSpeed = false }
 }
+
+@Composable
+private fun SpeedPitchDialog(speed: Float, pitch: Float, onChange: (Float, Float) -> Unit, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Speed and pitch") },
+        text = {
+            Column {
+                Text("Speed: %.2fx".format(speed))
+                Slider(value = speed, onValueChange = { onChange(snap(it), pitch) }, valueRange = 0.5f..2f)
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    listOf(0.75f, 1f, 1.25f, 1.5f).forEach { v ->
+                        FilterChip(selected = speed == v, onClick = { onChange(v, pitch) }, label = { Text("${v}x") })
+                    }
+                }
+                Spacer(Modifier.height(12.dp))
+                Text("Pitch: %.2fx".format(pitch))
+                Slider(value = pitch, onValueChange = { onChange(speed, snap(it)) }, valueRange = 0.5f..2f)
+            }
+        },
+        confirmButton = { TextButton(onClick = onDismiss) { Text("Done") } },
+        dismissButton = { TextButton(onClick = { onChange(1f, 1f) }) { Text("Reset") } },
+    )
+}
+
+/** Round to 0.05 steps so values read cleanly (1.25x, not 1.2473x). */
+private fun snap(v: Float) = (Math.round(v * 20f) / 20f)

@@ -1,5 +1,8 @@
 package com.vikash.mp3player.ui
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
@@ -70,6 +73,8 @@ fun SettingsScreen(
     onThemeMode: (ThemeMode) -> Unit,
     seekStyle: SeekStyle,
     onSeekStyle: (SeekStyle) -> Unit,
+    onBackup: (Uri) -> Unit,
+    onRestore: (Uri) -> Unit,
 ) {
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
@@ -81,6 +86,7 @@ fun SettingsScreen(
         SeekStyleCard(seekStyle, isPro = adsRemoved, onPick = onSeekStyle, onGetPro = onRemoveAds)
         SleepTimerCard()
         EqualizerCard()
+        BackupCard(onBackup, onRestore)
     }
 }
 
@@ -262,6 +268,12 @@ private fun EqualizerCard() {
                 )
                 return@Column
             }
+            Text(
+                "Now adjusting: ${eq.outputLabel}. Speaker, headphones and each Bluetooth device (like your car) keep their own settings.",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodySmall,
+            )
+            Spacer(Modifier.height(8.dp))
             Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 eq.presets.forEachIndexed { i, name ->
                     AssistChip(
@@ -283,6 +295,33 @@ private fun EqualizerCard() {
                         modifier = Modifier.weight(1f),
                     )
                     Text("${band.levelMb / 100} dB", Modifier.width(56.dp), style = MaterialTheme.typography.bodySmall)
+                }
+            }
+        }
+    }
+}
+
+/** Save favorites, settings, equalizer and listening history to a file, or load them back. */
+@Composable
+private fun BackupCard(onBackup: (Uri) -> Unit, onRestore: (Uri) -> Unit) {
+    val save = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
+        if (uri != null) onBackup(uri)
+    }
+    val open = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) onRestore(uri)
+    }
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(16.dp)) {
+            Text("Backup and restore", style = MaterialTheme.typography.titleMedium)
+            Text(
+                "Keep your favorites, settings, equalizer and listening history safe. Save to Google Drive to move them to a new phone.",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(10.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(onClick = { save.launch("ampli-backup-${java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(java.util.Date())}.json") }) { Text("Back up") }
+                OutlinedButton(onClick = { open.launch(arrayOf("application/json", "application/octet-stream", "text/plain")) }) {
+                    Text("Restore")
                 }
             }
         }
