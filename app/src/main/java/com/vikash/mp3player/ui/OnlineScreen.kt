@@ -27,7 +27,7 @@ fun OnlineScreen(
     currentId: String?,
     onQueryChange: (String) -> Unit,
     onLoadPopular: () -> Unit,
-    onPlay: (List<Song>, Int) -> Unit,
+    onPlay: (songs: List<Song>, startIndex: Int, source: String) -> Unit,
     onPlayNext: (Song) -> Unit,
     onAddToQueue: (Song) -> Unit,
     onDownload: (Song) -> Unit,
@@ -65,7 +65,7 @@ fun OnlineScreen(
                     SongRow(
                         song = song,
                         isCurrent = song.id == currentId,
-                        onClick = { onPlay(state.results, i) },
+                        onClick = { onPlay(state.results, i, "Online") },
                         actions = buildList {
                             add(SongAction("Play next") { onPlayNext(song) })
                             add(SongAction("Add to queue") { onAddToQueue(song) })

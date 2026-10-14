@@ -80,6 +80,19 @@
             </intent-filter>
         </activity>
 
+        <!-- Home-screen widget: now playing with play/pause, previous and next. -->
+        <receiver
+            android:name=".widget.AmpliWidgetReceiver"
+            android:exported="true"
+            android:label="Ampli">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/ampli_widget_info" />
+        </receiver>
+
         <service
             android:name=".playback.PlaybackService"
             android:exported="true"

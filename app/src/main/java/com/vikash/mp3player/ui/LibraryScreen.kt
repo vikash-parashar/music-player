@@ -97,7 +97,7 @@ fun LibraryScreen(
     hasPermission: Boolean,
     currentId: String?,
     onRequestPermission: () -> Unit,
-    onPlay: (List<Song>, Int) -> Unit,
+    onPlay: (songs: List<Song>, startIndex: Int, source: String) -> Unit,
     onPlayNext: (Song) -> Unit,
     onAddToQueue: (Song) -> Unit,
     favorites: List<String>,
@@ -273,7 +273,7 @@ private fun SongList(
     songs: List<Song>,
     currentId: String?,
     onBack: () -> Unit,
-    onPlay: (List<Song>, Int) -> Unit,
+    onPlay: (songs: List<Song>, startIndex: Int, source: String) -> Unit,
     onPlayNext: (Song) -> Unit,
     onAddToQueue: (Song) -> Unit,
     favorites: List<String>,
@@ -291,7 +291,7 @@ private fun SongList(
                     Text("${songs.size} songs", modifier = Modifier.weight(1f).padding(start = 8.dp),
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                IconButton(onClick = { if (songs.isNotEmpty()) onPlay(songs.shuffled(), 0) }) {
+                IconButton(onClick = { if (songs.isNotEmpty()) onPlay(songs.shuffled(), 0, title ?: "All songs") }) {
                     Icon(Icons.Default.Shuffle, "Shuffle all")
                 }
             }
@@ -302,7 +302,7 @@ private fun SongList(
             SongRow(
                 song = song,
                 isCurrent = song.id == currentId,
-                onClick = { onPlay(songs, i) },
+                onClick = { onPlay(songs, i, title ?: "All songs") },
                 actions = listOf(
                     SongAction("Play next") { onPlayNext(song) },
                     SongAction("Add to queue") { onAddToQueue(song) },
