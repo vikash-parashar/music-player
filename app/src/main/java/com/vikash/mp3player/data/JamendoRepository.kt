@@ -21,7 +21,11 @@ class JamendoRepository {
 
     private val json = Json { ignoreUnknownKeys = true }
 
-    val isConfigured: Boolean get() = BuildConfig.JAMENDO_CLIENT_ID.isNotBlank()
+    /**
+     * Release builds keep online music off until the Jamendo commercial licence is bought
+     * (ONLINE_MUSIC_IN_RELEASE=true in local.properties turns it on).
+     */
+    val isConfigured: Boolean get() = BuildConfig.ONLINE_MUSIC && BuildConfig.JAMENDO_CLIENT_ID.isNotBlank()
 
     /** Empty [query] returns the most popular tracks this week. */
     suspend fun search(query: String, limit: Int = 50): List<Song> = withContext(Dispatchers.IO) {

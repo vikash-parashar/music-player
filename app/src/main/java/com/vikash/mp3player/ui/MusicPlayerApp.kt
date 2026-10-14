@@ -195,6 +195,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                     1 -> DiscoverScreen(
                         currentId = currentId,
                         actions = discoverActions,
+                        showMusic = online.configured,
                     ) {
                         OnlineScreen(
                             state = online,
