@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Hearing
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.MoreVert
@@ -51,6 +52,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -58,7 +60,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil3.compose.SubcomposeAsyncImage
 import com.vikash.mp3player.R
+import com.vikash.mp3player.data.INTERNAL_STORAGE
 import com.vikash.mp3player.data.Song
+import com.vikash.mp3player.data.UNKNOWN_ALBUM
 import com.vikash.mp3player.ui.theme.Ampli
 import com.vikash.mp3player.playback.PlayerUiState
 
@@ -94,7 +98,7 @@ fun FavoriteButton(isFavorite: Boolean, onToggle: () -> Unit, modifier: Modifier
     IconButton(onClick = onToggle, modifier = modifier) {
         Icon(
             if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-            if (isFavorite) "Remove from My Favorites" else "Add to My Favorites",
+            stringResource(if (isFavorite) R.string.favorites_remove else R.string.favorites_add),
             tint = if (isFavorite) Ampli.Rose else MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
@@ -140,7 +144,7 @@ fun SongRow(
             ) {
                 Icon(Icons.AutoMirrored.Filled.PlaylistPlay, null, tint = MaterialTheme.colorScheme.onPrimaryContainer)
                 Spacer(Modifier.width(8.dp))
-                Text("Play next", color = MaterialTheme.colorScheme.onPrimaryContainer)
+                Text(stringResource(R.string.song_play_next), color = MaterialTheme.colorScheme.onPrimaryContainer)
             }
         },
     ) {
@@ -191,7 +195,7 @@ private fun SongRowContent(
         } else {
             if (isFavorite != null) FavoriteButton(isFavorite, onToggleFavorite)
             Box {
-                IconButton(onClick = { menuOpen = true }) { Icon(Icons.Default.MoreVert, "More options") }
+                IconButton(onClick = { menuOpen = true }) { Icon(Icons.Default.MoreVert, stringResource(R.string.common_more_options)) }
                 DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
                     actions.forEach { action ->
                         DropdownMenuItem(
@@ -222,7 +226,7 @@ fun MiniPlayer(state: PlayerUiState, onOpen: () -> Unit, onToggle: () -> Unit, o
             }
             GradientPlayButton(state.isPlaying, 40.dp, onToggle)
             Spacer(Modifier.width(4.dp))
-            IconButton(onClick = onNext) { Icon(Icons.Default.SkipNext, "Next") }
+            IconButton(onClick = onNext) { Icon(Icons.Default.SkipNext, stringResource(R.string.common_next)) }
         }
     }
 }
@@ -251,7 +255,7 @@ fun EmptyMessage(text: String, modifier: Modifier = Modifier, action: (@Composab
 
 /** App bar: logo + wordmark, with a "Get Pro" pill until the user has Pro. */
 @Composable
-fun BrandHeader(showAdFreePill: Boolean, onAdFreeClick: () -> Unit) {
+fun BrandHeader(showAdFreePill: Boolean, onAdFreeClick: () -> Unit, onRecognize: () -> Unit) {
     Row(
         Modifier.fillMaxWidth().statusBarsPadding().padding(start = 16.dp, end = 12.dp, top = 8.dp, bottom = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -259,12 +263,13 @@ fun BrandHeader(showAdFreePill: Boolean, onAdFreeClick: () -> Unit) {
         Image(painterResource(R.drawable.ic_logo_mark), contentDescription = null, modifier = Modifier.size(30.dp))
         Spacer(Modifier.width(8.dp))
         Text("Ampli", style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
+        IconButton(onClick = onRecognize) { Icon(Icons.Default.Hearing, stringResource(R.string.recognize_title)) }
         if (showAdFreePill) {
             Box(
                 Modifier.clip(RoundedCornerShape(50)).background(Ampli.Gradient)
                     .clickable(onClick = onAdFreeClick).padding(horizontal = 14.dp, vertical = 6.dp),
             ) {
-                Text("Get Pro", color = Color.White, style = MaterialTheme.typography.labelLarge)
+                Text(stringResource(R.string.common_get_pro), color = Color.White, style = MaterialTheme.typography.labelLarge)
             }
         }
     }
@@ -279,11 +284,22 @@ fun GradientPlayButton(isPlaying: Boolean, size: Dp, onClick: () -> Unit) {
     ) {
         Icon(
             if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
-            if (isPlaying) "Pause" else "Play",
+            stringResource(if (isPlaying) R.string.common_pause else R.string.common_play),
             tint = Color.White,
             modifier = Modifier.size(size * 0.55f),
         )
     }
+}
+
+/**
+ * Display name for a library group (folder, album...). The built-in group names are kept in
+ * English as keys, so they are translated here for display.
+ */
+@Composable
+fun groupLabel(name: String): String = when (name) {
+    INTERNAL_STORAGE -> stringResource(R.string.library_internal_storage)
+    UNKNOWN_ALBUM -> stringResource(R.string.library_unknown_album)
+    else -> name
 }
 
 fun formatDuration(ms: Long): String {

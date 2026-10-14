@@ -51,6 +51,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.vikash.mp3player.R
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -86,8 +88,8 @@ fun VideosScreen(state: VideoState, onLoad: () -> Unit) {
     }
 
     if (!hasPermission) {
-        EmptyMessage("Allow Ampli to see the videos on this phone, like camera clips and downloads.") {
-            Button(onClick = { launcher.launch(videoPermission) }) { Text("Allow access") }
+        EmptyMessage(stringResource(R.string.videos_permission_needed)) {
+            Button(onClick = { launcher.launch(videoPermission) }) { Text(stringResource(R.string.library_allow_access)) }
         }
         return
     }
@@ -96,7 +98,7 @@ fun VideosScreen(state: VideoState, onLoad: () -> Unit) {
         return
     }
     if (state.videos.isEmpty()) {
-        EmptyMessage("No videos on this phone yet. Camera recordings and downloaded videos show up here.")
+        EmptyMessage(stringResource(R.string.videos_none))
         return
     }
 
@@ -112,9 +114,9 @@ fun VideosScreen(state: VideoState, onLoad: () -> Unit) {
             Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 12.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            FilterChip(selected = folder == null, onClick = { folder = null }, label = { Text("All ${state.videos.size}") })
+            FilterChip(selected = folder == null, onClick = { folder = null }, label = { Text(stringResource(R.string.videos_all_count, state.videos.size)) })
             folders.forEach { f ->
-                FilterChip(selected = folder == f, onClick = { folder = f }, label = { Text(f.substringAfterLast('/')) })
+                FilterChip(selected = folder == f, onClick = { folder = f }, label = { Text(groupLabel(f).substringAfterLast('/')) })
             }
         }
         LazyVerticalGrid(
@@ -149,7 +151,7 @@ fun VideosScreen(state: VideoState, onLoad: () -> Unit) {
                         style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 6.dp),
                     )
                     Text(
-                        "${video.folder.substringAfterLast('/')} · ${formatSize(video.sizeBytes)}",
+                        "${groupLabel(video.folder).substringAfterLast('/')} · ${formatSize(video.sizeBytes)}",
                         maxLines = 1, overflow = TextOverflow.Ellipsis,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -170,12 +172,12 @@ fun LockedVideos(price: String?, onGetPro: () -> Unit) {
     ) {
         Icon(Icons.Default.VideoLibrary, null, Modifier.size(56.dp), tint = MaterialTheme.colorScheme.primary)
         Text(
-            "Watch your videos in Ampli",
+            stringResource(R.string.videos_locked_title),
             style = MaterialTheme.typography.titleLarge,
             modifier = Modifier.padding(top = 12.dp, bottom = 4.dp),
         )
         Text(
-            "Camera clips, WhatsApp and downloaded videos, full screen or in a floating window.",
+            stringResource(R.string.videos_locked_text),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(bottom = 20.dp),

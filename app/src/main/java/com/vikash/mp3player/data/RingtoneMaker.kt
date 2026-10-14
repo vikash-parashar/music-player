@@ -13,6 +13,8 @@ import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
 import android.provider.Settings
+import androidx.annotation.StringRes
+import com.vikash.mp3player.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
@@ -28,13 +30,15 @@ import kotlin.math.abs
 import kotlin.math.max
 
 /** Where a finished clip can be used. One clip can be all three at once. */
-enum class RingtoneTarget(val label: String, val type: Int, val column: String, val folder: String, val what: String) {
-    Call("Call ringtone", RingtoneManager.TYPE_RINGTONE, MediaStore.Audio.AudioColumns.IS_RINGTONE,
-        Environment.DIRECTORY_RINGTONES, "call ringtone"),
-    Notification("Notification (SMS)", RingtoneManager.TYPE_NOTIFICATION, MediaStore.Audio.AudioColumns.IS_NOTIFICATION,
-        Environment.DIRECTORY_NOTIFICATIONS, "notification sound"),
-    Alarm("Alarm", RingtoneManager.TYPE_ALARM, MediaStore.Audio.AudioColumns.IS_ALARM,
-        Environment.DIRECTORY_ALARMS, "alarm sound"),
+enum class RingtoneTarget(
+    @StringRes val labelRes: Int, val type: Int, val column: String, val folder: String, @StringRes val whatRes: Int,
+) {
+    Call(R.string.ringtone_target_call, RingtoneManager.TYPE_RINGTONE, MediaStore.Audio.AudioColumns.IS_RINGTONE,
+        Environment.DIRECTORY_RINGTONES, R.string.ringtone_what_call),
+    Notification(R.string.ringtone_target_notification, RingtoneManager.TYPE_NOTIFICATION, MediaStore.Audio.AudioColumns.IS_NOTIFICATION,
+        Environment.DIRECTORY_NOTIFICATIONS, R.string.ringtone_what_notification),
+    Alarm(R.string.ringtone_target_alarm, RingtoneManager.TYPE_ALARM, MediaStore.Audio.AudioColumns.IS_ALARM,
+        Environment.DIRECTORY_ALARMS, R.string.ringtone_what_alarm),
 }
 
 /** Thrown for files we can't cut without re-encoding (FLAC, OGG, WAV...). The message is shown as is. */
@@ -140,7 +144,7 @@ class RingtoneMaker(private val context: Context) {
             } catch (e: UnsupportedClipFormat) {
                 throw e
             } catch (e: Exception) {
-                throw UnsupportedClipFormat("Ampli couldn't read this song. It may have been moved or deleted.")
+                throw UnsupportedClipFormat(context.getString(R.string.ringtone_err_read))
             } finally {
                 release()
             }
@@ -161,8 +165,10 @@ class RingtoneMaker(private val context: Context) {
                     "mp3" to "audio/mpeg"
                 }
                 else -> throw UnsupportedClipFormat(
-                    "Ringtones can be made from MP3 and M4A/AAC songs. " +
-                        "This one is ${mime.substringAfter('/').uppercase().ifBlank { "an unknown format" }}."
+                    mime.substringAfter('/').uppercase().let { format ->
+                        if (format.isBlank()) context.getString(R.string.ringtone_err_format_unknown)
+                        else context.getString(R.string.ringtone_err_format, format)
+                    }
                 )
             }
             onProgress(1f)
@@ -183,7 +189,7 @@ class RingtoneMaker(private val context: Context) {
     private fun audioTrack(extractor: MediaExtractor): Int =
         (0 until extractor.trackCount).firstOrNull {
             extractor.getTrackFormat(it).getString(MediaFormat.KEY_MIME)?.startsWith("audio/") == true
-        } ?: throw UnsupportedClipFormat("This file has no audio Ampli can cut.")
+        } ?: throw UnsupportedClipFormat(context.getString(R.string.ringtone_err_no_audio))
 
     private suspend fun cutAac(uri: Uri, startUs: Long, endUs: Long, out: File, onProgress: (Float) -> Unit) {
         val extractor = MediaExtractor()
@@ -217,7 +223,7 @@ class RingtoneMaker(private val context: Context) {
                 }
                 extractor.advance()
             }
-            if (firstUs < 0) throw UnsupportedClipFormat("That part of the song is empty. Pick another section.")
+            if (firstUs < 0) throw UnsupportedClipFormat(context.getString(R.string.ringtone_err_empty_part))
             m.stop()
         } finally {
             runCatching { muxer?.release() }
@@ -228,13 +234,13 @@ class RingtoneMaker(private val context: Context) {
     /** Copies whole MP3 frames that overlap [startUs, endUs]. Handles CBR and VBR alike. */
     private suspend fun cutMp3(uri: Uri, startUs: Long, endUs: Long, out: OutputStream, onProgress: (Float) -> Unit) {
         val raw = context.contentResolver.openInputStream(uri)
-            ?: throw UnsupportedClipFormat("Ampli couldn't open this song.")
+            ?: throw UnsupportedClipFormat(context.getString(R.string.ringtone_err_open))
         val buffered = BufferedInputStream(raw, 64 * 1024)
         buffered.use {
             skipId3v2(buffered)
             val input = PushbackInputStream(buffered, 8192)
             val head = ByteArray(4)
-            if (!input.readFully(head, 0, 4)) throw UnsupportedClipFormat("This MP3 file looks damaged.")
+            if (!input.readFully(head, 0, 4)) throw UnsupportedClipFormat(context.getString(R.string.ringtone_err_damaged))
             var locked: Mp3Frame? = null
             var timeUs = 0L
             var wrote = 0
@@ -281,7 +287,7 @@ class RingtoneMaker(private val context: Context) {
                 }
                 if (!hasNext) break
             }
-            if (wrote == 0) throw UnsupportedClipFormat("That part of the song is empty. Pick another section.")
+            if (wrote == 0) throw UnsupportedClipFormat(context.getString(R.string.ringtone_err_empty_part))
         }
     }
 
@@ -334,10 +340,10 @@ class RingtoneMaker(private val context: Context) {
             values.put(MediaStore.Audio.Media.RELATIVE_PATH, "$folder/")
             values.put(MediaStore.Audio.Media.IS_PENDING, 1)
             val collection = MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
-            val uri = resolver.insert(collection, values) ?: error("Couldn't save the ringtone. Is the storage full?")
+            val uri = resolver.insert(collection, values) ?: error(context.getString(R.string.ringtone_err_save))
             try {
                 resolver.openOutputStream(uri)?.use { out -> file.inputStream().use { it.copyTo(out) } }
-                    ?: error("Couldn't save the ringtone. Is the storage full?")
+                    ?: error(context.getString(R.string.ringtone_err_save))
                 resolver.update(uri, ContentValues().apply { put(MediaStore.Audio.Media.IS_PENDING, 0) }, null, null)
             } catch (e: Exception) {
                 resolver.delete(uri, null, null)
@@ -354,12 +360,12 @@ class RingtoneMaker(private val context: Context) {
         try {
             file.copyTo(dest)
         } catch (e: Exception) {
-            throw IllegalStateException("Couldn't save to $folder. Allow storage access for Ampli and try again.")
+            throw IllegalStateException(context.getString(R.string.ringtone_err_save_folder, folder))
         }
         values.put(MediaStore.Audio.Media.DATA, dest.absolutePath)
         values.put(MediaStore.Audio.Media.SIZE, dest.length())
         return resolver.insert(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, values)
-            ?: error("Couldn't save the ringtone. Is the storage full?")
+            ?: error(context.getString(R.string.ringtone_err_save))
     }
 
     private fun safeName(s: String) = s.replace(Regex("[\\\\/:*?\"<>|]"), "_").take(80)

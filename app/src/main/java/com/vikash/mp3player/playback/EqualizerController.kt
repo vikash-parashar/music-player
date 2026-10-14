@@ -8,6 +8,7 @@ import android.media.audiofx.Equalizer
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import com.vikash.mp3player.R
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -115,6 +116,9 @@ object EqualizerController {
         publish()
     }
 
+    /** Translated output name; falls back to English before the controller has a context. */
+    private fun label(id: Int, fallback: String) = appContext?.getString(id) ?: fallback
+
     private fun currentOutput(): Output {
         val outs = audioManager?.getDevices(AudioManager.GET_DEVICES_OUTPUTS).orEmpty()
         fun named(d: AudioDeviceInfo, fallback: String) = d.productName?.toString()?.takeIf { it.isNotBlank() } ?: fallback
@@ -123,10 +127,10 @@ object EqualizerController {
             return Output("bt:$name", name)
         }
         outs.firstOrNull { it.type == AudioDeviceInfo.TYPE_WIRED_HEADSET || it.type == AudioDeviceInfo.TYPE_WIRED_HEADPHONES }
-            ?.let { return Output("wired", "Wired headphones") }
+            ?.let { return Output("wired", label(R.string.eq_output_wired, "Wired headphones")) }
         outs.firstOrNull { it.type == AudioDeviceInfo.TYPE_USB_HEADSET || it.type == AudioDeviceInfo.TYPE_USB_DEVICE }
-            ?.let { return Output("usb", "USB audio") }
-        return Output("speaker", "Phone speaker")
+            ?.let { return Output("usb", label(R.string.eq_output_usb, "USB audio")) }
+        return Output("speaker", label(R.string.eq_output_speaker, "Phone speaker"))
     }
 
     private fun AudioDeviceInfo.isBluetooth(): Boolean =

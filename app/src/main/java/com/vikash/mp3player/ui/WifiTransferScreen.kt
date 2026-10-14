@@ -41,6 +41,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.vikash.mp3player.R
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -80,8 +82,8 @@ fun WifiTransferScreen(onClose: () -> Unit) {
     Surface(Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize().systemBarsPadding()) {
             Row(Modifier.padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = onClose) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back") }
-                Text("Send songs from your computer", style = MaterialTheme.typography.titleMedium)
+                IconButton(onClick = onClose) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.common_back)) }
+                Text(stringResource(R.string.transfer_title), style = MaterialTheme.typography.titleMedium)
             }
             Column(
                 Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp),
@@ -91,18 +93,18 @@ fun WifiTransferScreen(onClose: () -> Unit) {
                     Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(Ampli.Gradient).padding(20.dp),
                 ) {
                     when {
-                        starting -> Text("Starting…", color = Color.White)
+                        starting -> Text(stringResource(R.string.transfer_starting), color = Color.White)
                         address == null -> {
-                            Text("Connect to Wi-Fi", color = Color.White, style = MaterialTheme.typography.titleLarge)
+                            Text(stringResource(R.string.transfer_connect_wifi), color = Color.White, style = MaterialTheme.typography.titleLarge)
                             Text(
-                                "Your phone and computer need to be on the same Wi-Fi (or the computer on your phone's hotspot).",
+                                stringResource(R.string.transfer_same_wifi),
                                 color = Color.White.copy(alpha = 0.9f),
                             )
                             Spacer(Modifier.height(10.dp))
-                            Button(onClick = { attempt++ }) { Text("Try again") }
+                            Button(onClick = { attempt++ }) { Text(stringResource(R.string.common_try_again)) }
                         }
                         else -> {
-                            Text("On your computer, open this address:", color = Color.White.copy(alpha = 0.9f))
+                            Text(stringResource(R.string.transfer_open_address), color = Color.White.copy(alpha = 0.9f))
                             Spacer(Modifier.height(8.dp))
                             SelectionContainer {
                                 Text(
@@ -117,13 +119,13 @@ fun WifiTransferScreen(onClose: () -> Unit) {
 
                 Card(Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Text("How it works", style = MaterialTheme.typography.titleMedium)
-                        Text("1. Put the computer on the same Wi-Fi as this phone.")
-                        Text("2. Type the address above into any browser (Chrome, Safari, Edge).")
-                        Text("3. Drag your music files onto the page.")
-                        Text("4. Keep this screen open until every file says Sent.")
+                        Text(stringResource(R.string.transfer_how_it_works), style = MaterialTheme.typography.titleMedium)
+                        Text(stringResource(R.string.transfer_step1))
+                        Text(stringResource(R.string.transfer_step2))
+                        Text(stringResource(R.string.transfer_step3))
+                        Text(stringResource(R.string.transfer_step4))
                         Text(
-                            "Files go straight to Music/Ampli on this phone. Nothing is uploaded to the internet, and the server stops when you leave this screen.",
+                            stringResource(R.string.transfer_privacy),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -131,7 +133,7 @@ fun WifiTransferScreen(onClose: () -> Unit) {
                 }
 
                 if (received.isNotEmpty()) {
-                    Text("Received (${received.size})", style = MaterialTheme.typography.titleMedium)
+                    Text(stringResource(R.string.transfer_received, received.size), style = MaterialTheme.typography.titleMedium)
                     received.forEach { name ->
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Default.CheckCircle, null, tint = MaterialTheme.colorScheme.primary)

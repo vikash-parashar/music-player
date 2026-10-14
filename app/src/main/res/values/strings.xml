@@ -1,14 +1,450 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Existing: app name, notification and Android Auto labels -->
     <string name="app_name">Ampli</string>
-    <!-- Lock screen, notification and car controls -->
     <string name="shuffle_on">Shuffle on</string>
     <string name="shuffle_off">Shuffle off</string>
     <string name="repeat_all">Repeat all</string>
     <string name="repeat_one">Repeat one</string>
     <string name="repeat_off">Repeat off</string>
-    <!-- Android Auto browse tabs -->
     <string name="tab_songs">Songs</string>
     <string name="tab_albums">Albums</string>
     <string name="tab_folders">Folders</string>
     <string name="widget_description">Play, pause and skip songs from your home screen</string>
+
+    <!-- Common buttons -->
+    <string name="common_ok">OK</string>
+    <string name="common_cancel">Cancel</string>
+    <string name="common_save">Save</string>
+    <string name="common_delete">Delete</string>
+    <string name="common_close">Close</string>
+    <string name="common_back">Back</string>
+    <string name="common_clear">Clear</string>
+    <string name="common_create">Create</string>
+    <string name="common_play">Play</string>
+    <string name="common_pause">Pause</string>
+    <string name="common_next">Next</string>
+    <string name="common_previous">Previous</string>
+    <string name="common_more_options">More options</string>
+    <string name="common_try_again">Try again</string>
+    <string name="common_get_pro">Get Pro</string>
+
+    <!-- Snackbar and toast messages -->
+    <string name="msg_added_to_favorites">Added \"%1$s\" to My Favorites</string>
+    <string name="msg_removed_from_favorites">Removed from My Favorites</string>
+    <string name="msg_already_in_favorites">Already in My Favorites</string>
+    <plurals name="msg_added_songs_to_favorites">
+        <item quantity="one">Added %1$d song to My Favorites</item>
+        <item quantity="other">Added %1$d songs to My Favorites</item>
+    </plurals>
+    <string name="msg_playlist_created">Playlist created</string>
+    <plurals name="msg_playlist_created_with_songs">
+        <item quantity="one">Created playlist with %1$d song</item>
+        <item quantity="other">Created playlist with %1$d songs</item>
+    </plurals>
+    <string name="msg_already_in_playlist">Already in %1$s</string>
+    <string name="msg_added_to_playlist">Added to %1$s</string>
+    <plurals name="msg_added_songs_to_playlist">
+        <item quantity="one">Added %1$d song to %2$s</item>
+        <item quantity="other">Added %1$d songs to %2$s</item>
+    </plurals>
+    <string name="msg_removed_song">Removed \"%1$s\"</string>
+    <string name="msg_playlist_deleted">Playlist deleted</string>
+    <plurals name="msg_added_songs_to_queue">
+        <item quantity="one">Added %1$d song to the queue</item>
+        <item quantity="other">Added %1$d songs to the queue</item>
+    </plurals>
+    <string name="msg_history_cleared">Listening history cleared</string>
+    <string name="msg_ab_a_set">A set. Tap again at the end of the part to loop.</string>
+    <string name="msg_ab_b_after_a">B must be after A</string>
+    <string name="online_search_failed">Search failed</string>
+    <string name="msg_downloading">Downloading \"%1$s\" to Music/MP3 Player</string>
+    <string name="msg_download_failed">Download failed</string>
+    <string name="msg_backup_saved">Backup saved</string>
+    <string name="msg_backup_failed">Backup failed</string>
+    <string name="msg_restored">Restored %1$d favorites, %2$d playlists and your settings</string>
+    <string name="msg_restore_failed">Restore failed</string>
+    <string name="msg_playing_next">Playing \"%1$s\" next</string>
+    <string name="msg_added_to_queue">Added to queue</string>
+    <string name="msg_ringtone_needs_local">Ringtones can be made from songs saved on this phone.</string>
+    <plurals name="msg_songs_deleted">
+        <item quantity="one">Song deleted</item>
+        <item quantity="other">%1$d songs deleted</item>
+    </plurals>
+    <string name="msg_song_info_saved">Song info saved</string>
+
+    <!-- Library, song menu and playlists -->
+    <string name="nav_library">Library</string>
+    <string name="nav_online">Online</string>
+    <string name="nav_videos">Videos</string>
+    <string name="nav_settings">Settings</string>
+    <string name="library_tab_artists">Artists</string>
+    <string name="library_tab_playlists">Playlists</string>
+    <string name="library_internal_storage">Internal storage</string>
+    <string name="library_unknown_album">Unknown album</string>
+    <string name="library_unknown_artist">Unknown artist</string>
+    <string name="library_unknown_title">Unknown</string>
+    <string name="library_my_favorites">My Favorites</string>
+    <string name="library_favorites_empty">No favorites yet. Tap the heart next to a song, or on the player screen, to add it here.</string>
+    <string name="library_most_played">Most played</string>
+    <string name="library_most_played_empty">Play some music and your most played songs show up here.</string>
+    <string name="library_recently_played">Recently played</string>
+    <string name="library_recently_played_empty">Songs you play show up here.</string>
+    <string name="library_recently_added">Recently added</string>
+    <string name="library_recently_added_empty">No songs yet.</string>
+    <string name="library_never_played">Never played</string>
+    <string name="library_never_played_empty">You\'ve played every song. Nice!</string>
+    <string name="library_permission_needed">Allow Ampli to see the music on this phone.</string>
+    <string name="library_allow_access">Allow access</string>
+    <string name="library_sort_songs">Sort songs</string>
+    <string name="library_search_hint">Search your music</string>
+    <string name="library_no_music">No music found on this phone yet. Downloaded songs appear here too.</string>
+    <string name="library_stats_title">Your listening stats</string>
+    <string name="library_stats_subtitle">Hours played, top songs and artists. Share it!</string>
+    <plurals name="library_song_count">
+        <item quantity="one">%1$d song</item>
+        <item quantity="other">%1$d songs</item>
+    </plurals>
+    <string name="library_favorites_hint">Tap the heart on any song to add it</string>
+    <string name="library_empty_for_now">Empty for now</string>
+    <string name="library_your_playlists">Your playlists</string>
+    <string name="library_new_playlist_subtitle">Make your own mix</string>
+    <string name="library_playlist_empty_short">Empty</string>
+    <string name="library_playlist_empty">This playlist is empty. Use \"Add to playlist\" in any song\'s menu, or long-press songs to add several at once.</string>
+    <string name="library_cancel_selection">Cancel selection</string>
+    <string name="library_selected_count">%1$d selected</string>
+    <string name="library_select_all">Select all</string>
+    <string name="library_play_selected">Play selected</string>
+    <string name="library_queue_selected">Add selected to queue</string>
+    <string name="library_playlist_selected">Add selected to a playlist</string>
+    <string name="library_favorite_selected">Add selected to My Favorites</string>
+    <string name="library_delete_selected">Delete selected from phone</string>
+    <plurals name="library_songs_long_press">
+        <item quantity="one">%1$d song · long-press to select</item>
+        <item quantity="other">%1$d songs · long-press to select</item>
+    </plurals>
+    <string name="library_shuffle_all">Shuffle all</string>
+    <string name="library_all_songs">All songs</string>
+    <string name="sort_title">Title</string>
+    <string name="sort_artist">Artist</string>
+    <string name="sort_recent">Recently added</string>
+    <string name="sort_longest">Longest first</string>
+    <string name="song_play_next">Play next</string>
+    <string name="song_add_to_queue">Add to queue</string>
+    <string name="song_add_to_playlist">Add to playlist…</string>
+    <string name="song_remove_from_playlist">Remove from this playlist</string>
+    <string name="song_set_ringtone">Set as ringtone</string>
+    <string name="song_edit_info">Edit song info</string>
+    <string name="song_delete_from_phone">Delete from phone</string>
+    <string name="favorites_add">Add to My Favorites</string>
+    <string name="favorites_remove">Remove from My Favorites</string>
+    <string name="playlist_new">New playlist</string>
+    <string name="playlist_rename">Rename playlist</string>
+    <string name="playlist_delete">Delete playlist</string>
+    <string name="playlist_delete_title">Delete \"%1$s\"?</string>
+    <string name="playlist_delete_text">The playlist goes away. Your songs stay on the phone.</string>
+    <string name="playlist_add_title">Add to playlist</string>
+    <plurals name="playlist_add_songs_title">
+        <item quantity="one">Add %1$d song to playlist</item>
+        <item quantity="other">Add %1$d songs to playlist</item>
+    </plurals>
+    <string name="playlist_name_label">Playlist name</string>
+
+    <!-- Settings and Ampli Pro -->
+    <string name="common_done">Done</string>
+    <string name="pro_name">Ampli Pro</string>
+    <string name="pro_you_have">You have Ampli Pro</string>
+    <string name="pro_thanks">Everything is unlocked forever. Thanks for supporting Ampli!</string>
+    <string name="pro_pitch">Pay once, keep it forever. No monthly fee, on every phone with this Google account.</string>
+    <string name="pro_feature_no_ads">No ads, ever</string>
+    <string name="pro_feature_videos">Video player for camera clips and downloads</string>
+    <string name="pro_feature_cast">Play on your TV or speaker with Chromecast</string>
+    <string name="pro_feature_recognize">Name that song: identify music playing around you</string>
+    <string name="pro_feature_recognize_soon">Name that song: identify music playing around you (coming soon)</string>
+    <string name="pro_get_for_price">Get Pro for %1$s</string>
+    <string name="pro_get">Get Ampli Pro</string>
+    <string name="settings_test_pro">Test build: try Pro</string>
+    <string name="settings_test_pro_desc">Purchases only work in the Play Store version. This switch is not in the release app.</string>
+    <string name="settings_seek_style">Progress bar style</string>
+    <string name="settings_seek_style_desc_pro">Pick how the bar moves while a song plays.</string>
+    <string name="settings_seek_style_desc_free">Classic and Squiggle are free. The rest come with Ampli Pro.</string>
+    <string name="seek_classic">Classic</string>
+    <string name="seek_squiggle">Squiggle wave</string>
+    <string name="seek_aurora">Aurora</string>
+    <string name="seek_heartbeat">Heartbeat</string>
+    <string name="seek_neon">Neon tube</string>
+    <string name="seek_gradient">Flowing gradient</string>
+    <string name="seek_pulse">Beat pulse</string>
+    <string name="seek_liquid">Liquid fill</string>
+    <string name="seek_ember">Ember fire</string>
+    <string name="seek_equalizer">Live equalizer</string>
+    <string name="settings_theme">Day / Night mode</string>
+    <string name="settings_theme_desc">Auto follows your phone\'s dark mode.</string>
+    <string name="settings_theme_auto">Auto</string>
+    <string name="settings_theme_day">Day</string>
+    <string name="settings_theme_night">Night</string>
+    <string name="settings_sleep_timer">Sleep timer</string>
+    <string name="settings_sleep_after_song">Music stops when this song ends.</string>
+    <string name="settings_sleep_stops_in">Music stops in %1$s</string>
+    <string name="settings_sleep_desc">Stop the music after a while.</string>
+    <string name="settings_sleep_end_of_song">End of this song</string>
+    <string name="settings_minutes">%1$d min</string>
+    <string name="settings_equalizer">Equalizer</string>
+    <string name="settings_equalizer_unavailable">Start playing a song to use the equalizer. Some phones don\'t support one.</string>
+    <string name="settings_equalizer_output">Now adjusting: %1$s. Speaker, headphones and each Bluetooth device (like your car) keep their own settings.</string>
+    <string name="eq_output_speaker">Phone speaker</string>
+    <string name="eq_output_wired">Wired headphones</string>
+    <string name="eq_output_usb">USB audio</string>
+    <string name="settings_backup">Backup and restore</string>
+    <string name="settings_backup_desc">Keep your favorites, settings, equalizer and listening history safe. Save to Google Drive to move them to a new phone.</string>
+    <string name="settings_backup_button">Back up</string>
+    <string name="settings_restore_button">Restore</string>
+    <string name="settings_transfer_desc">No cable needed. Open an address on any laptop on the same Wi-Fi and drag your music in.</string>
+    <string name="settings_transfer_start">Start Wi-Fi transfer</string>
+    <string name="settings_duplicates">Clean up duplicates</string>
+    <string name="settings_duplicates_desc">Find songs saved more than once, keep the best copy and free up space.</string>
+    <string name="settings_duplicates_button">Find duplicates</string>
+    <string name="settings_even_volume">Even volume</string>
+    <string name="settings_even_volume_desc">Loud songs are turned down to match quieter ones, so you don\'t reach for the volume between tracks. Works with songs that have ReplayGain tags.</string>
+    <string name="settings_fade">Fade between songs</string>
+    <string name="settings_fade_desc">Each song fades out at the end and the next one fades in, so nothing stops suddenly.</string>
+    <string name="settings_off">Off</string>
+    <string name="settings_seconds">%1$d s</string>
+    <string name="settings_folders">Music folders</string>
+    <string name="settings_folders_desc">Hide folders you don\'t want in your Library, like WhatsApp audio or call recordings.</string>
+    <string name="settings_folders_hidden">%1$d hidden. Their songs stay on the phone but don\'t show in Ampli.</string>
+    <string name="settings_folders_choose">Choose folders</string>
+    <string name="settings_folders_none">No folders found yet.</string>
+    <string name="settings_car_mode_desc">Huge buttons, swipe to change songs, and say a song or artist to play it. Keep your eyes on the road.</string>
+    <string name="settings_car_mode_start">Start car mode</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_language_desc">Choose the language for Ampli.</string>
+    <string name="settings_language_system">Phone default</string>
+    <string name="settings_language_english">English</string>
+    <string name="settings_language_hindi">हिंदी</string>
+    <string name="pro_purchase_test_build">Payments work once Ampli is on the Play Store. For now, use \"Test build: try Pro\" in Settings.</string>
+    <string name="pro_purchase_failed">Couldn\'t reach Google Play. Check your connection and try again.</string>
+
+    <!-- Now playing -->
+    <string name="player_close">Close player</string>
+    <string name="player_queue">Queue</string>
+    <string name="player_now_playing">Now playing</string>
+    <string name="player_remove_queue">Remove queue</string>
+    <string name="player_remove_from_queue">Remove from queue</string>
+    <string name="player_shuffle">Shuffle</string>
+    <string name="player_repeat">Repeat</string>
+    <string name="player_ab_on">A-B on</string>
+    <string name="player_ab_set_b">Set B</string>
+    <string name="player_ab_repeat">A-B repeat</string>
+    <string name="player_speed_pitch">Speed and pitch</string>
+    <string name="player_speed_value">Speed: %1$sx</string>
+    <string name="player_pitch_value">Pitch: %1$sx</string>
+    <string name="player_reset">Reset</string>
+
+    <!-- Casting -->
+    <string name="common_not_now">Not now</string>
+    <string name="cast_play_on_tv">Play on TV or speaker</string>
+    <string name="cast_unavailable_title">Casting isn\'t available</string>
+    <string name="cast_unavailable_text">Casting needs Google Play services, which this device doesn\'t have.</string>
+    <string name="cast_pro_title">Play on your TV or speaker</string>
+    <string name="cast_pro_text">Send your music to a Chromecast, Google/Nest speaker or Android TV. Casting is part of Ampli Pro, a one-time purchase.</string>
+    <string name="cast_playing_on">Playing on %1$s</string>
+    <string name="cast_pick_device">Play on a device</string>
+    <string name="cast_searching">Looking for TVs and speakers on your Wi-Fi…</string>
+    <string name="cast_same_wifi">The phone and the TV or speaker need to be on the same Wi-Fi.</string>
+    <string name="cast_connected_text">Use the player as usual; the music plays on %1$s.</string>
+    <string name="cast_stop">Stop casting</string>
+    <string name="cast_needs_same_wifi">To cast songs from this phone, connect it to the same Wi-Fi as the TV or speaker.</string>
+
+    <!-- Car mode -->
+    <string name="car_mode">Car mode</string>
+    <string name="car_exit">Exit car mode</string>
+    <string name="car_not_found">Couldn\'t find \"%1$s\"</string>
+    <string name="car_playing">Playing %1$s</string>
+    <string name="car_voice_prompt">Say a song, artist or album</string>
+    <string name="car_voice_unavailable">Voice search isn\'t available on this phone</string>
+    <string name="car_nothing_playing">Nothing playing</string>
+    <string name="car_tap_mic">Tap the mic and say a song or an artist</string>
+    <string name="car_swipe_hint">Swipe left or right anywhere to change songs</string>
+    <string name="car_voice_search">Voice search</string>
+
+    <!-- Deleting songs -->
+    <string name="delete_only_local">Only songs saved on this phone can be deleted.</string>
+    <string name="delete_failed">Couldn\'t delete this song.</string>
+    <string name="delete_needs_ok">Ampli needs your OK to delete this file.</string>
+    <string name="delete_needs_storage">Ampli needs storage access to delete files.</string>
+    <plurals name="delete_title">
+        <item quantity="one">Delete this song?</item>
+        <item quantity="other">Delete %1$d songs?</item>
+    </plurals>
+    <string name="delete_and_more">and %1$d more</string>
+    <string name="delete_warning">The files are removed from this phone. This can\'t be undone.</string>
+    <string name="delete_deleting">Deleting…</string>
+
+    <!-- Duplicate finder -->
+    <string name="dup_title">Duplicate songs</string>
+    <string name="dup_none">No duplicates found. Every song on this phone is saved only once.</string>
+    <plurals name="dup_summary">
+        <item quantity="one">%1$d song is saved more than once. The biggest copy is kept; ticked copies will be deleted.</item>
+        <item quantity="other">%1$d songs are saved more than once. The biggest copy is kept; ticked copies will be deleted.</item>
+    </plurals>
+    <string name="dup_size_unknown">size unknown</string>
+    <string name="dup_will_delete">delete</string>
+    <string name="dup_will_keep">keep</string>
+    <string name="dup_nothing_ticked">Nothing ticked</string>
+    <plurals name="dup_delete_button">
+        <item quantity="one">Delete %1$d copy · free %2$s</item>
+        <item quantity="other">Delete %1$d copies · free %2$s</item>
+    </plurals>
+
+    <!-- Lyrics -->
+    <string name="lyrics_title">Lyrics</string>
+    <string name="lyrics_file_empty">That file has no lyrics in it.</string>
+    <string name="lyrics_none">No lyrics for this song yet</string>
+    <string name="lyrics_none_desc">Add a .lrc file for words that scroll along with the music, or paste plain lyrics.</string>
+    <string name="lyrics_choose_file">Choose file</string>
+    <string name="lyrics_paste">Paste</string>
+    <string name="lyrics_paste_title">Paste lyrics</string>
+    <string name="lyrics_paste_hint">Plain lyrics, or LRC lines like [01:02.50] words</string>
+    <string name="lyrics_remove">Remove these lyrics</string>
+
+    <!-- Online music -->
+    <string name="online_not_configured">Online music is off in this build. Add JAMENDO_CLIENT_ID to local.properties (see README).</string>
+    <string name="online_search_hint">Search songs, artists, genres</string>
+    <string name="online_popular">Popular this week</string>
+    <string name="online_results">Results</string>
+    <string name="online_error">Couldn\'t reach the music catalog. Check your connection.\n(%1$s)</string>
+    <string name="online_no_results">No songs found.</string>
+    <string name="online_download">Download</string>
+    <string name="online_credit">Music provided by Jamendo under Creative Commons licenses.</string>
+    <string name="online_license_no_download">This track\'s license does not allow downloads</string>
+
+    <!-- Backup -->
+    <string name="backup_write_failed">Couldn\'t write the backup file</string>
+    <string name="backup_open_failed">Couldn\'t open the file</string>
+    <string name="backup_not_ampli">This isn\'t an Ampli backup file</string>
+
+    <!-- Name that song -->
+    <string name="recognize_title">Name that song</string>
+    <string name="recognize_pro_text">Hear a song in a shop, a car or on TV? Ampli tells you what it is. Part of Ampli Pro, a one-time purchase.</string>
+    <string name="recognize_coming_soon">Song recognition is coming soon in an update.</string>
+    <string name="recognize_coming_soon_short">Song recognition is coming soon.</string>
+    <string name="recognize_mic_failed">Couldn\'t use the microphone. Is another app using it?</string>
+    <string name="recognize_mic_denied">Ampli needs the microphone to hear the song. Allow it and try again.</string>
+    <string name="recognize_searching">Finding the song…</string>
+    <string name="recognize_listening">Listening… hold the phone near the music</string>
+    <string name="recognize_open_in">Open in %1$s</string>
+    <string name="recognize_not_found">Couldn\'t recognise that one. Get closer to the music and try again.</string>
+    <string name="recognize_listen_again">Listen again</string>
+    <string name="recognize_service_error">Couldn\'t reach the recognition service. Try again.</string>
+    <string name="recognize_no_internet">No internet connection? Try again.</string>
+    <string name="recognize_bad_answer">Couldn\'t understand the answer. Try again.</string>
+    <string name="recognize_not_working">Recognition isn\'t working right now. Try again later.</string>
+
+    <!-- Ringtone maker -->
+    <string name="ringtone_target_call">Call ringtone</string>
+    <string name="ringtone_target_notification">Notification (SMS)</string>
+    <string name="ringtone_target_alarm">Alarm</string>
+    <string name="ringtone_what_call">call ringtone</string>
+    <string name="ringtone_what_notification">notification sound</string>
+    <string name="ringtone_what_alarm">alarm sound</string>
+    <string name="ringtone_and">and</string>
+    <string name="ringtone_set_as">Set as %1$s</string>
+    <string name="ringtone_saved_not_set">Saved, but this phone didn\'t let Ampli change the sound. Pick it in Sound settings.</string>
+    <string name="ringtone_saved">Saved to Ringtones</string>
+    <string name="ringtone_saved_pick_later">Saved. You can pick it any time in your phone\'s Sound settings.</string>
+    <string name="ringtone_close">Close ringtone maker</string>
+    <string name="ringtone_title">Ringtone maker</string>
+    <string name="ringtone_start">Start</string>
+    <string name="ringtone_end">End</string>
+    <string name="ringtone_length">Length %1$s</string>
+    <string name="ringtone_previewing">Playing your selection</string>
+    <string name="ringtone_preview">Preview selection</string>
+    <string name="ringtone_use_as">Use it as</string>
+    <string name="ringtone_save_only">Save only</string>
+    <string name="ringtone_cutting">Cutting your ringtone…</string>
+    <string name="ringtone_err_generic">Couldn\'t make the ringtone. Try another song.</string>
+    <string name="ringtone_save">Save ringtone</string>
+    <string name="ringtone_save_and_set">Save and set</string>
+    <string name="ringtone_footer">The clip is cut without re-encoding, so it sounds exactly like the song. Works with MP3 and M4A/AAC files.</string>
+    <string name="ringtone_permission_title">Allow Ampli to change sounds</string>
+    <string name="ringtone_permission_text">Your clip is saved. Android asks before an app changes the phone\'s ringtone, notification or alarm sound. Turn on \"Allow modifying system settings\" for Ampli, then come back and it will be set.</string>
+    <string name="ringtone_open_settings">Open settings</string>
+    <string name="ringtone_nudge_earlier">%1$s 0.1 seconds earlier</string>
+    <string name="ringtone_nudge_later">%1$s 0.1 seconds later</string>
+    <string name="ringtone_err_read">Ampli couldn\'t read this song. It may have been moved or deleted.</string>
+    <string name="ringtone_err_format">Ringtones can be made from MP3 and M4A/AAC songs. This one is %1$s.</string>
+    <string name="ringtone_err_format_unknown">Ringtones can be made from MP3 and M4A/AAC songs. This one is an unknown format.</string>
+    <string name="ringtone_err_no_audio">This file has no audio Ampli can cut.</string>
+    <string name="ringtone_err_empty_part">That part of the song is empty. Pick another section.</string>
+    <string name="ringtone_err_open">Ampli couldn\'t open this song.</string>
+    <string name="ringtone_err_damaged">This MP3 file looks damaged.</string>
+    <string name="ringtone_err_save">Couldn\'t save the ringtone. Is the storage full?</string>
+    <string name="ringtone_err_save_folder">Couldn\'t save to %1$s. Allow storage access for Ampli and try again.</string>
+
+    <!-- Edit song info -->
+    <string name="tags_only_mp3">Only MP3 files can be edited for now.</string>
+    <string name="tags_open_failed">Couldn\'t open this song.</string>
+    <string name="tags_save_failed">Couldn\'t save this song.</string>
+    <string name="tags_save_failed_unchanged">Couldn\'t save this song. It was left unchanged.</string>
+    <string name="tags_unsupported">This file\'s tags use a format Ampli can\'t edit yet.</string>
+    <string name="tags_not_allowed">Android didn\'t allow editing this file.</string>
+    <string name="tags_needs_ok">Ampli needs your OK to change this file.</string>
+    <string name="tags_needs_storage">Ampli needs storage access to change this file.</string>
+    <string name="tags_title">Title</string>
+    <string name="tags_artist">Artist</string>
+    <string name="tags_album">Album</string>
+    <string name="tags_footer">Saved inside the MP3 file, so it shows up the same in every app.</string>
+    <string name="tags_saving">Saving…</string>
+
+    <!-- Listening stats -->
+    <string name="stats_hours_minutes">%1$d h %2$d min</string>
+    <string name="stats_minutes">%1$d min</string>
+    <string name="stats_title">Your listening</string>
+    <string name="stats_share_header">My music on Ampli MP3 Player 🎧</string>
+    <string name="stats_share_month">This month: %1$s of music</string>
+    <string name="stats_share_top_song">Top song: %1$s by %2$s</string>
+    <string name="stats_share_top_artist">Top artist: %1$s</string>
+    <string name="stats_share_footer">Ampli: your music, no monthly fee. Pay once, play forever.</string>
+    <string name="stats_share_title">Share your stats</string>
+    <string name="stats_share">Share</string>
+    <string name="stats_this_month">This month</string>
+    <string name="stats_all_time">All time: %1$s</string>
+    <plurals name="stats_plays">
+        <item quantity="one">%1$d play</item>
+        <item quantity="other">%1$d plays</item>
+    </plurals>
+    <string name="stats_empty">Play some music and your top songs and artists show up here. Everything stays on this phone.</string>
+    <string name="stats_top_songs">Top songs</string>
+    <string name="stats_top_artists">Top artists</string>
+    <string name="stats_privacy">Stats are kept only on this phone. Nothing is uploaded.</string>
+    <string name="stats_clear">Clear listening history</string>
+    <string name="stats_clear_title">Clear listening history?</string>
+    <string name="stats_clear_text">Play counts, Most played and these stats start again from zero.</string>
+
+    <!-- Videos -->
+    <string name="videos_permission_needed">Allow Ampli to see the videos on this phone, like camera clips and downloads.</string>
+    <string name="videos_none">No videos on this phone yet. Camera recordings and downloaded videos show up here.</string>
+    <string name="videos_all_count">All %1$d</string>
+    <string name="videos_locked_title">Watch your videos in Ampli</string>
+    <string name="videos_locked_text">Camera clips, WhatsApp and downloaded videos, full screen or in a floating window.</string>
+    <string name="videos_untitled">Video</string>
+
+    <!-- Wi-Fi transfer -->
+    <string name="transfer_title">Send songs from your computer</string>
+    <string name="transfer_starting">Starting…</string>
+    <string name="transfer_connect_wifi">Connect to Wi-Fi</string>
+    <string name="transfer_same_wifi">Your phone and computer need to be on the same Wi-Fi (or the computer on your phone\'s hotspot).</string>
+    <string name="transfer_open_address">On your computer, open this address:</string>
+    <string name="transfer_how_it_works">How it works</string>
+    <string name="transfer_step1">1. Put the computer on the same Wi-Fi as this phone.</string>
+    <string name="transfer_step2">2. Type the address above into any browser (Chrome, Safari, Edge).</string>
+    <string name="transfer_step3">3. Drag your music files onto the page.</string>
+    <string name="transfer_step4">4. Keep this screen open until every file says Sent.</string>
+    <string name="transfer_privacy">Files go straight to Music/Ampli on this phone. Nothing is uploaded to the internet, and the server stops when you leave this screen.</string>
+    <string name="transfer_received">Received (%1$d)</string>
+
+    <!-- Home screen widget -->
+    <string name="widget_open_app">Open Ampli</string>
+    <string name="widget_tap_play">Tap play to resume your music</string>
 </resources>

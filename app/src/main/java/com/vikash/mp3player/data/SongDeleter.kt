@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.IntentSender
 import android.os.Build
 import android.provider.MediaStore
+import com.vikash.mp3player.R
 
 /** Deletes songs from the phone. Android asks the user first for files other apps made. */
 object SongDeleter {
@@ -22,7 +23,7 @@ object SongDeleter {
 
     fun delete(context: Context, songs: List<Song>): Result {
         val local = songs.filter { !it.isOnline }
-        if (local.isEmpty()) return Result.Failed("Only songs saved on this phone can be deleted.")
+        if (local.isEmpty()) return Result.Failed(context.getString(R.string.delete_only_local))
         val resolver = context.contentResolver
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             val request = MediaStore.createDeleteRequest(resolver, local.map { it.uri })
@@ -39,7 +40,7 @@ object SongDeleter {
                 }
                 return if (deleted > 0) Result.Deleted(deleted) else Result.NeedsStoragePermission
             } catch (e: Exception) {
-                return if (deleted > 0) Result.Deleted(deleted) else Result.Failed("Couldn't delete this song.")
+                return if (deleted > 0) Result.Deleted(deleted) else Result.Failed(context.getString(R.string.delete_failed))
             }
         }
         return Result.Deleted(deleted)

@@ -48,6 +48,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.vikash.mp3player.R
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -87,19 +89,20 @@ fun CarModeScreen(
         val phrases = result.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS).orEmpty()
         if (result.resultCode != Activity.RESULT_OK || phrases.isEmpty()) return@rememberLauncherForActivityResult
         val match = VoiceMatch.find(phrases, songs)
-        heard = if (match == null) "Couldn't find \"${phrases.first()}\"" else "Playing ${match.label}"
+        heard = if (match == null) context.getString(R.string.car_not_found, phrases.first())
+            else context.getString(R.string.car_playing, match.label)
         match?.let { onPlay(it.songs, 0, it.label) }
     }
 
     fun listen() {
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
             .putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-            .putExtra(RecognizerIntent.EXTRA_PROMPT, "Say a song, artist or album")
+            .putExtra(RecognizerIntent.EXTRA_PROMPT, context.getString(R.string.car_voice_prompt))
             .putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 5)
         try {
             voice.launch(intent)
         } catch (e: ActivityNotFoundException) {
-            heard = "Voice search isn't available on this phone"
+            heard = context.getString(R.string.car_voice_unavailable)
         }
     }
 
@@ -118,9 +121,9 @@ fun CarModeScreen(
     ) {
         Column(Modifier.fillMaxSize().padding(20.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Car mode", color = Color.White.copy(alpha = 0.6f), fontSize = 18.sp, modifier = Modifier.weight(1f))
+                Text(stringResource(R.string.car_mode), color = Color.White.copy(alpha = 0.6f), fontSize = 18.sp, modifier = Modifier.weight(1f))
                 IconButton(onClick = onClose, modifier = Modifier.size(56.dp)) {
-                    Icon(Icons.Default.Close, "Exit car mode", tint = Color.White, modifier = Modifier.size(32.dp))
+                    Icon(Icons.Default.Close, stringResource(R.string.car_exit), tint = Color.White, modifier = Modifier.size(32.dp))
                 }
             }
             Column(
@@ -129,13 +132,13 @@ fun CarModeScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
-                    current?.title ?: "Nothing playing",
+                    current?.title ?: stringResource(R.string.car_nothing_playing),
                     color = Color.White, fontSize = 34.sp, fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center, maxLines = 2, overflow = TextOverflow.Ellipsis,
                 )
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    current?.artist ?: "Tap the mic and say a song or an artist",
+                    current?.artist ?: stringResource(R.string.car_tap_mic),
                     color = Color.White.copy(alpha = 0.7f), fontSize = 22.sp,
                     textAlign = TextAlign.Center, maxLines = 1, overflow = TextOverflow.Ellipsis,
                 )
@@ -144,23 +147,23 @@ fun CarModeScreen(
                     Text(it, color = Ampli.Rose, fontSize = 18.sp, textAlign = TextAlign.Center)
                 }
                 Spacer(Modifier.height(8.dp))
-                Text("Swipe left or right anywhere to change songs", color = Color.White.copy(alpha = 0.4f), fontSize = 14.sp)
+                Text(stringResource(R.string.car_swipe_hint), color = Color.White.copy(alpha = 0.4f), fontSize = 14.sp)
             }
             Row(Modifier.fillMaxWidth().height(150.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                BigButton(Icons.Default.SkipPrevious, "Previous", Modifier.weight(1f)) { player.previous() }
+                BigButton(Icons.Default.SkipPrevious, stringResource(R.string.common_previous), Modifier.weight(1f)) { player.previous() }
                 BigButton(
                     if (state.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
-                    if (state.isPlaying) "Pause" else "Play",
+                    stringResource(if (state.isPlaying) R.string.common_pause else R.string.common_play),
                     Modifier.weight(1.3f), highlight = true,
                 ) { player.togglePlay() }
-                BigButton(Icons.Default.SkipNext, "Next", Modifier.weight(1f)) { player.next() }
+                BigButton(Icons.Default.SkipNext, stringResource(R.string.common_next), Modifier.weight(1f)) { player.next() }
             }
             Spacer(Modifier.height(16.dp))
             Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                 Box(
                     Modifier.size(96.dp).clip(CircleShape).background(Ampli.Gradient).clickable { listen() },
                     contentAlignment = Alignment.Center,
-                ) { Icon(Icons.Default.Mic, "Voice search", tint = Color.White, modifier = Modifier.size(48.dp)) }
+                ) { Icon(Icons.Default.Mic, stringResource(R.string.car_voice_search), tint = Color.White, modifier = Modifier.size(48.dp)) }
             }
         }
     }

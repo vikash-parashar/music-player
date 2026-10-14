@@ -38,6 +38,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.vikash.mp3player.R
 import android.widget.Toast
 import com.vikash.mp3player.data.Song
 import androidx.core.content.ContextCompat
@@ -104,6 +106,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     var showTransfer by rememberSaveable { mutableStateOf(false) }
     var showCarMode by rememberSaveable { mutableStateOf(false) }
     var showDuplicates by rememberSaveable { mutableStateOf(false) }
+    var showRecognize by remember { mutableStateOf(false) }
     val snackbar = remember { SnackbarHostState() }
 
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
@@ -125,7 +128,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
 
     Box(Modifier.fillMaxSize()) {
         Scaffold(
-            topBar = { BrandHeader(showAdFreePill = !adsRemoved, onAdFreeClick = { tab = 3 }) },
+            topBar = { BrandHeader(showAdFreePill = !adsRemoved, onAdFreeClick = { tab = 3 }, onRecognize = { showRecognize = true }) },
             snackbarHost = { SnackbarHost(snackbar) },
             bottomBar = {
                 Column {
@@ -134,19 +137,19 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                     NavigationBar {
                         NavigationBarItem(
                             selected = tab == 0, onClick = { tab = 0 },
-                            icon = { Icon(Icons.Default.LibraryMusic, null) }, label = { Text("Library") },
+                            icon = { Icon(Icons.Default.LibraryMusic, null) }, label = { Text(stringResource(R.string.nav_library)) },
                         )
                         NavigationBarItem(
                             selected = tab == 1, onClick = { tab = 1 },
-                            icon = { Icon(Icons.Default.Public, null) }, label = { Text("Online") },
+                            icon = { Icon(Icons.Default.Public, null) }, label = { Text(stringResource(R.string.nav_online)) },
                         )
                         NavigationBarItem(
                             selected = tab == 2, onClick = { tab = 2 },
-                            icon = { Icon(Icons.Default.VideoLibrary, null) }, label = { Text("Videos") },
+                            icon = { Icon(Icons.Default.VideoLibrary, null) }, label = { Text(stringResource(R.string.nav_videos)) },
                         )
                         NavigationBarItem(
                             selected = tab == 3, onClick = { tab = 3 },
-                            icon = { Icon(Icons.Default.Settings, null) }, label = { Text("Settings") },
+                            icon = { Icon(Icons.Default.Settings, null) }, label = { Text(stringResource(R.string.nav_settings)) },
                         )
                     }
                 }
@@ -160,8 +163,8 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                         currentId = currentId,
                         onRequestPermission = { permissionLauncher.launch(launchPermissions) },
                         onPlay = vm.player::play,
-                        onPlayNext = { vm.player.playNext(it); vm.notify("Playing \"${it.title}\" next") },
-                        onAddToQueue = { vm.player.addToQueue(it); vm.notify("Added to queue") },
+                        onPlayNext = { vm.player.playNext(it); vm.notify(context.getString(R.string.msg_playing_next, it.title)) },
+                        onAddToQueue = { vm.player.addToQueue(it); vm.notify(context.getString(R.string.msg_added_to_queue)) },
                         favorites = favorites,
                         onToggleFavorite = { vm.toggleFavorite(it.id, it.title) },
                         onSetRingtone = { ringtoneSong = it; showRingtone = true },
@@ -182,8 +185,8 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                         onQueryChange = { vm.searchOnline(it) },
                         onLoadPopular = { vm.searchOnline("", debounce = false) },
                         onPlay = vm.player::play,
-                        onPlayNext = { vm.player.playNext(it); vm.notify("Playing \"${it.title}\" next") },
-                        onAddToQueue = { vm.player.addToQueue(it); vm.notify("Added to queue") },
+                        onPlayNext = { vm.player.playNext(it); vm.notify(context.getString(R.string.msg_playing_next, it.title)) },
+                        onAddToQueue = { vm.player.addToQueue(it); vm.notify(context.getString(R.string.msg_added_to_queue)) },
                         onDownload = vm::download,
                     )
                     2 -> if (adsRemoved) VideosScreen(videos, onLoad = vm::loadVideos)
@@ -216,11 +219,13 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                     // Only files on the phone can be cut; online streams aren't in the library.
                     val song = library.songs.firstOrNull { it.id == player.current?.mediaId }
                     if (song != null) { ringtoneSong = song; showRingtone = true }
-                    else Toast.makeText(context, "Ringtones can be made from songs saved on this phone.", Toast.LENGTH_SHORT).show()
+                    else Toast.makeText(context, context.getString(R.string.msg_ringtone_needs_local), Toast.LENGTH_SHORT).show()
                 },
                 abLoop = abLoop,
                 onCycleAb = vm::cycleAbRepeat,
                 onCarMode = { showCarMode = true },
+                isPro = adsRemoved,
+                onGetPro = onRemoveAds,
                 onClose = { showPlayer = false },
             )
         }
@@ -264,6 +269,8 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
             CarModeScreen(player, vm.player, library.songs, onPlay = vm.player::play, onClose = { showCarMode = false })
         }
 
+        if (showRecognize) RecognizeDialog(isPro = adsRemoved, onGetPro = onRemoveAds, onDismiss = { showRecognize = false })
+
         deleteSongs?.let { songs ->
             key(songs.map { it.id }) {
                 DeleteSongsDialog(
@@ -272,7 +279,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                     onDeleted = { count ->
                         deleteSongs = null
                         vm.loadLibrary()
-                        Toast.makeText(context, if (count == 1) "Song deleted" else "$count songs deleted", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, context.resources.getQuantityString(R.plurals.msg_songs_deleted, count, count), Toast.LENGTH_SHORT).show()
                     },
                 )
             }
@@ -286,7 +293,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                     onSaved = {
                         tagSong = null
                         vm.loadLibrary()
-                        Toast.makeText(context, "Song info saved", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, context.getString(R.string.msg_song_info_saved), Toast.LENGTH_SHORT).show()
                     },
                 )
             }

@@ -31,6 +31,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
+import com.vikash.mp3player.R
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -49,19 +52,20 @@ fun DuplicatesScreen(songs: List<Song>, onDelete: (List<Song>) -> Unit, onClose:
     var ticked by remember(groups) { mutableStateOf(groups.flatMap { it.drop(1) }.map { it.id }.toSet()) }
     val toDelete = remember(ticked, groups) { groups.flatten().filter { it.id in ticked } }
     val freed = toDelete.sumOf { it.sizeBytes }
+    val sizeUnknown = stringResource(R.string.dup_size_unknown)
 
     Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).systemBarsPadding()) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onClose) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back") }
-            Text("Duplicate songs", style = MaterialTheme.typography.titleLarge)
+            IconButton(onClick = onClose) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.common_back)) }
+            Text(stringResource(R.string.dup_title), style = MaterialTheme.typography.titleLarge)
         }
         if (groups.isEmpty()) {
             Box(Modifier.fillMaxSize().padding(32.dp), contentAlignment = Alignment.Center) {
-                Text("No duplicates found. Every song on this phone is saved only once.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(stringResource(R.string.dup_none), color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         } else {
             Text(
-                "${groups.size} songs are saved more than once. The biggest copy is kept; ticked copies will be deleted.",
+                pluralStringResource(R.plurals.dup_summary, groups.size, groups.size),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
             )
@@ -88,9 +92,10 @@ fun DuplicatesScreen(songs: List<Song>, onDelete: (List<Song>) -> Unit, onClose:
                                 ) {
                                     Checkbox(on, { ticked = if (on) ticked - song.id else ticked + song.id })
                                     Column(Modifier.weight(1f)) {
-                                        Text(song.folder.ifBlank { "Internal storage" }, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                        Text(song.folder.ifBlank { stringResource(R.string.library_internal_storage) }, maxLines = 1, overflow = TextOverflow.Ellipsis)
                                         Text(
-                                            "${formatDuration(song.durationMs)} · ${formatFileSize(song.sizeBytes)}" + if (on) " · delete" else " · keep",
+                                            "${formatDuration(song.durationMs)} · ${formatFileSize(song.sizeBytes, sizeUnknown)} · " +
+                                                if (on) stringResource(R.string.dup_will_delete) else stringResource(R.string.dup_will_keep),
                                             style = MaterialTheme.typography.bodySmall,
                                             color = if (on) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
                                         )
@@ -107,14 +112,17 @@ fun DuplicatesScreen(songs: List<Song>, onDelete: (List<Song>) -> Unit, onClose:
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
                 modifier = Modifier.fillMaxWidth().padding(16.dp),
             ) {
-                Text(if (toDelete.isEmpty()) "Nothing ticked" else "Delete ${toDelete.size} copies · free ${formatFileSize(freed)}")
+                Text(
+                    if (toDelete.isEmpty()) stringResource(R.string.dup_nothing_ticked)
+                    else pluralStringResource(R.plurals.dup_delete_button, toDelete.size, toDelete.size, formatFileSize(freed, sizeUnknown))
+                )
             }
         }
     }
 }
 
-internal fun formatFileSize(bytes: Long): String = when {
-    bytes <= 0 -> "size unknown"
+internal fun formatFileSize(bytes: Long, unknown: String): String = when {
+    bytes <= 0 -> unknown
     bytes >= 1_000_000_000 -> String.format(Locale.US, "%.1f GB", bytes / 1e9)
     bytes >= 1_000_000 -> String.format(Locale.US, "%.1f MB", bytes / 1e6)
     else -> "${bytes / 1000} KB"

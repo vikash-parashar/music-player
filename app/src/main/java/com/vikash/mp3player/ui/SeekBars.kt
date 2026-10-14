@@ -1,5 +1,6 @@
 package com.vikash.mp3player.ui
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -27,6 +28,7 @@ import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.vikash.mp3player.R
 import com.vikash.mp3player.ui.theme.Ampli
 import kotlin.math.abs
 import kotlin.math.exp
@@ -34,17 +36,17 @@ import kotlin.math.floor
 import kotlin.math.sin
 
 /** Animated seek bar styles the user can pick in Settings. The first two are free, the rest come with Ampli Pro. */
-enum class SeekStyle(val label: String, val pro: Boolean) {
-    Classic("Classic", false),
-    Squiggle("Squiggle wave", false),
-    Aurora("Aurora", true),
-    Heartbeat("Heartbeat", true),
-    Neon("Neon tube", true),
-    Gradient("Flowing gradient", true),
-    Pulse("Beat pulse", true),
-    Liquid("Liquid fill", true),
-    Ember("Ember fire", true),
-    Equalizer("Live equalizer", true),
+enum class SeekStyle(@StringRes val labelRes: Int, val pro: Boolean) {
+    Classic(R.string.seek_classic, false),
+    Squiggle(R.string.seek_squiggle, false),
+    Aurora(R.string.seek_aurora, true),
+    Heartbeat(R.string.seek_heartbeat, true),
+    Neon(R.string.seek_neon, true),
+    Gradient(R.string.seek_gradient, true),
+    Pulse(R.string.seek_pulse, true),
+    Liquid(R.string.seek_liquid, true),
+    Ember(R.string.seek_ember, true),
+    Equalizer(R.string.seek_equalizer, true),
 }
 
 /**

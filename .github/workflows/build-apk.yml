@@ -26,9 +26,11 @@ jobs:
       - name: Write local.properties
         env:
           JAMENDO_CLIENT_ID: ${{ secrets.JAMENDO_CLIENT_ID }}
+          AUDD_API_TOKEN: ${{ secrets.AUDD_API_TOKEN }}
         run: |
           echo "sdk.dir=$ANDROID_HOME" > local.properties
           echo "JAMENDO_CLIENT_ID=${JAMENDO_CLIENT_ID}" >> local.properties
+          echo "AUDD_API_TOKEN=${AUDD_API_TOKEN}" >> local.properties
 
       - name: Build debug APK
         run: |

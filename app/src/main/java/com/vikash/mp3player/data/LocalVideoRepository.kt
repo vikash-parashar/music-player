@@ -5,6 +5,7 @@ import android.content.Context
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
+import com.vikash.mp3player.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -51,7 +52,7 @@ class LocalVideoRepository(private val context: Context) {
                 videos += Video(
                     id = id,
                     uri = ContentUris.withAppendedId(collection, id),
-                    title = (c.getString(nameCol) ?: "Video").substringBeforeLast('.'),
+                    title = c.getString(nameCol)?.substringBeforeLast('.') ?: context.getString(R.string.videos_untitled),
                     folder = folderOf(c.getString(folderCol).orEmpty()),
                     durationMs = c.getLong(durationCol),
                     sizeBytes = c.getLong(sizeCol),
@@ -72,6 +73,6 @@ class LocalVideoRepository(private val context: Context) {
     private fun folderOf(raw: String): String {
         val path = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) raw.trimEnd('/')
         else raw.substringBeforeLast('/').removePrefix("/storage/emulated/0/")
-        return path.ifBlank { "Internal storage" }
+        return path.ifBlank { INTERNAL_STORAGE }
     }
 }

@@ -4,6 +4,8 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.vikash.mp3player.MusicApp
+import com.vikash.mp3player.R
+import com.vikash.mp3player.data.INTERNAL_STORAGE
 import com.vikash.mp3player.data.Backup
 import com.vikash.mp3player.data.Song
 import com.vikash.mp3player.playback.EqualizerController
@@ -49,12 +51,12 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     /** Every song on the phone, before hidden folders are taken out. */
     private val _library = MutableStateFlow(LibraryState())
     val library: StateFlow<LibraryState> = combine(_library, prefs.hiddenFolders) { lib, hidden ->
-        if (hidden.isEmpty()) lib else lib.copy(songs = lib.songs.filterNot { it.folder.ifBlank { "Internal storage" } in hidden })
+        if (hidden.isEmpty()) lib else lib.copy(songs = lib.songs.filterNot { it.folder.ifBlank { INTERNAL_STORAGE } in hidden })
     }.stateIn(viewModelScope, SharingStarted.Eagerly, LibraryState())
 
     /** All folders with their song counts, hidden ones included, for Settings. */
     val folders: StateFlow<List<Pair<String, Int>>> = _library.map { lib ->
-        lib.songs.groupingBy { it.folder.ifBlank { "Internal storage" } }.eachCount().toList().sortedBy { it.first.lowercase() }
+        lib.songs.groupingBy { it.folder.ifBlank { INTERNAL_STORAGE } }.eachCount().toList().sortedBy { it.first.lowercase() }
     }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     private val _online = MutableStateFlow(OnlineState(configured = musicApp.jamendo.isConfigured))
@@ -63,10 +65,17 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     private val _messages = MutableSharedFlow<String>(extraBufferCapacity = 4)
     val messages: SharedFlow<String> = _messages
 
+    /** A translated app string, for snackbar messages. */
+    private fun str(id: Int, vararg args: Any): String = getApplication<Application>().getString(id, *args)
+
+    /** A translated "N songs"-style string. */
+    private fun plural(id: Int, count: Int, vararg args: Any): String =
+        getApplication<Application>().resources.getQuantityString(id, count, count, *args)
+
     /** Heart a song: adds it to (or removes it from) the "My Favorites" playlist. */
     fun toggleFavorite(id: String, title: String) {
         val added = prefs.toggleFavorite(id)
-        _messages.tryEmit(if (added) "Added \"$title\" to My Favorites" else "Removed from My Favorites")
+        _messages.tryEmit(if (added) str(R.string.msg_added_to_favorites, title) else str(R.string.msg_removed_from_favorites))
     }
 
 
@@ -74,7 +83,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     fun addFavorites(songs: List<Song>) {
         val new = songs.filterNot { prefs.isFavorite(it.id) }
         new.asReversed().forEach { prefs.toggleFavorite(it.id) }
-        _messages.tryEmit(if (new.isEmpty()) "Already in My Favorites" else "Added ${new.size} songs to My Favorites")
+        _messages.tryEmit(if (new.isEmpty()) str(R.string.msg_already_in_favorites) else plural(R.plurals.msg_added_songs_to_favorites, new.size))
     }
 
     // ------------------------------------------------------------------ your playlists
@@ -83,7 +92,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     fun createPlaylist(name: String, songs: List<Song>) {
         musicApp.playlists.create(name, songs.map { it.id })
-        _messages.tryEmit(if (songs.isEmpty()) "Playlist created" else "Created playlist with ${songs.size} songs")
+        _messages.tryEmit(if (songs.isEmpty()) str(R.string.msg_playlist_created) else plural(R.plurals.msg_playlist_created_with_songs, songs.size))
     }
 
     fun addToPlaylist(id: String, songs: List<Song>) {
@@ -91,29 +100,29 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         val added = musicApp.playlists.add(id, songs.map { it.id })
         _messages.tryEmit(
             when (added) {
-                0 -> "Already in $name"
-                1 -> "Added to $name"
-                else -> "Added $added songs to $name"
+                0 -> str(R.string.msg_already_in_playlist, name)
+                1 -> str(R.string.msg_added_to_playlist, name)
+                else -> plural(R.plurals.msg_added_songs_to_playlist, added, name)
             }
         )
     }
 
     fun removeFromPlaylist(id: String, song: Song) {
         musicApp.playlists.remove(id, song.id)
-        _messages.tryEmit("Removed \"${song.title}\"")
+        _messages.tryEmit(str(R.string.msg_removed_song, song.title))
     }
 
     fun renamePlaylist(id: String, name: String) = musicApp.playlists.rename(id, name)
 
     fun deletePlaylist(id: String) {
         musicApp.playlists.delete(id)
-        _messages.tryEmit("Playlist deleted")
+        _messages.tryEmit(str(R.string.msg_playlist_deleted))
     }
 
     /** Several songs at once, in list order (multi-select). */
     fun addAllToQueue(songs: List<Song>) {
         songs.forEach { player.addToQueue(it) }
-        _messages.tryEmit("Added ${songs.size} songs to the queue")
+        _messages.tryEmit(plural(R.plurals.msg_added_songs_to_queue, songs.size))
     }
 
     private var searchJob: Job? = null
@@ -122,7 +131,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     fun clearStats() {
         musicApp.playStats.clear()
-        _messages.tryEmit("Listening history cleared")
+        _messages.tryEmit(str(R.string.msg_history_cleared))
     }
 
     private val _abLoop = MutableStateFlow(AbLoop())
@@ -137,11 +146,11 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         when {
             loop.aMs == null -> {
                 _abLoop.value = AbLoop(aMs = pos, songId = songId)
-                _messages.tryEmit("A set. Tap again at the end of the part to loop.")
+                _messages.tryEmit(str(R.string.msg_ab_a_set))
             }
             loop.bMs == null -> {
                 if (pos <= loop.aMs + 500) {
-                    _messages.tryEmit("B must be after A")
+                    _messages.tryEmit(str(R.string.msg_ab_b_after_a))
                     return
                 }
                 _abLoop.value = loop.copy(bMs = pos)
@@ -202,14 +211,14 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             _online.update { it.copy(loading = true, error = null) }
             runCatching { musicApp.jamendo.search(query) }
                 .onSuccess { songs -> _online.update { it.copy(loading = false, results = songs) } }
-                .onFailure { e -> _online.update { it.copy(loading = false, error = e.message ?: "Search failed") } }
+                .onFailure { e -> _online.update { it.copy(loading = false, error = e.message ?: str(R.string.online_search_failed)) } }
         }
     }
 
     fun download(song: Song) {
         runCatching { musicApp.downloader.download(song) }
-            .onSuccess { _messages.tryEmit("Downloading \"${song.title}\" to Music/MP3 Player") }
-            .onFailure { _messages.tryEmit(it.message ?: "Download failed") }
+            .onSuccess { _messages.tryEmit(str(R.string.msg_downloading, song.title)) }
+            .onFailure { _messages.tryEmit(it.message ?: str(R.string.msg_download_failed)) }
     }
 
     fun exportBackup(target: android.net.Uri) {
@@ -220,8 +229,8 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                     musicApp.playlists.playlists.value,
                 )
             }
-                .onSuccess { _messages.tryEmit("Backup saved") }
-                .onFailure { _messages.tryEmit(it.message ?: "Backup failed") }
+                .onSuccess { _messages.tryEmit(str(R.string.msg_backup_saved)) }
+                .onFailure { _messages.tryEmit(it.message ?: str(R.string.msg_backup_failed)) }
         }
     }
 
@@ -237,11 +246,12 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                     musicApp.playlists.replaceAll(here + restored.playlists.filterNot { it.name.lowercase() in names })
                     EqualizerController.reload()
                     com.vikash.mp3player.playback.FadeSetting.reload(getApplication())
+                    com.vikash.mp3player.playback.EvenVolume.reload(getApplication())
                     _messages.tryEmit(
-                        "Restored ${restored.favorites.size} favorites, ${restored.playlists.size} playlists and your settings"
+                        str(R.string.msg_restored, restored.favorites.size, restored.playlists.size)
                     )
                 }
-                .onFailure { _messages.tryEmit(it.message ?: "Restore failed") }
+                .onFailure { _messages.tryEmit(it.message ?: str(R.string.msg_restore_failed)) }
         }
     }
 

@@ -21,3 +21,12 @@ data class Song(
     /** File size in bytes, 0 if unknown. Used to keep the best copy when cleaning duplicates. */
     val sizeBytes: Long = 0,
 )
+
+/**
+ * Group name for songs with no folder (files in the storage root). Kept in English because it is
+ * also saved in the hidden-folders setting; the UI shows a translated label for it.
+ */
+const val INTERNAL_STORAGE = "Internal storage"
+
+/** Group name for songs with no album tag; the UI shows a translated label for it. */
+const val UNKNOWN_ALBUM = "Unknown album"

@@ -1,0 +1,450 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Existing: app name, notification and Android Auto labels -->
+    <string name="app_name">Ampli</string>
+    <string name="shuffle_on">शफ़ल चालू</string>
+    <string name="shuffle_off">शफ़ल बंद</string>
+    <string name="repeat_all">सब दोहराएं</string>
+    <string name="repeat_one">एक दोहराएं</string>
+    <string name="repeat_off">दोहराना बंद</string>
+    <string name="tab_songs">गाने</string>
+    <string name="tab_albums">एल्बम</string>
+    <string name="tab_folders">फ़ोल्डर</string>
+    <string name="widget_description">होम स्क्रीन से ही गाने चलाएं, रोकें और बदलें</string>
+
+    <!-- Common buttons -->
+    <string name="common_ok">ठीक है</string>
+    <string name="common_cancel">रद्द करें</string>
+    <string name="common_save">सेव करें</string>
+    <string name="common_delete">डिलीट करें</string>
+    <string name="common_close">बंद करें</string>
+    <string name="common_back">वापस</string>
+    <string name="common_clear">साफ़ करें</string>
+    <string name="common_create">बनाएं</string>
+    <string name="common_play">चलाएं</string>
+    <string name="common_pause">रोकें</string>
+    <string name="common_next">अगला</string>
+    <string name="common_previous">पिछला</string>
+    <string name="common_more_options">और विकल्प</string>
+    <string name="common_try_again">फिर कोशिश करें</string>
+    <string name="common_get_pro">Pro लें</string>
+
+    <!-- Snackbar and toast messages -->
+    <string name="msg_added_to_favorites">\"%1$s\" पसंदीदा में जोड़ा गया</string>
+    <string name="msg_removed_from_favorites">पसंदीदा से हटाया गया</string>
+    <string name="msg_already_in_favorites">पहले से पसंदीदा में है</string>
+    <plurals name="msg_added_songs_to_favorites">
+        <item quantity="one">%1$d गाना पसंदीदा में जोड़ा गया</item>
+        <item quantity="other">%1$d गाने पसंदीदा में जोड़े गए</item>
+    </plurals>
+    <string name="msg_playlist_created">प्लेलिस्ट बन गई</string>
+    <plurals name="msg_playlist_created_with_songs">
+        <item quantity="one">%1$d गाने के साथ प्लेलिस्ट बन गई</item>
+        <item quantity="other">%1$d गानों के साथ प्लेलिस्ट बन गई</item>
+    </plurals>
+    <string name="msg_already_in_playlist">पहले से %1$s में है</string>
+    <string name="msg_added_to_playlist">%1$s में जोड़ा गया</string>
+    <plurals name="msg_added_songs_to_playlist">
+        <item quantity="one">%1$d गाना %2$s में जोड़ा गया</item>
+        <item quantity="other">%1$d गाने %2$s में जोड़े गए</item>
+    </plurals>
+    <string name="msg_removed_song">\"%1$s\" हटाया गया</string>
+    <string name="msg_playlist_deleted">प्लेलिस्ट डिलीट हो गई</string>
+    <plurals name="msg_added_songs_to_queue">
+        <item quantity="one">%1$d गाना कतार में जोड़ा गया</item>
+        <item quantity="other">%1$d गाने कतार में जोड़े गए</item>
+    </plurals>
+    <string name="msg_history_cleared">सुनने का इतिहास साफ़ हो गया</string>
+    <string name="msg_ab_a_set">A सेट हो गया। जहां खत्म करना है, वहां फिर टैप करें।</string>
+    <string name="msg_ab_b_after_a">B, A के बाद होना चाहिए</string>
+    <string name="online_search_failed">खोज नहीं हो पाई</string>
+    <string name="msg_downloading">\"%1$s\" Music/MP3 Player में डाउनलोड हो रहा है</string>
+    <string name="msg_download_failed">डाउनलोड नहीं हो पाया</string>
+    <string name="msg_backup_saved">बैकअप सेव हो गया</string>
+    <string name="msg_backup_failed">बैकअप नहीं हो पाया</string>
+    <string name="msg_restored">%1$d पसंदीदा, %2$d प्लेलिस्ट और आपकी सेटिंग्स वापस आ गईं</string>
+    <string name="msg_restore_failed">रिस्टोर नहीं हो पाया</string>
+    <string name="msg_playing_next">\"%1$s\" इसके बाद चलेगा</string>
+    <string name="msg_added_to_queue">कतार में जोड़ा गया</string>
+    <string name="msg_ringtone_needs_local">रिंगटोन सिर्फ़ फ़ोन में सेव गानों से बन सकती है।</string>
+    <plurals name="msg_songs_deleted">
+        <item quantity="one">%1$d गाना डिलीट हो गया</item>
+        <item quantity="other">%1$d गाने डिलीट हो गए</item>
+    </plurals>
+    <string name="msg_song_info_saved">गाने की जानकारी सेव हो गई</string>
+
+    <!-- Library, song menu and playlists -->
+    <string name="nav_library">लाइब्रेरी</string>
+    <string name="nav_online">ऑनलाइन</string>
+    <string name="nav_videos">वीडियो</string>
+    <string name="nav_settings">सेटिंग्स</string>
+    <string name="library_tab_artists">कलाकार</string>
+    <string name="library_tab_playlists">प्लेलिस्ट</string>
+    <string name="library_internal_storage">फ़ोन स्टोरेज</string>
+    <string name="library_unknown_album">अनजान एल्बम</string>
+    <string name="library_unknown_artist">अनजान कलाकार</string>
+    <string name="library_unknown_title">अनजान</string>
+    <string name="library_my_favorites">मेरे पसंदीदा</string>
+    <string name="library_favorites_empty">अभी कोई पसंदीदा नहीं है। किसी गाने के पास या प्लेयर स्क्रीन पर दिल पर टैप करें, गाना यहां आ जाएगा।</string>
+    <string name="library_most_played">सबसे ज़्यादा सुने गए</string>
+    <string name="library_most_played_empty">गाने सुनिए, सबसे ज़्यादा सुने गए गाने यहां दिखेंगे।</string>
+    <string name="library_recently_played">हाल ही में सुने गए</string>
+    <string name="library_recently_played_empty">आप जो गाने सुनेंगे, वे यहां दिखेंगे।</string>
+    <string name="library_recently_added">हाल ही में जोड़े गए</string>
+    <string name="library_recently_added_empty">अभी कोई गाना नहीं है।</string>
+    <string name="library_never_played">कभी नहीं सुने गए</string>
+    <string name="library_never_played_empty">आपने हर गाना सुन लिया है। बढ़िया!</string>
+    <string name="library_permission_needed">Ampli को इस फ़ोन के गाने देखने की इजाज़त दें।</string>
+    <string name="library_allow_access">इजाज़त दें</string>
+    <string name="library_sort_songs">गाने क्रम से लगाएं</string>
+    <string name="library_search_hint">अपने गाने खोजें</string>
+    <string name="library_no_music">इस फ़ोन में अभी कोई गाना नहीं मिला। डाउनलोड किए गए गाने भी यहां दिखेंगे।</string>
+    <string name="library_stats_title">आपके सुनने के आंकड़े</string>
+    <string name="library_stats_subtitle">कितने घंटे सुना, टॉप गाने और कलाकार। शेयर करें!</string>
+    <plurals name="library_song_count">
+        <item quantity="one">%1$d गाना</item>
+        <item quantity="other">%1$d गाने</item>
+    </plurals>
+    <string name="library_favorites_hint">किसी भी गाने पर दिल टैप करके जोड़ें</string>
+    <string name="library_empty_for_now">अभी खाली है</string>
+    <string name="library_your_playlists">आपकी प्लेलिस्ट</string>
+    <string name="library_new_playlist_subtitle">अपना मिक्स बनाएं</string>
+    <string name="library_playlist_empty_short">खाली</string>
+    <string name="library_playlist_empty">यह प्लेलिस्ट खाली है। किसी भी गाने के मेन्यू में \"प्लेलिस्ट में जोड़ें\" चुनें, या एक साथ कई गाने जोड़ने के लिए गानों को दबाकर रखें।</string>
+    <string name="library_cancel_selection">चुनना रद्द करें</string>
+    <string name="library_selected_count">%1$d चुने गए</string>
+    <string name="library_select_all">सब चुनें</string>
+    <string name="library_play_selected">चुने हुए चलाएं</string>
+    <string name="library_queue_selected">चुने हुए कतार में जोड़ें</string>
+    <string name="library_playlist_selected">चुने हुए प्लेलिस्ट में जोड़ें</string>
+    <string name="library_favorite_selected">चुने हुए पसंदीदा में जोड़ें</string>
+    <string name="library_delete_selected">चुने हुए फ़ोन से डिलीट करें</string>
+    <plurals name="library_songs_long_press">
+        <item quantity="one">%1$d गाना · चुनने के लिए दबाकर रखें</item>
+        <item quantity="other">%1$d गाने · चुनने के लिए दबाकर रखें</item>
+    </plurals>
+    <string name="library_shuffle_all">सब शफ़ल करें</string>
+    <string name="library_all_songs">सभी गाने</string>
+    <string name="sort_title">नाम</string>
+    <string name="sort_artist">कलाकार</string>
+    <string name="sort_recent">हाल ही में जोड़े गए</string>
+    <string name="sort_longest">सबसे लंबे पहले</string>
+    <string name="song_play_next">इसके बाद चलाएं</string>
+    <string name="song_add_to_queue">कतार में जोड़ें</string>
+    <string name="song_add_to_playlist">प्लेलिस्ट में जोड़ें…</string>
+    <string name="song_remove_from_playlist">इस प्लेलिस्ट से हटाएं</string>
+    <string name="song_set_ringtone">रिंगटोन बनाएं</string>
+    <string name="song_edit_info">गाने की जानकारी बदलें</string>
+    <string name="song_delete_from_phone">फ़ोन से डिलीट करें</string>
+    <string name="favorites_add">पसंदीदा में जोड़ें</string>
+    <string name="favorites_remove">पसंदीदा से हटाएं</string>
+    <string name="playlist_new">नई प्लेलिस्ट</string>
+    <string name="playlist_rename">प्लेलिस्ट का नाम बदलें</string>
+    <string name="playlist_delete">प्लेलिस्ट डिलीट करें</string>
+    <string name="playlist_delete_title">\"%1$s\" डिलीट करें?</string>
+    <string name="playlist_delete_text">सिर्फ़ प्लेलिस्ट हटेगी। आपके गाने फ़ोन में रहेंगे।</string>
+    <string name="playlist_add_title">प्लेलिस्ट में जोड़ें</string>
+    <plurals name="playlist_add_songs_title">
+        <item quantity="one">%1$d गाना प्लेलिस्ट में जोड़ें</item>
+        <item quantity="other">%1$d गाने प्लेलिस्ट में जोड़ें</item>
+    </plurals>
+    <string name="playlist_name_label">प्लेलिस्ट का नाम</string>
+
+    <!-- Settings and Ampli Pro -->
+    <string name="common_done">हो गया</string>
+    <string name="pro_name">Ampli Pro</string>
+    <string name="pro_you_have">आपके पास Ampli Pro है</string>
+    <string name="pro_thanks">सब कुछ हमेशा के लिए अनलॉक है। Ampli का साथ देने के लिए धन्यवाद!</string>
+    <string name="pro_pitch">एक बार पैसे दें, हमेशा के लिए पाएं। कोई मंथली फ़ीस नहीं, इस Google अकाउंट वाले हर फ़ोन पर।</string>
+    <string name="pro_feature_no_ads">कभी कोई विज्ञापन नहीं</string>
+    <string name="pro_feature_videos">कैमरा वीडियो और डाउनलोड के लिए वीडियो प्लेयर</string>
+    <string name="pro_feature_cast">Chromecast से TV या स्पीकर पर चलाएं</string>
+    <string name="pro_feature_recognize">गाना पहचानें: आसपास बज रहा गाना कौन सा है, जानें</string>
+    <string name="pro_feature_recognize_soon">गाना पहचानें: आसपास बज रहा गाना कौन सा है, जानें (जल्द आ रहा है)</string>
+    <string name="pro_get_for_price">%1$s में Pro लें</string>
+    <string name="pro_get">Ampli Pro लें</string>
+    <string name="settings_test_pro">टेस्ट बिल्ड: Pro आज़माएं</string>
+    <string name="settings_test_pro_desc">खरीदारी सिर्फ़ Play Store वाले वर्ज़न में होती है। यह स्विच असली ऐप में नहीं है।</string>
+    <string name="settings_seek_style">प्रोग्रेस बार का स्टाइल</string>
+    <string name="settings_seek_style_desc_pro">गाना चलते समय बार कैसे चले, चुनें।</string>
+    <string name="settings_seek_style_desc_free">Classic और Squiggle मुफ़्त हैं। बाकी Ampli Pro के साथ मिलते हैं।</string>
+    <string name="seek_classic">Classic</string>
+    <string name="seek_squiggle">Squiggle लहर</string>
+    <string name="seek_aurora">ऑरोरा</string>
+    <string name="seek_heartbeat">धड़कन</string>
+    <string name="seek_neon">नियॉन ट्यूब</string>
+    <string name="seek_gradient">बहते रंग</string>
+    <string name="seek_pulse">बीट पल्स</string>
+    <string name="seek_liquid">लिक्विड फ़िल</string>
+    <string name="seek_ember">अंगारे</string>
+    <string name="seek_equalizer">लाइव इक्वलाइज़र</string>
+    <string name="settings_theme">दिन / रात मोड</string>
+    <string name="settings_theme_desc">ऑटो में फ़ोन का डार्क मोड अपनाया जाता है।</string>
+    <string name="settings_theme_auto">ऑटो</string>
+    <string name="settings_theme_day">दिन</string>
+    <string name="settings_theme_night">रात</string>
+    <string name="settings_sleep_timer">स्लीप टाइमर</string>
+    <string name="settings_sleep_after_song">यह गाना खत्म होते ही म्यूज़िक रुक जाएगा।</string>
+    <string name="settings_sleep_stops_in">म्यूज़िक %1$s में रुक जाएगा</string>
+    <string name="settings_sleep_desc">कुछ देर बाद म्यूज़िक बंद करें।</string>
+    <string name="settings_sleep_end_of_song">इस गाने के बाद</string>
+    <string name="settings_minutes">%1$d मिनट</string>
+    <string name="settings_equalizer">इक्वलाइज़र</string>
+    <string name="settings_equalizer_unavailable">इक्वलाइज़र के लिए कोई गाना चलाएं। कुछ फ़ोन में यह नहीं होता।</string>
+    <string name="settings_equalizer_output">अभी बदल रहे हैं: %1$s। स्पीकर, हेडफ़ोन और हर Bluetooth डिवाइस (जैसे आपकी कार) की अपनी अलग सेटिंग रहती है।</string>
+    <string name="eq_output_speaker">फ़ोन स्पीकर</string>
+    <string name="eq_output_wired">तार वाले हेडफ़ोन</string>
+    <string name="eq_output_usb">USB ऑडियो</string>
+    <string name="settings_backup">बैकअप और रिस्टोर</string>
+    <string name="settings_backup_desc">अपने पसंदीदा, सेटिंग्स, इक्वलाइज़र और सुनने का इतिहास सुरक्षित रखें। नए फ़ोन में ले जाने के लिए Google Drive पर सेव करें।</string>
+    <string name="settings_backup_button">बैकअप लें</string>
+    <string name="settings_restore_button">रिस्टोर करें</string>
+    <string name="settings_transfer_desc">केबल की ज़रूरत नहीं। उसी Wi-Fi पर किसी भी लैपटॉप में एक पता खोलें और गाने खींचकर डाल दें।</string>
+    <string name="settings_transfer_start">Wi-Fi ट्रांसफ़र शुरू करें</string>
+    <string name="settings_duplicates">डुप्लिकेट हटाएं</string>
+    <string name="settings_duplicates_desc">एक से ज़्यादा बार सेव गाने ढूंढें, सबसे अच्छी कॉपी रखें और जगह खाली करें।</string>
+    <string name="settings_duplicates_button">डुप्लिकेट ढूंढें</string>
+    <string name="settings_even_volume">एक जैसी आवाज़</string>
+    <string name="settings_even_volume_desc">तेज़ गानों की आवाज़ धीमे गानों जितनी कर दी जाती है, ताकि बार-बार वॉल्यूम न बदलना पड़े। ReplayGain टैग वाले गानों पर काम करता है।</string>
+    <string name="settings_fade">गानों के बीच फ़ेड</string>
+    <string name="settings_fade_desc">हर गाना आखिर में धीरे-धीरे खत्म होता है और अगला धीरे-धीरे शुरू होता है, कुछ भी अचानक नहीं रुकता।</string>
+    <string name="settings_off">बंद</string>
+    <string name="settings_seconds">%1$d सेकंड</string>
+    <string name="settings_folders">म्यूज़िक फ़ोल्डर</string>
+    <string name="settings_folders_desc">जो फ़ोल्डर लाइब्रेरी में नहीं चाहिए, उन्हें छिपाएं, जैसे WhatsApp ऑडियो या कॉल रिकॉर्डिंग।</string>
+    <string name="settings_folders_hidden">%1$d छिपे हुए। इनके गाने फ़ोन में रहेंगे पर Ampli में नहीं दिखेंगे।</string>
+    <string name="settings_folders_choose">फ़ोल्डर चुनें</string>
+    <string name="settings_folders_none">अभी कोई फ़ोल्डर नहीं मिला।</string>
+    <string name="settings_car_mode_desc">बड़े बटन, स्वाइप करके गाना बदलें, और गाने या कलाकार का नाम बोलकर चलाएं। नज़र सड़क पर रखें।</string>
+    <string name="settings_car_mode_start">कार मोड शुरू करें</string>
+    <string name="settings_language">भाषा</string>
+    <string name="settings_language_desc">Ampli की भाषा चुनें।</string>
+    <string name="settings_language_system">फ़ोन की भाषा</string>
+    <string name="settings_language_english">English</string>
+    <string name="settings_language_hindi">हिंदी</string>
+    <string name="pro_purchase_test_build">Ampli के Play Store पर आने के बाद पेमेंट काम करेगा। अभी के लिए सेटिंग्स में \"टेस्ट बिल्ड: Pro आज़माएं\" इस्तेमाल करें।</string>
+    <string name="pro_purchase_failed">Google Play तक नहीं पहुंच पाए। इंटरनेट चेक करके फिर कोशिश करें।</string>
+
+    <!-- Now playing -->
+    <string name="player_close">प्लेयर बंद करें</string>
+    <string name="player_queue">कतार</string>
+    <string name="player_now_playing">अभी चल रहा है</string>
+    <string name="player_remove_queue">कतार हटाएं</string>
+    <string name="player_remove_from_queue">कतार से हटाएं</string>
+    <string name="player_shuffle">शफ़ल</string>
+    <string name="player_repeat">दोहराएं</string>
+    <string name="player_ab_on">A-B चालू</string>
+    <string name="player_ab_set_b">B सेट करें</string>
+    <string name="player_ab_repeat">A-B दोहराएं</string>
+    <string name="player_speed_pitch">स्पीड और पिच</string>
+    <string name="player_speed_value">स्पीड: %1$sx</string>
+    <string name="player_pitch_value">पिच: %1$sx</string>
+    <string name="player_reset">रीसेट करें</string>
+
+    <!-- Casting -->
+    <string name="common_not_now">अभी नहीं</string>
+    <string name="cast_play_on_tv">TV या स्पीकर पर चलाएं</string>
+    <string name="cast_unavailable_title">कास्टिंग उपलब्ध नहीं है</string>
+    <string name="cast_unavailable_text">कास्टिंग के लिए Google Play services चाहिए, जो इस डिवाइस में नहीं हैं।</string>
+    <string name="cast_pro_title">अपने TV या स्पीकर पर चलाएं</string>
+    <string name="cast_pro_text">अपने गाने Chromecast, Google/Nest स्पीकर या Android TV पर भेजें। कास्टिंग Ampli Pro का हिस्सा है, जो एक बार की खरीद है।</string>
+    <string name="cast_playing_on">%1$s पर चल रहा है</string>
+    <string name="cast_pick_device">किसी डिवाइस पर चलाएं</string>
+    <string name="cast_searching">आपके Wi-Fi पर TV और स्पीकर ढूंढ रहे हैं…</string>
+    <string name="cast_same_wifi">फ़ोन और TV या स्पीकर एक ही Wi-Fi पर होने चाहिए।</string>
+    <string name="cast_connected_text">प्लेयर हमेशा की तरह इस्तेमाल करें; गाने %1$s पर बजेंगे।</string>
+    <string name="cast_stop">कास्टिंग बंद करें</string>
+    <string name="cast_needs_same_wifi">इस फ़ोन से गाने कास्ट करने के लिए इसे उसी Wi-Fi से जोड़ें, जिस पर TV या स्पीकर है।</string>
+
+    <!-- Car mode -->
+    <string name="car_mode">कार मोड</string>
+    <string name="car_exit">कार मोड से बाहर निकलें</string>
+    <string name="car_not_found">\"%1$s\" नहीं मिला</string>
+    <string name="car_playing">%1$s चल रहा है</string>
+    <string name="car_voice_prompt">किसी गाने, कलाकार या एल्बम का नाम बोलें</string>
+    <string name="car_voice_unavailable">इस फ़ोन में बोलकर खोजने की सुविधा नहीं है</string>
+    <string name="car_nothing_playing">कुछ नहीं चल रहा</string>
+    <string name="car_tap_mic">माइक पर टैप करें और गाने या कलाकार का नाम बोलें</string>
+    <string name="car_swipe_hint">गाना बदलने के लिए कहीं भी बाएं या दाएं स्वाइप करें</string>
+    <string name="car_voice_search">बोलकर खोजें</string>
+
+    <!-- Deleting songs -->
+    <string name="delete_only_local">सिर्फ़ फ़ोन में सेव गाने ही डिलीट हो सकते हैं।</string>
+    <string name="delete_failed">यह गाना डिलीट नहीं हो पाया।</string>
+    <string name="delete_needs_ok">यह फ़ाइल डिलीट करने के लिए Ampli को आपकी मंज़ूरी चाहिए।</string>
+    <string name="delete_needs_storage">फ़ाइलें डिलीट करने के लिए Ampli को स्टोरेज की इजाज़त चाहिए।</string>
+    <plurals name="delete_title">
+        <item quantity="one">%1$d गाना डिलीट करें?</item>
+        <item quantity="other">%1$d गाने डिलीट करें?</item>
+    </plurals>
+    <string name="delete_and_more">और %1$d गाने</string>
+    <string name="delete_warning">फ़ाइलें इस फ़ोन से हट जाएंगी। यह वापस नहीं होगा।</string>
+    <string name="delete_deleting">डिलीट हो रहा है…</string>
+
+    <!-- Duplicate finder -->
+    <string name="dup_title">डुप्लिकेट गाने</string>
+    <string name="dup_none">कोई डुप्लिकेट नहीं मिला। इस फ़ोन में हर गाना सिर्फ़ एक बार सेव है।</string>
+    <plurals name="dup_summary">
+        <item quantity="one">%1$d गाना एक से ज़्यादा बार सेव है। सबसे बड़ी कॉपी रखी जाएगी; टिक की गई कॉपी डिलीट होंगी।</item>
+        <item quantity="other">%1$d गाने एक से ज़्यादा बार सेव हैं। सबसे बड़ी कॉपी रखी जाएगी; टिक की गई कॉपी डिलीट होंगी।</item>
+    </plurals>
+    <string name="dup_size_unknown">साइज़ पता नहीं</string>
+    <string name="dup_will_delete">डिलीट होगा</string>
+    <string name="dup_will_keep">रहेगा</string>
+    <string name="dup_nothing_ticked">कुछ भी टिक नहीं है</string>
+    <plurals name="dup_delete_button">
+        <item quantity="one">%1$d कॉपी डिलीट करें · %2$s खाली होगा</item>
+        <item quantity="other">%1$d कॉपी डिलीट करें · %2$s खाली होगा</item>
+    </plurals>
+
+    <!-- Lyrics -->
+    <string name="lyrics_title">बोल</string>
+    <string name="lyrics_file_empty">उस फ़ाइल में कोई बोल नहीं हैं।</string>
+    <string name="lyrics_none">इस गाने के बोल अभी नहीं हैं</string>
+    <string name="lyrics_none_desc">म्यूज़िक के साथ चलने वाले बोल के लिए .lrc फ़ाइल जोड़ें, या सादे बोल पेस्ट करें।</string>
+    <string name="lyrics_choose_file">फ़ाइल चुनें</string>
+    <string name="lyrics_paste">पेस्ट करें</string>
+    <string name="lyrics_paste_title">बोल पेस्ट करें</string>
+    <string name="lyrics_paste_hint">सादे बोल, या LRC लाइनें जैसे [01:02.50] बोल</string>
+    <string name="lyrics_remove">ये बोल हटाएं</string>
+
+    <!-- Online music -->
+    <string name="online_not_configured">इस बिल्ड में ऑनलाइन म्यूज़िक बंद है। local.properties में JAMENDO_CLIENT_ID जोड़ें (README देखें)।</string>
+    <string name="online_search_hint">गाने, कलाकार, जॉनर खोजें</string>
+    <string name="online_popular">इस हफ़्ते के मशहूर गाने</string>
+    <string name="online_results">नतीजे</string>
+    <string name="online_error">म्यूज़िक कैटलॉग तक नहीं पहुंच पाए। अपना इंटरनेट चेक करें।\n(%1$s)</string>
+    <string name="online_no_results">कोई गाना नहीं मिला।</string>
+    <string name="online_download">डाउनलोड करें</string>
+    <string name="online_credit">Creative Commons लाइसेंस के तहत Jamendo से लिया गया म्यूज़िक।</string>
+    <string name="online_license_no_download">इस गाने के लाइसेंस में डाउनलोड की इजाज़त नहीं है</string>
+
+    <!-- Backup -->
+    <string name="backup_write_failed">बैकअप फ़ाइल सेव नहीं हो पाई</string>
+    <string name="backup_open_failed">फ़ाइल खुल नहीं पाई</string>
+    <string name="backup_not_ampli">यह Ampli की बैकअप फ़ाइल नहीं है</string>
+
+    <!-- Name that song -->
+    <string name="recognize_title">गाना पहचानें</string>
+    <string name="recognize_pro_text">दुकान, कार या TV पर कोई गाना सुना? Ampli बताएगा कौन सा है। यह Ampli Pro का हिस्सा है, जो एक बार की खरीद है।</string>
+    <string name="recognize_coming_soon">गाना पहचानने की सुविधा जल्द ही एक अपडेट में आ रही है।</string>
+    <string name="recognize_coming_soon_short">गाना पहचानने की सुविधा जल्द आ रही है।</string>
+    <string name="recognize_mic_failed">माइक्रोफ़ोन इस्तेमाल नहीं हो पाया। क्या कोई और ऐप इसे चला रहा है?</string>
+    <string name="recognize_mic_denied">गाना सुनने के लिए Ampli को माइक्रोफ़ोन चाहिए। इजाज़त देकर फिर कोशिश करें।</string>
+    <string name="recognize_searching">गाना ढूंढ रहे हैं…</string>
+    <string name="recognize_listening">सुन रहे हैं… फ़ोन को म्यूज़िक के पास रखें</string>
+    <string name="recognize_open_in">%1$s में खोलें</string>
+    <string name="recognize_not_found">यह गाना पहचान नहीं पाए। म्यूज़िक के पास जाकर फिर कोशिश करें।</string>
+    <string name="recognize_listen_again">फिर से सुनें</string>
+    <string name="recognize_service_error">पहचानने वाली सर्विस तक नहीं पहुंच पाए। फिर कोशिश करें।</string>
+    <string name="recognize_no_internet">इंटरनेट नहीं है? फिर कोशिश करें।</string>
+    <string name="recognize_bad_answer">जवाब समझ नहीं आया। फिर कोशिश करें।</string>
+    <string name="recognize_not_working">पहचानने की सुविधा अभी काम नहीं कर रही। थोड़ी देर बाद कोशिश करें।</string>
+
+    <!-- Ringtone maker -->
+    <string name="ringtone_target_call">कॉल रिंगटोन</string>
+    <string name="ringtone_target_notification">नोटिफ़िकेशन (SMS)</string>
+    <string name="ringtone_target_alarm">अलार्म</string>
+    <string name="ringtone_what_call">कॉल रिंगटोन</string>
+    <string name="ringtone_what_notification">नोटिफ़िकेशन साउंड</string>
+    <string name="ringtone_what_alarm">अलार्म साउंड</string>
+    <string name="ringtone_and">और</string>
+    <string name="ringtone_set_as">%1$s के रूप में सेट हो गया</string>
+    <string name="ringtone_saved_not_set">सेव हो गया, पर इस फ़ोन ने Ampli को साउंड बदलने नहीं दिया। साउंड सेटिंग्स में जाकर चुनें।</string>
+    <string name="ringtone_saved">Ringtones में सेव हो गया</string>
+    <string name="ringtone_saved_pick_later">सेव हो गया। आप इसे कभी भी फ़ोन की साउंड सेटिंग्स में चुन सकते हैं।</string>
+    <string name="ringtone_close">रिंगटोन मेकर बंद करें</string>
+    <string name="ringtone_title">रिंगटोन मेकर</string>
+    <string name="ringtone_start">शुरू</string>
+    <string name="ringtone_end">अंत</string>
+    <string name="ringtone_length">लंबाई %1$s</string>
+    <string name="ringtone_previewing">आपका चुना हिस्सा चल रहा है</string>
+    <string name="ringtone_preview">चुना हिस्सा सुनें</string>
+    <string name="ringtone_use_as">इसे लगाएं</string>
+    <string name="ringtone_save_only">सिर्फ़ सेव करें</string>
+    <string name="ringtone_cutting">आपकी रिंगटोन बन रही है…</string>
+    <string name="ringtone_err_generic">रिंगटोन नहीं बन पाई। कोई दूसरा गाना आज़माएं।</string>
+    <string name="ringtone_save">रिंगटोन सेव करें</string>
+    <string name="ringtone_save_and_set">सेव करके लगाएं</string>
+    <string name="ringtone_footer">क्लिप बिना री-एनकोड किए काटी जाती है, इसलिए आवाज़ बिल्कुल गाने जैसी रहती है। MP3 और M4A/AAC फ़ाइलों पर काम करता है।</string>
+    <string name="ringtone_permission_title">Ampli को साउंड बदलने दें</string>
+    <string name="ringtone_permission_text">आपकी क्लिप सेव हो गई है। कोई ऐप फ़ोन की रिंगटोन, नोटिफ़िकेशन या अलार्म साउंड बदले, उससे पहले Android पूछता है। Ampli के लिए \"सिस्टम सेटिंग्स बदलने दें\" चालू करें, फिर वापस आएं, रिंगटोन लग जाएगी।</string>
+    <string name="ringtone_open_settings">सेटिंग्स खोलें</string>
+    <string name="ringtone_nudge_earlier">%1$s 0.1 सेकंड पहले</string>
+    <string name="ringtone_nudge_later">%1$s 0.1 सेकंड बाद</string>
+    <string name="ringtone_err_read">Ampli यह गाना पढ़ नहीं पाया। शायद यह हटा दिया गया है या कहीं और चला गया है।</string>
+    <string name="ringtone_err_format">रिंगटोन MP3 और M4A/AAC गानों से बन सकती है। यह गाना %1$s है।</string>
+    <string name="ringtone_err_format_unknown">रिंगटोन MP3 और M4A/AAC गानों से बन सकती है। इस गाने का फ़ॉर्मैट पता नहीं है।</string>
+    <string name="ringtone_err_no_audio">इस फ़ाइल में ऐसा ऑडियो नहीं है जिसे Ampli काट सके।</string>
+    <string name="ringtone_err_empty_part">गाने का वह हिस्सा खाली है। कोई दूसरा हिस्सा चुनें।</string>
+    <string name="ringtone_err_open">Ampli यह गाना खोल नहीं पाया।</string>
+    <string name="ringtone_err_damaged">यह MP3 फ़ाइल खराब लग रही है।</string>
+    <string name="ringtone_err_save">रिंगटोन सेव नहीं हो पाई। क्या स्टोरेज भर गया है?</string>
+    <string name="ringtone_err_save_folder">%1$s में सेव नहीं हो पाया। Ampli को स्टोरेज की इजाज़त देकर फिर कोशिश करें।</string>
+
+    <!-- Edit song info -->
+    <string name="tags_only_mp3">अभी सिर्फ़ MP3 फ़ाइलें बदली जा सकती हैं।</string>
+    <string name="tags_open_failed">यह गाना खुल नहीं पाया।</string>
+    <string name="tags_save_failed">यह गाना सेव नहीं हो पाया।</string>
+    <string name="tags_save_failed_unchanged">यह गाना सेव नहीं हो पाया। इसमें कोई बदलाव नहीं हुआ।</string>
+    <string name="tags_unsupported">इस फ़ाइल के टैग ऐसे फ़ॉर्मैट में हैं जिसे Ampli अभी बदल नहीं सकता।</string>
+    <string name="tags_not_allowed">Android ने यह फ़ाइल बदलने नहीं दी।</string>
+    <string name="tags_needs_ok">यह फ़ाइल बदलने के लिए Ampli को आपकी मंज़ूरी चाहिए।</string>
+    <string name="tags_needs_storage">यह फ़ाइल बदलने के लिए Ampli को स्टोरेज की इजाज़त चाहिए।</string>
+    <string name="tags_title">नाम</string>
+    <string name="tags_artist">कलाकार</string>
+    <string name="tags_album">एल्बम</string>
+    <string name="tags_footer">यह MP3 फ़ाइल के अंदर ही सेव होता है, इसलिए हर ऐप में एक जैसा दिखेगा।</string>
+    <string name="tags_saving">सेव हो रहा है…</string>
+
+    <!-- Listening stats -->
+    <string name="stats_hours_minutes">%1$d घंटे %2$d मिनट</string>
+    <string name="stats_minutes">%1$d मिनट</string>
+    <string name="stats_title">आपकी सुनने की आदत</string>
+    <string name="stats_share_header">Ampli MP3 Player पर मेरा म्यूज़िक 🎧</string>
+    <string name="stats_share_month">इस महीने: %1$s म्यूज़िक</string>
+    <string name="stats_share_top_song">टॉप गाना: %1$s (%2$s)</string>
+    <string name="stats_share_top_artist">टॉप कलाकार: %1$s</string>
+    <string name="stats_share_footer">Ampli: आपका म्यूज़िक, कोई मंथली फ़ीस नहीं। एक बार पैसे दें, हमेशा सुनें।</string>
+    <string name="stats_share_title">अपने आंकड़े शेयर करें</string>
+    <string name="stats_share">शेयर करें</string>
+    <string name="stats_this_month">इस महीने</string>
+    <string name="stats_all_time">अब तक: %1$s</string>
+    <plurals name="stats_plays">
+        <item quantity="one">%1$d बार सुना</item>
+        <item quantity="other">%1$d बार सुना</item>
+    </plurals>
+    <string name="stats_empty">गाने सुनिए, आपके टॉप गाने और कलाकार यहां दिखेंगे। सब कुछ इसी फ़ोन में रहता है।</string>
+    <string name="stats_top_songs">टॉप गाने</string>
+    <string name="stats_top_artists">टॉप कलाकार</string>
+    <string name="stats_privacy">आंकड़े सिर्फ़ इसी फ़ोन में रहते हैं। कुछ भी अपलोड नहीं होता।</string>
+    <string name="stats_clear">सुनने का इतिहास साफ़ करें</string>
+    <string name="stats_clear_title">सुनने का इतिहास साफ़ करें?</string>
+    <string name="stats_clear_text">कितनी बार सुना, सबसे ज़्यादा सुने गए और ये आंकड़े फिर से शून्य से शुरू होंगे।</string>
+
+    <!-- Videos -->
+    <string name="videos_permission_needed">Ampli को इस फ़ोन के वीडियो देखने की इजाज़त दें, जैसे कैमरा क्लिप और डाउनलोड।</string>
+    <string name="videos_none">इस फ़ोन में अभी कोई वीडियो नहीं है। कैमरा रिकॉर्डिंग और डाउनलोड किए गए वीडियो यहां दिखेंगे।</string>
+    <string name="videos_all_count">सभी %1$d</string>
+    <string name="videos_locked_title">Ampli में अपने वीडियो देखें</string>
+    <string name="videos_locked_text">कैमरा क्लिप, WhatsApp और डाउनलोड किए गए वीडियो, फ़ुल स्क्रीन या छोटी फ़्लोटिंग विंडो में।</string>
+    <string name="videos_untitled">वीडियो</string>
+
+    <!-- Wi-Fi transfer -->
+    <string name="transfer_title">कंप्यूटर से गाने भेजें</string>
+    <string name="transfer_starting">शुरू हो रहा है…</string>
+    <string name="transfer_connect_wifi">Wi-Fi से जुड़ें</string>
+    <string name="transfer_same_wifi">आपका फ़ोन और कंप्यूटर एक ही Wi-Fi पर होने चाहिए (या कंप्यूटर आपके फ़ोन के हॉटस्पॉट पर)।</string>
+    <string name="transfer_open_address">अपने कंप्यूटर पर यह पता खोलें:</string>
+    <string name="transfer_how_it_works">कैसे काम करता है</string>
+    <string name="transfer_step1">1. कंप्यूटर को उसी Wi-Fi से जोड़ें जिस पर यह फ़ोन है।</string>
+    <string name="transfer_step2">2. ऊपर दिया पता किसी भी ब्राउज़र (Chrome, Safari, Edge) में टाइप करें।</string>
+    <string name="transfer_step3">3. अपनी म्यूज़िक फ़ाइलें खींचकर पेज पर छोड़ दें।</string>
+    <string name="transfer_step4">4. जब तक हर फ़ाइल पर \"Sent\" न दिखे, यह स्क्रीन खुली रखें।</string>
+    <string name="transfer_privacy">फ़ाइलें सीधे इस फ़ोन के Music/Ampli फ़ोल्डर में जाती हैं। इंटरनेट पर कुछ भी अपलोड नहीं होता, और यह स्क्रीन छोड़ते ही सर्वर बंद हो जाता है।</string>
+    <string name="transfer_received">मिली फ़ाइलें (%1$d)</string>
+
+    <!-- Home screen widget -->
+    <string name="widget_open_app">Ampli खोलें</string>
+    <string name="widget_tap_play">अपने गाने फिर से सुनने के लिए प्ले दबाएं</string>
+</resources>
