@@ -88,6 +88,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     var ringtoneSong by remember { mutableStateOf<Song?>(null) }
     var tagSong by remember { mutableStateOf<Song?>(null) }
     var deleteSongs by remember { mutableStateOf<List<Song>?>(null) }
+    var moveSongs by remember { mutableStateOf<List<Song>?>(null) }
     val playlists by vm.playlists.collectAsStateWithLifecycle()
     val songSort by vm.prefs.songSort.collectAsStateWithLifecycle()
     val folders by vm.folders.collectAsStateWithLifecycle()
@@ -108,6 +109,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     var showDuplicates by rememberSaveable { mutableStateOf(false) }
     var showRecognize by remember { mutableStateOf(false) }
     var showPro by rememberSaveable { mutableStateOf(false) }
+    var showHelp by rememberSaveable { mutableStateOf(false) }
     val openPro: () -> Unit = { showPro = true }
     val snackbar = remember { SnackbarHostState() }
 
@@ -127,6 +129,14 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     LaunchedEffect(Unit) { vm.messages.collect { snackbar.showSnackbar(it) } }
 
     val currentId = player.current?.mediaId
+    val discoverActions = remember(vm) {
+        DiscoverActions(
+            play = vm.player::play,
+            playNext = { vm.player.playNext(it); vm.notify(context.getString(R.string.msg_playing_next, it.title)) },
+            addToQueue = { vm.player.addToQueue(it); vm.notify(context.getString(R.string.msg_added_to_queue)) },
+            download = { song, folder -> vm.download(song, folder) },
+        )
+    }
 
     Box(Modifier.fillMaxSize()) {
         Scaffold(
@@ -172,6 +182,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                         onSetRingtone = { ringtoneSong = it; showRingtone = true },
                         onEditTags = { tagSong = it },
                         onDelete = { if (it.isNotEmpty()) deleteSongs = it },
+                        onMove = { if (it.isNotEmpty()) moveSongs = it },
                         stats = stats,
                         onOpenStats = { showStats = true },
                         playlists = playlists,
@@ -181,16 +192,21 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                         sort = songSort,
                         onSort = vm.prefs::setSongSort,
                     )
-                    1 -> OnlineScreen(
-                        state = online,
+                    1 -> DiscoverScreen(
                         currentId = currentId,
-                        onQueryChange = { vm.searchOnline(it) },
-                        onLoadPopular = { vm.searchOnline("", debounce = false) },
-                        onPlay = vm.player::play,
-                        onPlayNext = { vm.player.playNext(it); vm.notify(context.getString(R.string.msg_playing_next, it.title)) },
-                        onAddToQueue = { vm.player.addToQueue(it); vm.notify(context.getString(R.string.msg_added_to_queue)) },
-                        onDownload = vm::download,
-                    )
+                        actions = discoverActions,
+                    ) {
+                        OnlineScreen(
+                            state = online,
+                            currentId = currentId,
+                            onQueryChange = { vm.searchOnline(it) },
+                            onLoadPopular = { vm.searchOnline("", debounce = false) },
+                            onPlay = vm.player::play,
+                            onPlayNext = discoverActions.playNext,
+                            onAddToQueue = discoverActions.addToQueue,
+                            onDownload = { vm.download(it) },
+                        )
+                    }
                     2 -> if (adsRemoved) VideosScreen(videos, onLoad = vm::loadVideos)
                          else LockedVideos(price = price, onGetPro = openPro)
                     else -> SettingsScreen(
@@ -205,6 +221,8 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                         folders = folders,
                         hiddenFolders = hiddenFolders,
                         onFolderHidden = vm.prefs::setFolderHidden,
+                        onLibraryChanged = vm::loadLibrary,
+                        onOpenHelp = { showHelp = true },
                     )
                 }
             }
@@ -289,6 +307,14 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
             )
         }
 
+        AnimatedVisibility(
+            visible = showHelp,
+            enter = slideInVertically { it },
+            exit = slideOutVertically { it },
+        ) {
+            HelpScreen(isPro = adsRemoved, onClose = { showHelp = false })
+        }
+
         if (showRecognize) RecognizeDialog(isPro = adsRemoved, onGetPro = openPro, onDismiss = { showRecognize = false })
 
         deleteSongs?.let { songs ->
@@ -300,6 +326,21 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                         deleteSongs = null
                         vm.loadLibrary()
                         Toast.makeText(context, context.resources.getQuantityString(R.plurals.msg_songs_deleted, count, count), Toast.LENGTH_SHORT).show()
+                    },
+                )
+            }
+        }
+
+        moveSongs?.let { songs ->
+            key(songs.map { it.id }) {
+                MoveSongsDialog(
+                    songs,
+                    folders = folders.map { it.first },
+                    onDismiss = { moveSongs = null },
+                    onMoved = { count ->
+                        moveSongs = null
+                        vm.loadLibrary()
+                        Toast.makeText(context, context.resources.getQuantityString(R.plurals.msg_songs_moved, count, count), Toast.LENGTH_SHORT).show()
                     },
                 )
             }

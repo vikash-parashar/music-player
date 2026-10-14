@@ -25,6 +25,9 @@ class MusicApp : Application(), SingletonImageLoader.Factory {
     val prefs by lazy { AppPrefs(this) }
     val playStats by lazy { PlayStats(this) }
     val playlists by lazy { PlaylistStore(this) }
+    val spoken by lazy { com.vikash.mp3player.data.SpokenRepository() }
+    val bookmarks by lazy { com.vikash.mp3player.data.BookmarkStore(this) }
+    val podcastFollows by lazy { com.vikash.mp3player.data.PodcastFollows(this) }
 
     override fun newImageLoader(context: PlatformContext): ImageLoader =
         ImageLoader.Builder(context).crossfade(true).build()

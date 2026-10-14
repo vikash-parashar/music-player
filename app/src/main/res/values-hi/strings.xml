@@ -240,6 +240,10 @@
     <string name="settings_language_system">फ़ोन की भाषा</string>
     <string name="settings_language_english">English</string>
     <string name="settings_language_hindi">हिंदी</string>
+    <string name="settings_language_tamil">தமிழ்</string>
+    <string name="settings_language_telugu">తెలుగు</string>
+    <string name="settings_language_bengali">বাংলা</string>
+    <string name="settings_language_marathi">मराठी</string>
     <string name="pro_purchase_test_build">Ampli के Play Store पर आने के बाद पेमेंट काम करेगा। अभी के लिए सेटिंग्स में \"टेस्ट बिल्ड: Pro आज़माएं\" इस्तेमाल करें।</string>
     <string name="pro_purchase_failed">Google Play तक नहीं पहुंच पाए। इंटरनेट चेक करके फिर कोशिश करें।</string>
 
