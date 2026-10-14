@@ -103,6 +103,7 @@ fun LibraryScreen(
     favorites: List<String>,
     onToggleFavorite: (Song) -> Unit,
     onSetRingtone: (Song) -> Unit,
+    onEditTags: (Song) -> Unit,
     stats: StatsData,
     onOpenStats: () -> Unit,
 ) {
@@ -197,6 +198,7 @@ fun LibraryScreen(
                         favorites = favorites,
                         onToggleFavorite = onToggleFavorite,
                         onSetRingtone = onSetRingtone,
+                        onEditTags = onEditTags,
                     )
                 }
             }
@@ -213,6 +215,7 @@ fun LibraryScreen(
                     favorites = favorites,
                     onToggleFavorite = onToggleFavorite,
                     onSetRingtone = onSetRingtone,
+                    onEditTags = onEditTags,
                 )
             }
             else -> {
@@ -279,6 +282,7 @@ private fun SongList(
     favorites: List<String>,
     onToggleFavorite: (Song) -> Unit,
     onSetRingtone: (Song) -> Unit,
+    onEditTags: (Song) -> Unit,
 ) {
     LazyColumn(Modifier.fillMaxSize()) {
         item {
@@ -308,6 +312,7 @@ private fun SongList(
                     SongAction("Add to queue") { onAddToQueue(song) },
                     SongAction(if (fav) "Remove from $MY_FAVORITES" else "Add to $MY_FAVORITES") { onToggleFavorite(song) },
                     SongAction("Set as ringtone") { onSetRingtone(song) },
+                    SongAction("Edit song info") { onEditTags(song) },
                 ),
                 isFavorite = fav,
                 onToggleFavorite = { onToggleFavorite(song) },
