@@ -107,6 +107,8 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     var showCarMode by rememberSaveable { mutableStateOf(false) }
     var showDuplicates by rememberSaveable { mutableStateOf(false) }
     var showRecognize by remember { mutableStateOf(false) }
+    var showPro by rememberSaveable { mutableStateOf(false) }
+    val openPro: () -> Unit = { showPro = true }
     val snackbar = remember { SnackbarHostState() }
 
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
@@ -128,7 +130,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
 
     Box(Modifier.fillMaxSize()) {
         Scaffold(
-            topBar = { BrandHeader(showAdFreePill = !adsRemoved, onAdFreeClick = { tab = 3 }, onRecognize = { showRecognize = true }) },
+            topBar = { BrandHeader(showAdFreePill = !adsRemoved, onAdFreeClick = openPro, onRecognize = { showRecognize = true }) },
             snackbarHost = { SnackbarHost(snackbar) },
             bottomBar = {
                 Column {
@@ -190,9 +192,9 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                         onDownload = vm::download,
                     )
                     2 -> if (adsRemoved) VideosScreen(videos, onLoad = vm::loadVideos)
-                         else LockedVideos(price = price, onGetPro = onRemoveAds)
+                         else LockedVideos(price = price, onGetPro = openPro)
                     else -> SettingsScreen(
-                        adsRemoved = adsRemoved, price = price, onRemoveAds = onRemoveAds,
+                        adsRemoved = adsRemoved, price = price, onRemoveAds = openPro,
                         onTestPro = vm.billing::setTestPro,
                         seekStyle = seekStyle, onSeekStyle = { vm.prefs.setSeekStyle(it.name) },
                         themeMode = themeMode, onThemeMode = vm.prefs::setThemeMode,
@@ -225,7 +227,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                 onCycleAb = vm::cycleAbRepeat,
                 onCarMode = { showCarMode = true },
                 isPro = adsRemoved,
-                onGetPro = onRemoveAds,
+                onGetPro = openPro,
                 onClose = { showPlayer = false },
             )
         }
@@ -269,7 +271,25 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
             CarModeScreen(player, vm.player, library.songs, onPlay = vm.player::play, onClose = { showCarMode = false })
         }
 
-        if (showRecognize) RecognizeDialog(isPro = adsRemoved, onGetPro = onRemoveAds, onDismiss = { showRecognize = false })
+        AnimatedVisibility(
+            visible = showPro,
+            enter = slideInVertically { it },
+            exit = slideOutVertically { it },
+        ) {
+            ProScreen(
+                isPro = adsRemoved,
+                playPrice = price,
+                onBuy = onRemoveAds,
+                onRestore = {
+                    vm.billing.restore()
+                    Toast.makeText(context, context.getString(R.string.pro_restoring), Toast.LENGTH_SHORT).show()
+                },
+                onTestPro = { vm.billing.setTestPro(true) },
+                onClose = { showPro = false },
+            )
+        }
+
+        if (showRecognize) RecognizeDialog(isPro = adsRemoved, onGetPro = openPro, onDismiss = { showRecognize = false })
 
         deleteSongs?.let { songs ->
             key(songs.map { it.id }) {
