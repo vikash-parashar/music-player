@@ -51,6 +51,7 @@ class PlaybackService : MediaLibraryService() {
     private var session: MediaLibrarySession? = null
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private lateinit var library: LocalMusicRepository
+    private val resume by lazy { ResumePositions(this) }
 
     /** Cached local songs for the car browse tree; reloaded when the root is requested. */
     private var songs: List<Song> = emptyList()
@@ -105,6 +106,7 @@ class PlaybackService : MediaLibraryService() {
             }
 
             override fun onIsPlayingChanged(isPlaying: Boolean) {
+                if (!isPlaying) resume.save(player)
                 refreshWidget(player)
                 if (isPlaying) {
                     if (trackedItem == null) trackedItem = player.currentMediaItem
@@ -120,6 +122,14 @@ class PlaybackService : MediaLibraryService() {
             }
 
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                // Leaving a long track: remember where we were, unless it played to the end.
+                trackedItem?.let { old ->
+                    if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_AUTO) resume.clear(old.mediaId)
+                }
+                // Coming back to a long track: carry on from where it was left.
+                if (mediaItem != null && reason != Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT) {
+                    resume.positionFor(mediaItem.mediaId)?.let { player.seekTo(it) }
+                }
                 refreshWidget(player)
                 reportListening()
                 trackedItem = mediaItem
@@ -127,6 +137,14 @@ class PlaybackService : MediaLibraryService() {
                 if (playingSince != 0L) playingSince = SystemClock.elapsedRealtime()
             }
         })
+
+        // Long tracks (audiobooks, podcasts, DJ mixes): save the position every few seconds.
+        scope.launch {
+            while (true) {
+                delay(5_000)
+                if (player.isPlaying) resume.save(player)
+            }
+        }
 
         // Fade between songs: lower the volume over the last seconds of a song and raise it over
         // the first seconds of the next. A plain volume ramp, so it works with any file.

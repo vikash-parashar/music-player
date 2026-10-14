@@ -7,6 +7,8 @@ import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
@@ -99,6 +101,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     var showRingtone by remember { mutableStateOf(false) }
     var showStats by rememberSaveable { mutableStateOf(false) }
     var showTransfer by rememberSaveable { mutableStateOf(false) }
+    var showCarMode by rememberSaveable { mutableStateOf(false) }
     val snackbar = remember { SnackbarHostState() }
 
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
@@ -189,6 +192,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                         themeMode = themeMode, onThemeMode = vm.prefs::setThemeMode,
                         onBackup = vm::exportBackup, onRestore = vm::restoreBackup,
                         onOpenTransfer = { showTransfer = true },
+                        onOpenCarMode = { showCarMode = true },
                         folders = folders,
                         hiddenFolders = hiddenFolders,
                         onFolderHidden = vm.prefs::setFolderHidden,
@@ -212,6 +216,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                 },
                 abLoop = abLoop,
                 onCycleAb = vm::cycleAbRepeat,
+                onCarMode = { showCarMode = true },
                 onClose = { showPlayer = false },
             )
         }
@@ -241,6 +246,10 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
             ringtoneSong?.let { song ->
                 key(song.id) { RingtoneEditorScreen(song, onClose = { showRingtone = false }) }
             }
+        }
+
+        AnimatedVisibility(visible = showCarMode, enter = fadeIn(), exit = fadeOut()) {
+            CarModeScreen(player, vm.player, library.songs, onPlay = vm.player::play, onClose = { showCarMode = false })
         }
 
         tagSong?.let { song ->

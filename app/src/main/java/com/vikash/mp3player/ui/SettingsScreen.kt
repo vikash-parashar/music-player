@@ -78,6 +78,7 @@ fun SettingsScreen(
     onBackup: (Uri) -> Unit,
     onRestore: (Uri) -> Unit,
     onOpenTransfer: () -> Unit,
+    onOpenCarMode: () -> Unit,
     folders: List<Pair<String, Int>>,
     hiddenFolders: Set<String>,
     onFolderHidden: (String, Boolean) -> Unit,
@@ -93,6 +94,7 @@ fun SettingsScreen(
         SleepTimerCard()
         FadeCard()
         EqualizerCard()
+        CarModeCard(onOpenCarMode)
         TransferCard(onOpenTransfer)
         FoldersCard(folders, hiddenFolders, onFolderHidden)
         BackupCard(onBackup, onRestore)
@@ -415,6 +417,21 @@ private fun FoldersCard(folders: List<Pair<String, Int>>, hidden: Set<String>, o
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun CarModeCard(onOpen: () -> Unit) {
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(16.dp)) {
+            Text("Car mode", style = MaterialTheme.typography.titleMedium)
+            Text(
+                "Huge buttons, swipe to change songs, and say a song or artist to play it. Keep your eyes on the road.",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(10.dp))
+            Button(onClick = onOpen) { Text("Start car mode") }
         }
     }
 }
