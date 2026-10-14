@@ -99,6 +99,56 @@ public final class Id3Editor {
         out.flush();
     }
 
+    /**
+     * Returns the lyrics stored in the tag (the first USLT frame), or null. Many lyrics taggers
+     * put LRC text with [mm:ss] timestamps in here, which the player shows in sync.
+     */
+    public static String readLyrics(InputStream in) throws IOException {
+        byte[] header = new byte[10];
+        if (readFully(in, header) != 10 || header[0] != 'I' || header[1] != 'D' || header[2] != '3') return null;
+        int major = header[3];
+        int flags = header[5] & 0xFF;
+        if ((major != 3 && major != 4) || (flags & 0x80) != 0) return null;
+        int size = syncsafe(header, 6);
+        if (size <= 0 || size > 64 * 1024 * 1024) return null;
+        byte[] body = new byte[size];
+        if (readFully(in, body) != size) return null;
+        int pos = 0;
+        if ((flags & 0x40) != 0) pos = major == 4 ? syncsafe(body, 0) : int32(body, 0) + 4;
+        while (pos + 10 <= body.length && body[pos] != 0) {
+            String id = new String(body, pos, 4, StandardCharsets.ISO_8859_1);
+            int frameSize = major == 4 ? syncsafe(body, pos + 4) : int32(body, pos + 4);
+            if (frameSize <= 0 || pos + 10 + frameSize > body.length) break;
+            if (id.equals("USLT") && frameSize > 4) {
+                int start = pos + 10;
+                int end = start + frameSize;
+                int enc = body[start];
+                int p = start + 4; // encoding byte + 3-byte language
+                boolean wide = enc == 1 || enc == 2;
+                // Skip the content description, which ends with a null (two bytes for UTF-16).
+                if (wide) {
+                    while (p + 1 < end && !(body[p] == 0 && body[p + 1] == 0)) p += 2;
+                    p += 2;
+                } else {
+                    while (p < end && body[p] != 0) p++;
+                    p += 1;
+                }
+                if (p >= end) return null;
+                String text;
+                switch (enc) {
+                    case 1: text = new String(body, p, end - p, StandardCharsets.UTF_16); break;
+                    case 2: text = new String(body, p, end - p, StandardCharsets.UTF_16BE); break;
+                    case 3: text = new String(body, p, end - p, StandardCharsets.UTF_8); break;
+                    default: text = new String(body, p, end - p, StandardCharsets.ISO_8859_1);
+                }
+                text = text.replace("\u0000", "").trim();
+                return text.isEmpty() ? null : text;
+            }
+            pos += 10 + frameSize;
+        }
+        return null;
+    }
+
     /** A text frame in UTF-16 with a byte-order mark, which both ID3v2.3 and v2.4 accept. */
     static byte[] textFrame(String id, String value, int major) {
         byte[] text = value.getBytes(StandardCharsets.UTF_16); // big-endian with BOM

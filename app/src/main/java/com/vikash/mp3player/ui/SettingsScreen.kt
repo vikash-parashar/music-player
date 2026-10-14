@@ -30,6 +30,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -86,6 +87,7 @@ fun SettingsScreen(
         AppearanceCard(themeMode, onThemeMode)
         SeekStyleCard(seekStyle, isPro = adsRemoved, onPick = onSeekStyle, onGetPro = onRemoveAds)
         SleepTimerCard()
+        FadeCard()
         EqualizerCard()
         TransferCard(onOpenTransfer)
         BackupCard(onBackup, onRestore)
@@ -342,6 +344,32 @@ private fun TransferCard(onOpen: () -> Unit) {
             )
             Spacer(Modifier.height(10.dp))
             Button(onClick = onOpen) { Text("Start Wi-Fi transfer") }
+        }
+    }
+}
+
+/** "Fade between songs": how many seconds the end and start of songs fade over. */
+@Composable
+private fun FadeCard() {
+    val context = LocalContext.current
+    val seconds by remember { com.vikash.mp3player.playback.FadeSetting.seconds(context) }.collectAsState()
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(16.dp)) {
+            Text("Fade between songs", style = MaterialTheme.typography.titleMedium)
+            Text(
+                "Each song fades out at the end and the next one fades in, so nothing stops suddenly.",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(8.dp))
+            Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                com.vikash.mp3player.playback.FadeSetting.CHOICES.forEach { s ->
+                    FilterChip(
+                        selected = seconds == s,
+                        onClick = { com.vikash.mp3player.playback.FadeSetting.set(context, s) },
+                        label = { Text(if (s == 0) "Off" else "$s s") },
+                    )
+                }
+            }
         }
     }
 }

@@ -128,6 +128,24 @@ class PlaybackService : MediaLibraryService() {
             }
         })
 
+        // Fade between songs: lower the volume over the last seconds of a song and raise it over
+        // the first seconds of the next. A plain volume ramp, so it works with any file.
+        val fade = FadeSetting.seconds(this)
+        scope.launch {
+            while (true) {
+                val fadeMs = fade.value * 1000L
+                val duration = player.duration
+                val target = if (fadeMs > 0 && player.isPlaying && duration > fadeMs * 2 + 2000) {
+                    val pos = player.currentPosition
+                    val fadeIn = (pos.toFloat() / fadeMs).coerceIn(0f, 1f)
+                    val fadeOut = ((duration - pos).toFloat() / fadeMs).coerceIn(0f, 1f)
+                    minOf(fadeIn, fadeOut)
+                } else 1f
+                if (player.volume != target) player.volume = target
+                delay(if (fadeMs > 0) 50 else 500)
+            }
+        }
+
         scope.launch {
             SleepTimer.endsAtMillis.collectLatest { endsAt ->
                 if (endsAt == null) return@collectLatest
