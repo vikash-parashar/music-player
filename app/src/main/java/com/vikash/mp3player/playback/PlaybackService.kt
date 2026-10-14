@@ -3,6 +3,7 @@ package com.vikash.mp3player.playback
 import android.app.PendingIntent
 import android.content.Intent
 import android.os.Bundle
+import android.os.SystemClock
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
@@ -23,6 +24,7 @@ import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.SettableFuture
 import com.vikash.mp3player.MainActivity
+import com.vikash.mp3player.MusicApp
 import com.vikash.mp3player.R
 import com.vikash.mp3player.data.LocalMusicRepository
 import com.vikash.mp3player.data.Song
@@ -51,6 +53,13 @@ class PlaybackService : MediaLibraryService() {
 
     /** Cached local songs for the car browse tree; reloaded when the root is requested. */
     private var songs: List<Song> = emptyList()
+
+    // Listening time of the current song, for play counts and listening stats. Tracked here,
+    // not in the UI, so songs played with the app closed still count.
+    private var trackedItem: MediaItem? = null
+    private var trackedDurationMs = 0L
+    private var heardMs = 0L
+    private var playingSince = 0L // elapsedRealtime when playback started; 0 while paused
 
     override fun onCreate() {
         super.onCreate()
@@ -93,6 +102,27 @@ class PlaybackService : MediaLibraryService() {
             override fun onRepeatModeChanged(repeatMode: Int) {
                 librarySession.setCustomLayout(controlButtons(player))
             }
+
+            override fun onIsPlayingChanged(isPlaying: Boolean) {
+                if (isPlaying) {
+                    if (trackedItem == null) trackedItem = player.currentMediaItem
+                    playingSince = SystemClock.elapsedRealtime()
+                } else {
+                    addHeardTime()
+                    playingSince = 0L
+                }
+            }
+
+            override fun onPlaybackStateChanged(playbackState: Int) {
+                if (playbackState == Player.STATE_READY && player.duration > 0) trackedDurationMs = player.duration
+            }
+
+            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                reportListening()
+                trackedItem = mediaItem
+                trackedDurationMs = if (player.duration > 0) player.duration else 0L
+                if (playingSince != 0L) playingSince = SystemClock.elapsedRealtime()
+            }
         })
 
         scope.launch {
@@ -113,7 +143,32 @@ class PlaybackService : MediaLibraryService() {
         if (!player.playWhenReady || player.mediaItemCount == 0) stopSelf()
     }
 
+    private fun addHeardTime() {
+        if (playingSince != 0L) {
+            val now = SystemClock.elapsedRealtime()
+            heardMs += now - playingSince
+            playingSince = now
+        }
+    }
+
+    /** Hands the finished song's listening time to [com.vikash.mp3player.data.PlayStats]. */
+    private fun reportListening() {
+        addHeardTime()
+        val item = trackedItem
+        if (item != null && heardMs > 0) {
+            (application as MusicApp).playStats.record(
+                id = item.mediaId,
+                title = item.mediaMetadata.title?.toString().orEmpty(),
+                artist = item.mediaMetadata.artist?.toString().orEmpty(),
+                heardMs = heardMs,
+                durationMs = trackedDurationMs,
+            )
+        }
+        heardMs = 0L
+    }
+
     override fun onDestroy() {
+        reportListening()
         scope.cancel()
         EqualizerController.release()
         session?.run {

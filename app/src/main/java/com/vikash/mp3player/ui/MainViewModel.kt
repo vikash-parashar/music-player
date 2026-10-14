@@ -4,7 +4,9 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.vikash.mp3player.MusicApp
+import com.vikash.mp3player.data.Backup
 import com.vikash.mp3player.data.Song
+import com.vikash.mp3player.playback.EqualizerController
 import com.vikash.mp3player.playback.PlayerConnection
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -20,6 +22,11 @@ data class LibraryState(
     val loading: Boolean = false,
     val songs: List<Song> = emptyList(),
 )
+
+/** A-B repeat: loop the part of the song between [aMs] and [bMs]. */
+data class AbLoop(val aMs: Long? = null, val bMs: Long? = null, val songId: String? = null) {
+    val active get() = aMs != null && bMs != null
+}
 
 data class OnlineState(
     val query: String = "",
@@ -52,6 +59,61 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
 
     private var searchJob: Job? = null
+
+    val stats = musicApp.playStats.data
+
+    fun clearStats() {
+        musicApp.playStats.clear()
+        _messages.tryEmit("Listening history cleared")
+    }
+
+    private val _abLoop = MutableStateFlow(AbLoop())
+    val abLoop: StateFlow<AbLoop> = _abLoop.asStateFlow()
+    private var abJob: Job? = null
+
+    /** First tap marks A, second marks B and starts looping, third turns it off. */
+    fun cycleAbRepeat() {
+        val pos = player.positionMs()
+        val songId = player.state.value.current?.mediaId
+        val loop = _abLoop.value.let { if (it.songId != songId) AbLoop() else it }
+        when {
+            loop.aMs == null -> {
+                _abLoop.value = AbLoop(aMs = pos, songId = songId)
+                _messages.tryEmit("A set. Tap again at the end of the part to loop.")
+            }
+            loop.bMs == null -> {
+                if (pos <= loop.aMs + 500) {
+                    _messages.tryEmit("B must be after A")
+                    return
+                }
+                _abLoop.value = loop.copy(bMs = pos)
+                startAbLoop()
+            }
+            else -> clearAbRepeat()
+        }
+    }
+
+    private fun clearAbRepeat() {
+        abJob?.cancel()
+        abJob = null
+        _abLoop.value = AbLoop()
+    }
+
+    private fun startAbLoop() {
+        abJob?.cancel()
+        val songId = _abLoop.value.songId
+        abJob = viewModelScope.launch {
+            while (true) {
+                val loop = _abLoop.value
+                val a = loop.aMs ?: break
+                val b = loop.bMs ?: break
+                // A different song started: the loop belonged to the old one.
+                if (player.state.value.current?.mediaId != songId) { clearAbRepeat(); break }
+                if (player.positionMs() >= b) player.seekTo(a)
+                delay(50)
+            }
+        }
+    }
 
     private val _videos = MutableStateFlow(VideoState())
     val videos: StateFlow<VideoState> = _videos.asStateFlow()
@@ -90,6 +152,29 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         runCatching { musicApp.downloader.download(song) }
             .onSuccess { _messages.tryEmit("Downloading \"${song.title}\" to Music/MP3 Player") }
             .onFailure { _messages.tryEmit(it.message ?: "Download failed") }
+    }
+
+    fun exportBackup(target: android.net.Uri) {
+        viewModelScope.launch {
+            runCatching {
+                Backup.export(getApplication(), target, _library.value.songs, stats.value, prefs.favorites.value)
+            }
+                .onSuccess { _messages.tryEmit("Backup saved") }
+                .onFailure { _messages.tryEmit(it.message ?: "Backup failed") }
+        }
+    }
+
+    fun restoreBackup(source: android.net.Uri) {
+        viewModelScope.launch {
+            runCatching { Backup.restore(getApplication(), source, _library.value.songs) }
+                .onSuccess { (restoredStats, favorites) ->
+                    musicApp.playStats.replaceAll(restoredStats)
+                    prefs.reloadAfterRestore(favorites)
+                    EqualizerController.reload()
+                    _messages.tryEmit("Restored ${favorites.size} favorites and your settings")
+                }
+                .onFailure { _messages.tryEmit(it.message ?: "Restore failed") }
+        }
     }
 
     fun notify(message: String) {

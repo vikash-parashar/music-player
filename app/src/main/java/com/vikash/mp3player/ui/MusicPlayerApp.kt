@@ -71,6 +71,8 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     val favorites by vm.prefs.favorites.collectAsStateWithLifecycle()
     val themeMode by vm.prefs.themeMode.collectAsStateWithLifecycle()
     val seekStyleName by vm.prefs.seekStyle.collectAsStateWithLifecycle()
+    val stats by vm.stats.collectAsStateWithLifecycle()
+    val abLoop by vm.abLoop.collectAsStateWithLifecycle()
     // Pro styles fall back to Classic if Pro is turned off.
     val seekStyle = SeekStyle.entries.firstOrNull { it.name == seekStyleName }
         ?.takeIf { !it.pro || adsRemoved } ?: SeekStyle.Classic
@@ -81,6 +83,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     // Ringtone maker: the song stays set while the panel slides away.
     var ringtoneSong by remember { mutableStateOf<Song?>(null) }
     var showRingtone by remember { mutableStateOf(false) }
+    var showStats by rememberSaveable { mutableStateOf(false) }
     val snackbar = remember { SnackbarHostState() }
 
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
@@ -142,6 +145,8 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                         favorites = favorites,
                         onToggleFavorite = { vm.toggleFavorite(it.id, it.title) },
                         onSetRingtone = { ringtoneSong = it; showRingtone = true },
+                        stats = stats,
+                        onOpenStats = { showStats = true },
                     )
                     1 -> OnlineScreen(
                         state = online,
@@ -160,6 +165,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                         onTestPro = vm.billing::setTestPro,
                         seekStyle = seekStyle, onSeekStyle = { vm.prefs.setSeekStyle(it.name) },
                         themeMode = themeMode, onThemeMode = vm.prefs::setThemeMode,
+                        onBackup = vm::exportBackup, onRestore = vm::restoreBackup,
                     )
                 }
             }
@@ -178,8 +184,18 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                     if (song != null) { ringtoneSong = song; showRingtone = true }
                     else Toast.makeText(context, "Ringtones can be made from songs saved on this phone.", Toast.LENGTH_SHORT).show()
                 },
+                abLoop = abLoop,
+                onCycleAb = vm::cycleAbRepeat,
                 onClose = { showPlayer = false },
             )
+        }
+
+        AnimatedVisibility(
+            visible = showStats,
+            enter = slideInVertically { it },
+            exit = slideOutVertically { it },
+        ) {
+            StatsScreen(stats, onClear = vm::clearStats, onClose = { showStats = false })
         }
 
         AnimatedVisibility(

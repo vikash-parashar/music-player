@@ -27,6 +27,7 @@ class LocalMusicRepository(private val context: Context) {
             MediaStore.Audio.Media.ALBUM,
             MediaStore.Audio.Media.ALBUM_ID,
             MediaStore.Audio.Media.DURATION,
+            MediaStore.Audio.Media.DATE_ADDED,
             folderColumn,
         )
         // Skip ringtones, notification sounds and tiny clips.
@@ -43,6 +44,7 @@ class LocalMusicRepository(private val context: Context) {
             val albumIdCol = c.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID)
             val durationCol = c.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)
             val folderCol = c.getColumnIndexOrThrow(folderColumn)
+            val addedCol = c.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_ADDED)
             while (c.moveToNext()) {
                 val id = c.getLong(idCol)
                 songs += Song(
@@ -54,6 +56,7 @@ class LocalMusicRepository(private val context: Context) {
                     folder = folderOf(c.getString(folderCol).orEmpty()),
                     durationMs = c.getLong(durationCol),
                     artworkUri = ContentUris.withAppendedId(ALBUM_ART, c.getLong(albumIdCol)),
+                    dateAddedSec = c.getLong(addedCol),
                 )
             }
         }
