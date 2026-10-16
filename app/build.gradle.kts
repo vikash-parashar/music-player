@@ -7,8 +7,9 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
 }
 
-// Keys live in local.properties (never committed). Missing AdMob keys fall back to
-// Google's public test IDs so debug builds never show real ads.
+// Keys live in local.properties (never committed). Debug (sideload) builds always use Google's
+// public test ad IDs so they never show real ads. Release (Play) builds use Ampli's own AdMob
+// app and banner IDs; these are public identifiers (they ship inside every APK), not secrets.
 val localProps = Properties().apply {
     val f = rootProject.file("local.properties")
     if (f.exists()) f.inputStream().use { load(it) }
@@ -73,8 +74,8 @@ android {
             // Jamendo needs a paid licence for an ad-supported app, so v1 ships without it.
             buildConfigField("boolean", "ONLINE_MUSIC", prop("ONLINE_MUSIC_IN_RELEASE", "false"))
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            manifestPlaceholders["admobAppId"] = prop("ADMOB_APP_ID", "ca-app-pub-3940256099942544~3347511713")
-            buildConfigField("String", "ADMOB_BANNER_ID", "\"${prop("ADMOB_BANNER_ID", "ca-app-pub-3940256099942544/9214589741")}\"")
+            manifestPlaceholders["admobAppId"] = prop("ADMOB_APP_ID", "ca-app-pub-8097353665002950~8534221783")
+            buildConfigField("String", "ADMOB_BANNER_ID", "\"${prop("ADMOB_BANNER_ID", "ca-app-pub-8097353665002950/5945560776")}\"")
         }
     }
 
