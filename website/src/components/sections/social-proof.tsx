@@ -6,7 +6,7 @@ import { SectionHeading } from "@/components/sections/section-heading";
 const stats = [
   { value: 0, prefix: "₹", suffix: "", label: "monthly fee, in any app" },
   { value: 3, prefix: "", suffix: "", label: "apps for everyday India" },
-  { value: 263, prefix: "", suffix: "", label: "Haryanvi lines in Car Hub" },
+  { value: 298, prefix: "", suffix: "", label: "Haryanvi lines in Car Hub" },
   { value: 100, prefix: "", suffix: "%", label: "offline music and voice" },
 ];
 

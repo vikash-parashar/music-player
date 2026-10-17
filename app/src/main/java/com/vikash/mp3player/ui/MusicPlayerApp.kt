@@ -40,6 +40,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.vikash.mp3player.R
@@ -81,6 +82,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     val trialUntil by com.vikash.mp3player.monetization.ProTrial.until.collectAsStateWithLifecycle()
     val tipPrices by vm.billing.tipPrices.collectAsStateWithLifecycle()
     val tipsReceived by vm.billing.tipsReceived.collectAsStateWithLifecycle()
+    val paymentPending by vm.billing.pending.collectAsStateWithLifecycle()
     var showVisualizer by rememberSaveable { mutableStateOf(false) }
     val discAnim by app.prefs.discAnimation.collectAsStateWithLifecycle()
     // The song starts at once; the CD change animation only plays on top.
@@ -129,6 +131,9 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     var showPro by rememberSaveable { mutableStateOf(false) }
     var showHelp by rememberSaveable { mutableStateOf(false) }
     val openPro: () -> Unit = { showPro = true }
+    LaunchedEffect(paymentPending) {
+        if (paymentPending) Toast.makeText(context, context.getString(R.string.billing_pending), Toast.LENGTH_LONG).show()
+    }
     val onTip: (String) -> Unit = { id ->
         val activity = context as? android.app.Activity
         if (activity == null || !vm.billing.purchaseTip(activity, id)) {
@@ -185,6 +190,12 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
             snackbarHost = { SnackbarHost(snackbar) },
             bottomBar = {
                 Column {
+                    // Banner sits above the mini player with clear space, never touching playback buttons
+                    // or the nav bar (AdMob's accidental-click guidance).
+                    if (!adsRemoved && adsReady) {
+                        androidx.compose.material3.HorizontalDivider(color = androidx.compose.material3.MaterialTheme.colorScheme.outlineVariant)
+                        BannerAd(Modifier.padding(top = 8.dp, bottom = 10.dp))
+                    }
                     MiniPlayer(
                         player,
                         onOpen = { showPlayer = true },
@@ -192,7 +203,6 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                         onNext = vm.player::next,
                         onPrevious = vm.player::previous,
                     )
-                    if (!adsRemoved && adsReady) BannerAd()
                     CompactNavBar(
                         tabs = listOf(
                             NavTab(stringResource(R.string.nav_library), Icons.Default.LibraryMusic),

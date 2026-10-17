@@ -17,4 +17,10 @@
     <string name="tip_pill_small">चहा %1$s</string>
     <string name="tip_pill_large">समोसा %1$s</string>
     <string name="tip_pill_xl">थाळी %1$s</string>
+    <string name="privacy_choices_title">गोपनीयता पर्याय</string>
+    <string name="privacy_choices_desc">जाहिराती तुमचा डेटा कसा वापरतात ते बदला.</string>
+    <string name="privacy_choices_open">गोपनीयता पर्याय उघडा</string>
+    <string name="billing_pending">पेमेंट प्रलंबित आहे. Google ने खात्री करताच तुमची खरेदी सुरू होईल.</string>
+    <string name="usage_counts_title">वापराची मोजणी पाठवा</string>
+    <string name="usage_counts_desc">कोणती फीचर्स वापरता याची साधी मोजणी एका रँडम ॲप ID सोबत पाठवा. नाव, ईमेल किंवा गाणी नाहीत.</string>
 </resources>

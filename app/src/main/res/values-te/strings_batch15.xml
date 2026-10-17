@@ -17,4 +17,10 @@
     <string name="tip_pill_small">చాయ్ %1$s</string>
     <string name="tip_pill_large">సమోసా %1$s</string>
     <string name="tip_pill_xl">థాలీ %1$s</string>
+    <string name="privacy_choices_title">గోప్యతా ఎంపికలు</string>
+    <string name="privacy_choices_desc">ప్రకటనలు మీ డేటాను ఎలా వాడాలో మార్చండి.</string>
+    <string name="privacy_choices_open">గోప్యతా ఎంపికలు తెరవండి</string>
+    <string name="billing_pending">చెల్లింపు పెండింగ్‌లో ఉంది. Google నిర్ధారించగానే మీ కొనుగోలు అన్‌లాక్ అవుతుంది.</string>
+    <string name="usage_counts_title">వినియోగ లెక్కలు పంపండి</string>
+    <string name="usage_counts_desc">మీరు ఏ ఫీచర్లు వాడుతున్నారో సాధారణ లెక్కలను ఒక ర్యాండమ్ యాప్ IDతో పంపండి. పేరు, ఈమెయిల్ లేదా పాటలు కాదు.</string>
 </resources>

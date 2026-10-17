@@ -124,6 +124,8 @@ fun SettingsScreen(
         BackupCard(onBackup, onRestore)
         InviteCard()
         HelpCard(onOpenHelp)
+        PrivacyChoicesCard()
+        UsageCountsCard()
     }
 }
 
@@ -434,6 +436,42 @@ private fun HelpCard(onOpen: () -> Unit) {
             Text(stringResource(R.string.help_card_desc), color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(10.dp))
             Button(onClick = onOpen) { Text(stringResource(R.string.help_open)) }
+        }
+    }
+}
+
+/** Lets people stop the feature-use counts sent to Ampli (only when the Ampli server is set up). */
+@Composable
+private fun UsageCountsCard() {
+    if (!com.vikash.mp3player.data.OwnerHooks.enabled) return
+    val context = LocalContext.current
+    var on by remember { mutableStateOf(com.vikash.mp3player.data.OwnerHooks.usageOn(context)) }
+    Card(Modifier.fillMaxWidth()) {
+        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text(stringResource(R.string.usage_counts_title), style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.usage_counts_desc), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            Spacer(Modifier.width(12.dp))
+            Switch(checked = on, onCheckedChange = { on = it; com.vikash.mp3player.data.OwnerHooks.setUsageOn(context, it) })
+        }
+    }
+}
+
+/** Shown only where the law requires it: lets people change their ad consent later. */
+@Composable
+private fun PrivacyChoicesCard() {
+    val required by com.vikash.mp3player.monetization.Ads.privacyOptionsRequired.collectAsState()
+    if (!required) return
+    val activity = LocalContext.current as? android.app.Activity ?: return
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(16.dp)) {
+            Text(stringResource(R.string.privacy_choices_title), style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.privacy_choices_desc), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Spacer(Modifier.height(10.dp))
+            OutlinedButton(onClick = { com.vikash.mp3player.monetization.Ads.showPrivacyOptions(activity) }) {
+                Text(stringResource(R.string.privacy_choices_open))
+            }
         }
     }
 }

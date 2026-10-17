@@ -125,6 +125,9 @@ fun DiscChangeOverlay(
     val swipe = remember { Animatable(0f) }
     val threshold = with(LocalDensity.current) { 96.dp.toPx() }
     val fg = MaterialTheme.colorScheme.onBackground
+    // Fixed Ampli rose for the song strip, so wallpaper colours don't change it.
+    val dark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val stripInk = if (dark) Color.White else Color(0xFF4C0519)
 
     Box(
         Modifier
@@ -172,17 +175,17 @@ fun DiscChangeOverlay(
                     .alpha(easeOut(seg(intro.value, 0.5f, 0.85f)))
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(18.dp))
-                    .background(MaterialTheme.colorScheme.primaryContainer)
+                    .background(if (dark) Color(0xFFBE123C) else Color(0xFFFFE4E6))
                     .padding(horizontal = 16.dp, vertical = 12.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
-                    title, color = MaterialTheme.colorScheme.onPrimaryContainer, fontSize = 18.sp, fontWeight = FontWeight.SemiBold,
+                    title, color = stripInk, fontSize = 18.sp, fontWeight = FontWeight.SemiBold,
                     maxLines = 1, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth(),
                 )
                 Text(
-                    artist, color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f), fontSize = 14.sp,
+                    artist, color = stripInk.copy(alpha = 0.75f), fontSize = 14.sp,
                     maxLines = 1, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth(),
                 )

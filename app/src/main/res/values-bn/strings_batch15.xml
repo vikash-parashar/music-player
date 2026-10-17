@@ -17,4 +17,10 @@
     <string name="tip_pill_small">চা %1$s</string>
     <string name="tip_pill_large">সিঙাড়া %1$s</string>
     <string name="tip_pill_xl">থালি %1$s</string>
+    <string name="privacy_choices_title">গোপনীয়তার পছন্দ</string>
+    <string name="privacy_choices_desc">বিজ্ঞাপন আপনার ডেটা কীভাবে ব্যবহার করবে তা বদলান।</string>
+    <string name="privacy_choices_open">গোপনীয়তার পছন্দ খুলুন</string>
+    <string name="billing_pending">পেমেন্ট বাকি। Google নিশ্চিত করলেই আপনার কেনাকাটা চালু হবে।</string>
+    <string name="usage_counts_title">ব্যবহারের হিসাব পাঠান</string>
+    <string name="usage_counts_desc">কোন ফিচার ব্যবহার করেন তার সাধারণ হিসাব একটি র‍্যান্ডম অ্যাপ ID সহ পাঠান। নাম, ইমেল বা গান নয়।</string>
 </resources>

@@ -46,6 +46,10 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
     val tipPrices: StateFlow<Map<String, String>> = _tipPrices.asStateFlow()
     private var tipDetails: Map<String, ProductDetails> = emptyMap()
 
+    /** True while a payment waits for the bank (common with UPI); the UI says "Payment pending". */
+    private val _pending = MutableStateFlow(false)
+    val pending: StateFlow<Boolean> = _pending.asStateFlow()
+
     /** Goes up by one each time a tip goes through, so the UI can say thank you. */
     private val _tipsReceived = MutableStateFlow(0)
     val tipsReceived: StateFlow<Int> = _tipsReceived.asStateFlow()
@@ -53,6 +57,8 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
     private val client = BillingClient.newBuilder(context)
         .setListener(this)
         .enablePendingPurchases(PendingPurchasesParams.newBuilder().enableOneTimeProducts().build())
+        // Billing 8: reconnects by itself when Play's service drops, so a tap never hits a dead client.
+        .enableAutoServiceReconnection()
         .build()
 
     fun start() {
@@ -118,8 +124,9 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
                 )
             )
             .build()
-        client.queryProductDetailsAsync(params) { result, list ->
+        client.queryProductDetailsAsync(params) { result, found ->
             if (result.responseCode != BillingClient.BillingResponseCode.OK) return@queryProductDetailsAsync
+            val list = found.productDetailsList
             productDetails = list.firstOrNull()
             _price.value = productDetails?.oneTimePurchaseOfferDetails?.formattedPrice
         }
@@ -130,8 +137,9 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
                 }
             )
             .build()
-        client.queryProductDetailsAsync(tipParams) { result, list ->
+        client.queryProductDetailsAsync(tipParams) { result, found ->
             if (result.responseCode != BillingClient.BillingResponseCode.OK) return@queryProductDetailsAsync
+            val list = found.productDetailsList
             tipDetails = list.associateBy { it.productId }
             _tipPrices.value = list.mapNotNull { d -> d.oneTimePurchaseOfferDetails?.formattedPrice?.let { d.productId to it } }.toMap()
         }
@@ -149,6 +157,12 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
     }
 
     private fun handlePurchase(purchase: Purchase) {
+        // UPI and cash payments can wait for the bank; nothing unlocks until Play says PURCHASED.
+        if (purchase.purchaseState == Purchase.PurchaseState.PENDING) {
+            _pending.value = true
+            return
+        }
+        if (purchase.purchaseState == Purchase.PurchaseState.PURCHASED) _pending.value = false
         if (purchase.isTip()) {
             // Tips are consumable, so the same tip can be bought again later.
             val params = ConsumeParams.newBuilder().setPurchaseToken(purchase.purchaseToken).build()

@@ -148,7 +148,7 @@ function HeadUnit() {
 }
 
 const features: Feature[] = [
-  { icon: AudioLines, title: "Human Haryanvi voices", body: "Pick Bunty or Simran. 263 real Haryanvi lines for 62 moments, from “Ram Ram” at start to “lock the car” at the end. Works with no internet." },
+  { icon: AudioLines, title: "Human Haryanvi voices", body: "Pick Bunty or Simran. 298 real Haryanvi lines, from “Ram Ram” at start to “lock the car” at the end. Works with no internet." },
   { icon: Mic, title: "“Hey Ampli” voice control", body: "Say “Hey Ampli” and ask for a song, a call or a place. It listens on the unit itself, so your voice never leaves the car." },
   { icon: Navigation, title: "Turn-by-turn in Haryanvi", body: "“Aage sulte haath mud jaiye.” Directions the way people in Haryana actually talk, with ulte and sulte haath." },
   { icon: Camera, title: "Speed camera alerts", body: "A spoken warning before speed cameras, only when you are over the limit if you want." },
@@ -210,7 +210,7 @@ export function CarHub() {
               written the way people in Haryana really talk. Next stop: Punjabi, Rajasthani and every voice of India.
             </p>
             <div className="mt-6 flex flex-wrap justify-center gap-2 text-sm">
-              {["263 Haryanvi lines", "2 human voices", "100% offline voice", "Family-safe, always"].map((t) => (
+              {["298 Haryanvi lines", "2 human voices", "100% offline voice", "Family-safe, always"].map((t) => (
                 <span key={t} className="rounded-full border border-cyan-400/20 bg-cyan-500/10 px-3 py-1 text-cyan-100">
                   {t}
                 </span>

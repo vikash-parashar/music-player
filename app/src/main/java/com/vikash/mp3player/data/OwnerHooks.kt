@@ -31,6 +31,7 @@ object OwnerHooks {
     private const val KEY_EVENTS = "owner_events"
     private const val KEY_PURCHASES = "owner_purchases"
     private const val KEY_PLAYED = "owner_played_count"
+    private const val KEY_USAGE = "owner_usage_on"
     private val NAME = Regex("^[a-z0-9_]{1,40}$")
 
     private val base = BuildConfig.OWNER_API_URL.trimEnd('/')
@@ -54,16 +55,25 @@ object OwnerHooks {
         scope.launch { flushPurchases(); flushEvents() }
     }
 
+    /** Settings > Share usage counts. Installs and purchases are always sent (needed to check purchases). */
+    fun usageOn(context: Context): Boolean = context.getSharedPreferences("ampli_prefs", Context.MODE_PRIVATE).getBoolean(KEY_USAGE, true)
+
+    fun setUsageOn(context: Context, on: Boolean) {
+        val p = context.getSharedPreferences("ampli_prefs", Context.MODE_PRIVATE)
+        p.edit().putBoolean(KEY_USAGE, on).apply()
+        if (!on) p.edit().remove(KEY_EVENTS).apply()
+    }
+
     /** Counts a feature use. Sent in one batch, at most once per app start (on the next start). */
     fun event(name: String) {
-        if (!::prefs.isInitialized || !enabled || !NAME.matches(name)) return
+        if (!::prefs.isInitialized || !enabled || !NAME.matches(name) || !prefs.getBoolean(KEY_USAGE, true)) return
         val now = prefs.getStringSet(KEY_EVENTS, emptySet()).orEmpty()
         if (name !in now && now.size < 20) prefs.edit().putStringSet(KEY_EVENTS, now + name).apply()
     }
 
     /** Counts songs played; sends "played_10" the first time it reaches 10. */
     fun songPlayed() {
-        if (!::prefs.isInitialized || !enabled) return
+        if (!::prefs.isInitialized || !enabled || !prefs.getBoolean(KEY_USAGE, true)) return
         val n = prefs.getInt(KEY_PLAYED, 0)
         if (n >= 10) return
         prefs.edit().putInt(KEY_PLAYED, n + 1).apply()
@@ -95,9 +105,11 @@ object OwnerHooks {
         runCatching {
             client.startConnection(object : InstallReferrerStateListener {
                 override fun onInstallReferrerSetupFinished(code: Int) {
-                    val referrer = if (code == InstallReferrerClient.InstallReferrerResponse.OK) {
+                    val raw = if (code == InstallReferrerClient.InstallReferrerResponse.OK) {
                         runCatching { client.installReferrer.installReferrer }.getOrNull().orEmpty()
                     } else ""
+                    // Keep only the campaign tags (utm_*), nothing else the referrer may carry.
+                    val referrer = raw.split('&').filter { it.startsWith("utm_") }.joinToString("&")
                     runCatching { client.endConnection() }
                     // Sideloaded builds have no referrer; still counted so tests show up.
                     scope.launch {

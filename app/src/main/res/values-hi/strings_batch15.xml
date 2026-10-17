@@ -17,4 +17,10 @@
     <string name="tip_pill_small">चाय %1$s</string>
     <string name="tip_pill_large">समोसा %1$s</string>
     <string name="tip_pill_xl">थाली %1$s</string>
+    <string name="privacy_choices_title">निजता विकल्प</string>
+    <string name="privacy_choices_desc">बदलें कि विज्ञापन आपके डेटा का कैसे इस्तेमाल करें।</string>
+    <string name="privacy_choices_open">निजता विकल्प खोलें</string>
+    <string name="billing_pending">भुगतान बाकी है। Google की पुष्टि होते ही आपकी खरीद चालू हो जाएगी।</string>
+    <string name="usage_counts_title">इस्तेमाल की गिनती भेजें</string>
+    <string name="usage_counts_desc">कौन से फ़ीचर इस्तेमाल हुए, इसकी सामान्य गिनती एक रैंडम ऐप ID के साथ भेजें। नाम, ईमेल या गाने नहीं।</string>
 </resources>

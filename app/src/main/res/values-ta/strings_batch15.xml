@@ -17,4 +17,10 @@
     <string name="tip_pill_small">டீ %1$s</string>
     <string name="tip_pill_large">சமோசா %1$s</string>
     <string name="tip_pill_xl">தாலி %1$s</string>
+    <string name="privacy_choices_title">தனியுரிமை தேர்வுகள்</string>
+    <string name="privacy_choices_desc">விளம்பரங்கள் உங்கள் தரவை எப்படிப் பயன்படுத்துகின்றன என்பதை மாற்றுங்கள்.</string>
+    <string name="privacy_choices_open">தனியுரிமை தேர்வுகளைத் திற</string>
+    <string name="billing_pending">கட்டணம் நிலுவையில் உள்ளது. Google உறுதிசெய்தவுடன் உங்கள் வாங்குதல் இயங்கும்.</string>
+    <string name="usage_counts_title">பயன்பாட்டு எண்ணிக்கையைப் பகிர்</string>
+    <string name="usage_counts_desc">எந்த அம்சங்களைப் பயன்படுத்துகிறீர்கள் என்ற எளிய எண்ணிக்கையை ஒரு ரேண்டம் ஆப் ID உடன் அனுப்பு. பெயர், மின்னஞ்சல் அல்லது பாடல்கள் இல்லை.</string>
 </resources>
