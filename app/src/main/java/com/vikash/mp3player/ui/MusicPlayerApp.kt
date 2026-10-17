@@ -151,6 +151,11 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     }
     // First run shows the welcome screens; its last page asks for music access.
     var welcomeDone by remember { mutableStateOf(vm.prefs.welcomeDone || context.hasAudioPermission()) }
+    // Then, once, "Switching from Wynk or Samsung Music?". Users who already had music access
+    // before the welcome screens existed (no welcome pref) skip it, like upgraders who finished welcome.
+    var switchDone by remember {
+        mutableStateOf(vm.prefs.switchScreenDone || (!vm.prefs.welcomeDone && context.hasAudioPermission()))
+    }
     LaunchedEffect(Unit) {
         if (welcomeDone && !hasPermission) permissionLauncher.launch(launchPermissions)
     }
@@ -500,6 +505,27 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                 welcomeDone = true
                 permissionLauncher.launch(launchPermissions)
             })
+        }
+
+        AnimatedVisibility(
+            visible = welcomeDone && hasPermission && !switchDone,
+            enter = fadeIn() + slideInVertically { it / 6 },
+            exit = fadeOut() + slideOutVertically { -it / 4 },
+        ) {
+            SwitchScreen(
+                songs = library.songs,
+                allFolders = folders.map { it.first },
+                onImport = vm::importM3uPlaylists,
+                onStart = { hide ->
+                    hide.forEach { vm.prefs.setFolderHidden(it, true) }
+                    vm.prefs.setSwitchScreenDone()
+                    switchDone = true
+                },
+                onSkip = {
+                    vm.prefs.setSwitchScreenDone()
+                    switchDone = true
+                },
+            )
         }
     }
     }

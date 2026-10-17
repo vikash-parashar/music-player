@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- One-time "Switching from Wynk or Samsung Music?" screen after first-run welcome. -->
+    <string name="switch_skip">దాటవేయి</string>
+    <string name="switch_title">Wynk లేదా Samsung Music నుండి వస్తున్నారా?</string>
+    <string name="switch_subtitle">Ampli మీ పాటలను కనుగొంది. దీన్ని మీదిగా చేసుకోవడానికి:</string>
+    <string name="switch_stat_songs">పాటలు</string>
+    <string name="switch_stat_albums">ఆల్బమ్‌లు</string>
+    <string name="switch_stat_folders">ఫోల్డర్‌లు</string>
+    <string name="switch_hide_whatsapp">WhatsApp ఆడియోను దాచు</string>
+    <string name="switch_hide_whatsapp_sub">వాయిస్ నోట్‌లు, ఫార్వర్డ్ క్లిప్‌లు</string>
+    <string name="switch_hide_calls">కాల్ రికార్డింగ్‌లను దాచు</string>
+    <string name="switch_hide_calls_sub">రికార్డర్, కాల్ ఫోల్డర్‌లు</string>
+    <string name="switch_import">ప్లేలిస్ట్‌లను తీసుకురా</string>
+    <string name="switch_import_sub">Samsung Music .m3u ఫైల్‌లను ఎంచుకోండి</string>
+    <string name="switch_pick">ఎంచుకో</string>
+    <string name="switch_note">Wynk లో డౌన్‌లోడ్ చేసిన పాటలు Wynk లో మాత్రమే ప్లే అవుతాయి. MP3 ఫైల్‌లుగా సేవ్ చేసిన పాటలు ఇక్కడ కనిపిస్తాయి.</string>
+    <string name="switch_start">వినడం ప్రారంభించు</string>
+    <plurals name="switch_imported">
+        <item quantity="one">%d ప్లేలిస్ట్ తీసుకొచ్చాం</item>
+        <item quantity="other">%d ప్లేలిస్ట్‌లు తీసుకొచ్చాం</item>
+    </plurals>
+</resources>
