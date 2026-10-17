@@ -68,8 +68,8 @@ fun VisualizerScreen(
 ) {
     BackHandler(onBack = onClose)
     DisposableEffect(Unit) {
-        VisualizerTap.listening = true
-        onDispose { VisualizerTap.listening = false }
+        VisualizerTap.acquire()
+        onDispose { VisualizerTap.release() }
     }
     val levels by VisualizerTap.levels.collectAsState()
     var style by rememberSaveable { mutableIntStateOf(0) }

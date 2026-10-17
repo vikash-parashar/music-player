@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.IntSize
 import com.vikash.mp3player.R
 import com.vikash.mp3player.playback.VisualizerTap
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.exp
@@ -88,19 +89,29 @@ fun DanceBuddy(buddy: Buddy, isPlaying: Boolean, songKey: String?, modifier: Mod
     LaunchedEffect(songKey) { if (songKey != firstSong || poseUntil.longValue != 0L) poseUntil.longValue = now() + POSE_MS }
 
     DisposableEffect(Unit) {
-        VisualizerTap.listening = true
-        onDispose { VisualizerTap.listening = false }
+        VisualizerTap.acquire()
+        onDispose { VisualizerTap.release() }
     }
     // Beat finder: a jump in bass energy well above its recent average.
+    // The tap hears the music before the speaker plays it (output buffer, and much more over
+    // Bluetooth in cars), so each step waits that long to land on the beat you hear.
+    val context = androidx.compose.ui.platform.LocalContext.current
     LaunchedEffect(Unit) {
         var avg = 0f
+        var lastHeard = 0L
         VisualizerTap.levels.collect { lv ->
             var bass = 0f
             for (i in 0 until 6) bass += lv[i]
             bass /= 6f
             val t = now()
-            val gap = t - lastBeat.longValue
-            if (playing && bass > 0.3f && bass > avg * 1.25f && gap > 280) beat(t, beats, lastBeat, interval)
+            if (playing && bass > 0.3f && bass > avg * 1.25f && t - lastHeard > 280) {
+                lastHeard = t
+                val wait = outputDelayMs(context)
+                launch {
+                    delay(wait)
+                    if (playing) beat(now(), beats, lastBeat, interval)
+                }
+            }
             avg = avg * 0.9f + bass * 0.1f
         }
     }
@@ -202,4 +213,16 @@ private fun beat(
     if (steady) interval.longValue = 650L
     lastBeat.longValue = t
     beats.intValue = beats.intValue + 1
+}
+
+/** Rough time from decoded audio to sound: about 150 ms on the phone, about 300 ms more over Bluetooth. */
+private fun outputDelayMs(context: Context): Long {
+    val am = context.getSystemService(Context.AUDIO_SERVICE) as? android.media.AudioManager ?: return 150L
+    val bluetooth = runCatching {
+        am.getDevices(android.media.AudioManager.GET_DEVICES_OUTPUTS).any {
+            it.type == android.media.AudioDeviceInfo.TYPE_BLUETOOTH_A2DP ||
+                (android.os.Build.VERSION.SDK_INT >= 31 && it.type == android.media.AudioDeviceInfo.TYPE_BLE_HEADSET)
+        }
+    }.getOrDefault(false)
+    return if (bluetooth) 450L else 150L
 }

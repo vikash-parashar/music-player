@@ -2,10 +2,8 @@
 <resources>
     <string name="disc_anim_title">సీడీ ప్లేయర్ యానిమేషన్</string>
     <string name="disc_anim_desc">పాటను నొక్కినప్పుడు సీడీ ప్లేయర్ దాని సీడీని పెడుతుంది. పాట వెంటనే మొదలవుతుంది.</string>
-    <string name="disc_tap_skip">దాటవేయడానికి నొక్కండి</string>
     <string name="disc_status_ready">సిద్ధం</string>
     <string name="disc_status_opening">తెరుస్తోంది</string>
     <string name="disc_status_reading">సీడీ చదువుతోంది</string>
     <string name="disc_status_paused">ఆపబడింది</string>
-    <string name="disc_swipe_back">వెనక్కి వెళ్లడానికి ఎడమకు లేదా కుడికి స్వైప్ చేయండి</string>
 </resources>
