@@ -7,4 +7,5 @@
     <string name="disc_status_opening">उघडत आहे</string>
     <string name="disc_status_reading">सीडी वाचत आहे</string>
     <string name="disc_status_paused">थांबवले</string>
+    <string name="disc_swipe_back">मागे जाण्यासाठी डावीकडे किंवा उजवीकडे स्वाइप करा</string>
 </resources>

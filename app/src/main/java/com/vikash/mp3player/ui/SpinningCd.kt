@@ -105,7 +105,7 @@ fun rememberStickerPainter(uri: Uri?, px: Int = 512): Painter? {
     return painter.takeIf { uri != null && state is AsyncImagePainter.State.Success }
 }
 
-/** The song's poster printed as a round sticker on a CD that turns with the music. */
+/** The song's poster printed as the label of a small record that turns with the music. */
 @Composable
 fun SpinningCd(uri: Uri?, size: Dp, modifier: Modifier = Modifier, spinning: Boolean = true) {
     val angle = LocalDiscAngle.current
@@ -115,11 +115,6 @@ fun SpinningCd(uri: Uri?, size: Dp, modifier: Modifier = Modifier, spinning: Boo
         drawCd(center, size.toPx() / 2f, if (spinning) angle.value else 0f, art, logo)
     }
 }
-
-private val DiscSheen = listOf(
-    Color(0xFFD9DCE6), Color(0xFFFBCFE8), Color(0xFFA5F3FC), Color(0xFFE9D5FF),
-    Color(0xFFFDE68A), Color(0xFFD9DCE6), Color(0xFFBAE6FD), Color(0xFFF5D0FE), Color(0xFFD9DCE6),
-)
 
 private fun ring(c: Offset, outer: Float, inner: Float) = Path().apply {
     fillType = PathFillType.EvenOdd
@@ -139,32 +134,31 @@ fun DrawScope.drawCover(painter: Painter, c: Offset, side: Float, alpha: Float =
     }
 }
 
-/** A CD: silver rim, the poster as a sticker, the clear hub ring and hole, and a still gloss. */
+/** A small record: black vinyl with grooves, the poster as the label, and a still gloss. */
 fun DrawScope.drawCd(c: Offset, r: Float, angle: Float, art: Painter?, logo: Painter, alpha: Float = 1f) {
-    drawCircle(Brush.sweepGradient(DiscSheen, c), radius = r, center = c, alpha = alpha)
-    rotate(angle, pivot = c) {
-        clipPath(ring(c, r * 0.95f, r * 0.30f)) {
-            if (art != null) {
-                drawCover(art, c, r * 1.9f, alpha)
-            } else {
-                drawCircle(Ampli.Gradient, radius = r * 0.95f, center = c, alpha = alpha)
-                drawCover(logo, c, r * 1.3f, alpha)
-            }
-        }
+    drawCircle(Color(0xFF121014), radius = r, center = c, alpha = alpha)
+    for (i in 0 until 5) {
+        drawCircle(Color.White.copy(alpha = 0.07f * alpha), radius = r * (0.68f + 0.07f * i), center = c, style = Stroke(max(0.6f, r * 0.012f)))
     }
-    // Clear plastic hub and the hole.
-    drawPath(ring(c, r * 0.30f, r * 0.15f), Color(0xFFE1E6EE).copy(alpha = 0.55f * alpha))
-    drawCircle(Color.White.copy(alpha = 0.6f * alpha), radius = r * 0.22f, center = c, style = Stroke(max(1f, r * 0.012f)))
-    drawCircle(Color(0xFF0B0A0E).copy(alpha = alpha), radius = r * 0.15f, center = c)
-    // Gloss that does not turn, like light on a real disc.
     drawPath(
-        ring(c, r * 0.95f, r * 0.15f),
-        Brush.linearGradient(
-            0f to Color.White.copy(alpha = 0.32f), 0.35f to Color.Transparent, 0.62f to Color.Transparent,
-            0.8f to Color.White.copy(alpha = 0.14f), 1f to Color.Transparent,
-            start = c - Offset(r, r), end = c + Offset(r, r),
+        ring(c, r * 0.98f, r * 0.58f),
+        Brush.sweepGradient(
+            0f to Color.Transparent, 0.08f to Color.White.copy(alpha = 0.16f), 0.16f to Color.Transparent,
+            0.5f to Color.Transparent, 0.58f to Color.White.copy(alpha = 0.12f), 0.66f to Color.Transparent,
+            1f to Color.Transparent, center = c,
         ),
         alpha = alpha,
     )
-    drawCircle(Color.White.copy(alpha = 0.45f * alpha), radius = r - 0.5f, center = c, style = Stroke(1f))
+    rotate(angle, pivot = c) {
+        clipPath(Path().apply { addOval(Rect(c, r * 0.56f)) }) {
+            if (art != null) {
+                drawCover(art, c, r * 1.12f, alpha)
+            } else {
+                drawCircle(Ampli.Gradient, radius = r * 0.56f, center = c, alpha = alpha)
+                drawCover(logo, c, r * 0.9f, alpha)
+            }
+        }
+    }
+    drawCircle(Color(0xFF0B0A0E).copy(alpha = alpha), radius = max(1.5f, r * 0.07f), center = c)
+    drawCircle(Ampli.Rose.copy(alpha = 0.5f * alpha), radius = r - 0.5f, center = c, style = Stroke(1f))
 }

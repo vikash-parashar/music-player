@@ -7,4 +7,5 @@
     <string name="disc_status_opening">తెరుస్తోంది</string>
     <string name="disc_status_reading">సీడీ చదువుతోంది</string>
     <string name="disc_status_paused">ఆపబడింది</string>
+    <string name="disc_swipe_back">వెనక్కి వెళ్లడానికి ఎడమకు లేదా కుడికి స్వైప్ చేయండి</string>
 </resources>

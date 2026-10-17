@@ -179,16 +179,15 @@ fun NowPlayingScreen(
                         modifier = Modifier.fillMaxWidth().weight(1f).padding(vertical = 8.dp),
                     )
                 } else {
-                    Spacer(Modifier.weight(0.2f))
-                    // The same CD player as the song-change scene, lid closed, the CD turning with the song.
-                    CdPlayerView(
+                    // The same record player as the song-tap view: the arm follows the song.
+                    RecordPlayerView(
                         artworkUri = current.artworkUri,
                         title = current.title,
+                        artist = current.artist,
                         isPlaying = state.isPlaying,
-                        progress = position.toFloat() / state.durationMs.coerceAtLeast(1),
-                        modifier = Modifier.fillMaxWidth().height(340.dp),
+                        progress = { position.toFloat() / state.durationMs.coerceAtLeast(1) },
+                        modifier = Modifier.fillMaxWidth().weight(1f).padding(vertical = 8.dp),
                     )
-                    Spacer(Modifier.weight(0.2f))
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
