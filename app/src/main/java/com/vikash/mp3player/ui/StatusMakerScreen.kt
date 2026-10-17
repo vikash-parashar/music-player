@@ -528,7 +528,7 @@ private fun Context.findActivity(): Activity? {
  */
 private fun shareStatus(context: Context, file: File, pkg: String?) {
     val uri = runCatching {
-        FileProvider.getUriForFile(context, context.packageName + ".statusfiles", file)
+        FileProvider.getUriForFile(context, context.packageName + ".fileprovider", file)
     }.getOrElse {
         Toast.makeText(context, R.string.status_no_app, Toast.LENGTH_SHORT).show()
         return

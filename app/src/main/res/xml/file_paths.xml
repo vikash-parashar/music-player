@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Only these cache folders are shared, just before a share sheet opens. -->
 <paths>
-    <!-- Lyric card pictures, written to the cache just before sharing. -->
     <cache-path name="lyric_cards" path="lyric_cards/" />
+    <cache-path name="status" path="status/" />
 </paths>
