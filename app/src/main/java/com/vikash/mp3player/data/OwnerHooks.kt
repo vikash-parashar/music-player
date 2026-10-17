@@ -63,7 +63,8 @@ object OwnerHooks {
     private lateinit var prefs: SharedPreferences
     private lateinit var app: Context
 
-    val enabled: Boolean get() = base.isNotEmpty()
+    /** Off while OWNER_API_URL is empty, and for a plain http:// address (Android blocks cleartext, so it could never send). */
+    val enabled: Boolean get() = base.startsWith("https://")
 
     private fun store(context: Context): SharedPreferences {
         if (!::prefs.isInitialized) {
