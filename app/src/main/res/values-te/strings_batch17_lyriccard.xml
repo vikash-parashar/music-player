@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyric_card_title">ఈ లైన్ షేర్ చేయి</string>
+    <string name="lyric_card_preview_desc">లిరిక్ కార్డ్ ప్రివ్యూ</string>
+    <string name="lyric_card_style_rose">రోజ్</string>
+    <string name="lyric_card_style_vinyl">వినైల్</string>
+    <string name="lyric_card_style_paper">పేపర్</string>
+    <string name="lyric_card_style_neon">నియాన్</string>
+    <string name="lyric_card_pro_badge">PRO</string>
+    <string name="lyric_card_pro_toast">ఈ స్టైల్ Ampli Pro లో ఉంది</string>
+    <string name="lyric_card_whatsapp">WhatsApp</string>
+    <string name="lyric_card_instagram">Instagram</string>
+    <string name="lyric_card_save">సేవ్ చేయి</string>
+    <string name="lyric_card_saved">Pictures/Ampli లో సేవ్ అయింది</string>
+    <string name="lyric_card_failed">చిత్రం తయారు కాలేదు. మళ్లీ ప్రయత్నించండి.</string>
+    <string name="lyric_card_share_chooser">లిరిక్ కార్డ్ షేర్ చేయి</string>
+    <string name="lyric_card_no_app">షేర్ చేయడానికి యాప్ లేదు</string>
+</resources>

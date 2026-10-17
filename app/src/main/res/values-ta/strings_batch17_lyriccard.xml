@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyric_card_title">இந்த வரியைப் பகிர்</string>
+    <string name="lyric_card_preview_desc">பாடல் வரி கார்டு முன்னோட்டம்</string>
+    <string name="lyric_card_style_rose">ரோஸ்</string>
+    <string name="lyric_card_style_vinyl">வினைல்</string>
+    <string name="lyric_card_style_paper">பேப்பர்</string>
+    <string name="lyric_card_style_neon">நியான்</string>
+    <string name="lyric_card_pro_badge">PRO</string>
+    <string name="lyric_card_pro_toast">இந்த ஸ்டைல் Ampli Pro-வில் உள்ளது</string>
+    <string name="lyric_card_whatsapp">WhatsApp</string>
+    <string name="lyric_card_instagram">Instagram</string>
+    <string name="lyric_card_save">சேமி</string>
+    <string name="lyric_card_saved">Pictures/Ampli-ல் சேமிக்கப்பட்டது</string>
+    <string name="lyric_card_failed">படத்தை உருவாக்க முடியவில்லை. மீண்டும் முயலவும்.</string>
+    <string name="lyric_card_share_chooser">பாடல் வரி கார்டைப் பகிர்</string>
+    <string name="lyric_card_no_app">பகிர ஆப் எதுவும் இல்லை</string>
+</resources>

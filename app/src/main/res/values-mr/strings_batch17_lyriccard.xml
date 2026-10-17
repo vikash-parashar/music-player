@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyric_card_title">ही ओळ शेअर करा</string>
+    <string name="lyric_card_preview_desc">लिरिक कार्डचे प्रिव्ह्यू</string>
+    <string name="lyric_card_style_rose">रोझ</string>
+    <string name="lyric_card_style_vinyl">विनाइल</string>
+    <string name="lyric_card_style_paper">पेपर</string>
+    <string name="lyric_card_style_neon">निऑन</string>
+    <string name="lyric_card_pro_badge">PRO</string>
+    <string name="lyric_card_pro_toast">ही स्टाइल Ampli Pro मध्ये आहे</string>
+    <string name="lyric_card_whatsapp">WhatsApp</string>
+    <string name="lyric_card_instagram">Instagram</string>
+    <string name="lyric_card_save">सेव्ह करा</string>
+    <string name="lyric_card_saved">Pictures/Ampli मध्ये सेव्ह झाले</string>
+    <string name="lyric_card_failed">चित्र तयार झाले नाही. पुन्हा प्रयत्न करा.</string>
+    <string name="lyric_card_share_chooser">लिरिक कार्ड शेअर करा</string>
+    <string name="lyric_card_no_app">शेअर करण्यासाठी अॅप नाही</string>
+</resources>

@@ -178,6 +178,9 @@ fun NowPlayingScreen(
                         positionMs = position,
                         onSeek = { player.seekTo(it); position = it },
                         modifier = Modifier.fillMaxWidth().weight(1f).padding(vertical = 8.dp),
+                        pro = isPro,
+                        title = current.title,
+                        artist = current.artist,
                     )
                 } else {
                     // The same record player as the song-tap view: the arm follows the song.

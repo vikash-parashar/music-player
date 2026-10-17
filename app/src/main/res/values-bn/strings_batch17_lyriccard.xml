@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyric_card_title">এই লাইনটি শেয়ার করুন</string>
+    <string name="lyric_card_preview_desc">লিরিক কার্ডের প্রিভিউ</string>
+    <string name="lyric_card_style_rose">রোজ</string>
+    <string name="lyric_card_style_vinyl">ভিনাইল</string>
+    <string name="lyric_card_style_paper">পেপার</string>
+    <string name="lyric_card_style_neon">নিয়ন</string>
+    <string name="lyric_card_pro_badge">PRO</string>
+    <string name="lyric_card_pro_toast">এই স্টাইলটি Ampli Pro-তে আছে</string>
+    <string name="lyric_card_whatsapp">WhatsApp</string>
+    <string name="lyric_card_instagram">Instagram</string>
+    <string name="lyric_card_save">সেভ করুন</string>
+    <string name="lyric_card_saved">Pictures/Ampli-তে সেভ হয়েছে</string>
+    <string name="lyric_card_failed">ছবি তৈরি করা গেল না। আবার চেষ্টা করুন।</string>
+    <string name="lyric_card_share_chooser">লিরিক কার্ড শেয়ার করুন</string>
+    <string name="lyric_card_no_app">শেয়ার করার কোনো অ্যাপ নেই</string>
+</resources>
