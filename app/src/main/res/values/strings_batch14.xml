@@ -2,10 +2,8 @@
 <resources>
     <string name="disc_anim_title">CD player animation</string>
     <string name="disc_anim_desc">A CD player loads the song CD when you tap a song. The song starts right away.</string>
-    <string name="disc_tap_skip">Tap to skip</string>
     <string name="disc_status_ready">Ready</string>
     <string name="disc_status_opening">Opening</string>
     <string name="disc_status_reading">Reading disc</string>
     <string name="disc_status_paused">Paused</string>
-    <string name="disc_swipe_back">Swipe left or right to go back</string>
 </resources>

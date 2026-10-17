@@ -18,6 +18,7 @@ import com.android.billingclient.api.PurchasesUpdatedListener
 import com.android.billingclient.api.QueryProductDetailsParams
 import com.android.billingclient.api.QueryPurchasesParams
 import com.vikash.mp3player.BuildConfig
+import com.vikash.mp3player.R
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -115,16 +116,32 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
         client.launchBillingFlow(activity, params)
     }
 
-    /** Called when Play's product answer arrives: opens the sheet for a tap that was waiting on it. */
-    private fun launchWaiting() {
+    /**
+     * Called when Play answers a product query (or fails to): opens the sheet for a tap that was
+     * waiting on it, or, when Play has no such product or could not answer, says so instead of
+     * leaving the tap without any reply.
+     */
+    private fun settleWaiting(forPro: Boolean) {
         val id = waitingFor ?: return
-        val details = if (id == BuildConfig.REMOVE_ADS_PRODUCT_ID) productDetails else tipDetails[id]
+        if ((id == BuildConfig.REMOVE_ADS_PRODUCT_ID) != forPro) return
+        val details = if (forPro) productDetails else tipDetails[id]
         val activity = waitingActivity?.get()
-        if (details == null || activity == null) return
         waitingFor = null
         waitingActivity = null
-        if (SystemClock.elapsedRealtime() - waitingSince > 15_000 || activity.isFinishing || activity.isDestroyed) return
-        activity.runOnUiThread { launch(activity, details) }
+        if (activity == null || activity.isFinishing || activity.isDestroyed) return
+        if (SystemClock.elapsedRealtime() - waitingSince > 15_000) return
+        activity.runOnUiThread {
+            if (details != null) {
+                launch(activity, details)
+            } else {
+                val msg = when {
+                    !forPro -> R.string.tip_unavailable
+                    BuildConfig.DEBUG -> R.string.pro_purchase_test_build
+                    else -> R.string.pro_purchase_failed
+                }
+                android.widget.Toast.makeText(activity, msg, android.widget.Toast.LENGTH_LONG).show()
+            }
+        }
     }
 
     /** "Restore purchase": asks Play again which products this Google account owns. */
@@ -157,12 +174,12 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
             )
             .build()
         client.queryProductDetailsAsync(params) { result, found ->
-            if (result.responseCode != BillingClient.BillingResponseCode.OK) return@queryProductDetailsAsync
-            val list = found.productDetailsList
-            productDetails = list.firstOrNull()
-            proQueried = true
-            _price.value = productDetails?.oneTimePurchaseOfferDetails?.formattedPrice
-            launchWaiting()
+            if (result.responseCode == BillingClient.BillingResponseCode.OK) {
+                productDetails = found.productDetailsList.firstOrNull()
+                proQueried = true
+                _price.value = productDetails?.oneTimePurchaseOfferDetails?.formattedPrice
+            }
+            settleWaiting(forPro = true)
         }
         val tipParams = QueryProductDetailsParams.newBuilder()
             .setProductList(
@@ -172,12 +189,13 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
             )
             .build()
         client.queryProductDetailsAsync(tipParams) { result, found ->
-            if (result.responseCode != BillingClient.BillingResponseCode.OK) return@queryProductDetailsAsync
-            val list = found.productDetailsList
-            tipDetails = list.associateBy { it.productId }
-            tipsQueried = true
-            launchWaiting()
-            _tipPrices.value = list.mapNotNull { d -> d.oneTimePurchaseOfferDetails?.formattedPrice?.let { d.productId to it } }.toMap()
+            if (result.responseCode == BillingClient.BillingResponseCode.OK) {
+                val list = found.productDetailsList
+                tipDetails = list.associateBy { it.productId }
+                tipsQueried = true
+                _tipPrices.value = list.mapNotNull { d -> d.oneTimePurchaseOfferDetails?.formattedPrice?.let { d.productId to it } }.toMap()
+            }
+            settleWaiting(forPro = false)
         }
     }
 

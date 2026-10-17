@@ -38,6 +38,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -102,9 +103,9 @@ fun SupportDeveloperCard(tipPrices: Map<String, String>, tipsReceived: Int, onTi
                     modifier = Modifier.padding(top = 6.dp, bottom = 12.dp, end = 8.dp),
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    TipPill(stringResource(R.string.tip_pill_small, tipPrices[BuildConfig.TIP_SMALL_ID] ?: "₹49"), false, Modifier.weight(1f)) { onTip(BuildConfig.TIP_SMALL_ID) }
-                    TipPill(stringResource(R.string.tip_pill_large, tipPrices[BuildConfig.TIP_LARGE_ID] ?: "₹99"), false, Modifier.weight(1f)) { onTip(BuildConfig.TIP_LARGE_ID) }
-                    TipPill(stringResource(R.string.tip_pill_xl, tipPrices[BuildConfig.TIP_XL_ID] ?: "₹199"), true, Modifier.weight(1f)) { onTip(BuildConfig.TIP_XL_ID) }
+                    TipPill(stringResource(R.string.tip_pill_small, tipPrices[BuildConfig.TIP_SMALL_ID] ?: "…"), false, Modifier.weight(1f)) { onTip(BuildConfig.TIP_SMALL_ID) }
+                    TipPill(stringResource(R.string.tip_pill_large, tipPrices[BuildConfig.TIP_LARGE_ID] ?: "…"), false, Modifier.weight(1f)) { onTip(BuildConfig.TIP_LARGE_ID) }
+                    TipPill(stringResource(R.string.tip_pill_xl, tipPrices[BuildConfig.TIP_XL_ID] ?: "…"), true, Modifier.weight(1f)) { onTip(BuildConfig.TIP_XL_ID) }
                 }
             }
         }
@@ -114,11 +115,11 @@ fun SupportDeveloperCard(tipPrices: Map<String, String>, tipsReceived: Int, onTi
 @Composable
 private fun TipPill(label: String, strong: Boolean, modifier: Modifier, onClick: () -> Unit) {
     Box(
-        modifier.clip(CircleShape).background(if (strong) Color.White else Color.White.copy(alpha = 0.18f))
+        modifier.clip(RoundedCornerShape(20.dp)).background(if (strong) Color.White else Color.White.copy(alpha = 0.18f))
             .clickable(onClick = onClick).padding(vertical = 10.dp, horizontal = 6.dp),
         contentAlignment = Alignment.Center,
     ) {
-        Text(label, color = if (strong) Color(0xFFBE123C) else Color.White, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(label, color = if (strong) Color(0xFFBE123C) else Color.White, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, lineHeight = 16.sp, textAlign = TextAlign.Center, maxLines = 2, overflow = TextOverflow.Ellipsis)
     }
 }
 

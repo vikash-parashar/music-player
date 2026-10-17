@@ -2,10 +2,8 @@
 <resources>
     <string name="disc_anim_title">সিডি প্লেয়ার অ্যানিমেশন</string>
     <string name="disc_anim_desc">গানে ট্যাপ করলে সিডি প্লেয়ার তার সিডি চালায়। গান সঙ্গে সঙ্গে শুরু হয়।</string>
-    <string name="disc_tap_skip">এড়াতে ট্যাপ করুন</string>
     <string name="disc_status_ready">প্রস্তুত</string>
     <string name="disc_status_opening">খুলছে</string>
     <string name="disc_status_reading">সিডি পড়ছে</string>
     <string name="disc_status_paused">থামানো</string>
-    <string name="disc_swipe_back">ফিরে যেতে বাঁয়ে বা ডানে সোয়াইপ করুন</string>
 </resources>

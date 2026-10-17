@@ -38,8 +38,14 @@ object VisualizerTap : TeeAudioProcessor.AudioBufferSink {
     /** Bar heights from 0 to 1, low frequencies first. */
     val levels: StateFlow<FloatArray> = _levels.asStateFlow()
 
-    /** Set while the visualiser screen is showing, so no work is done otherwise. */
-    @Volatile var listening = false
+    // How many screens (visualiser, dance buddy) want levels right now; no work is done at zero.
+    private val listeners = java.util.concurrent.atomic.AtomicInteger(0)
+    val listening: Boolean get() = listeners.get() > 0
+
+    /** Call when a screen starts showing levels; pair every call with [release]. */
+    fun acquire() { listeners.incrementAndGet() }
+
+    fun release() { listeners.updateAndGet { (it - 1).coerceAtLeast(0) } }
 
     @Volatile private var channels = 2
     @Volatile private var encoding = C.ENCODING_PCM_16BIT

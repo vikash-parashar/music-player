@@ -51,8 +51,7 @@ object LyricsRepository {
         runCatching {
             context.contentResolver.openInputStream(uri)?.use { input ->
                 // Lyrics files are small; refuse anything big that's clearly not text.
-                val bytes = input.readBytes().takeIf { it.size < 512 * 1024 } ?: return@use null
-                bytes.decodeToString().removePrefix("﻿")
+                readCapped(input)?.let(::decode)
             }
         }.getOrNull()
     }
@@ -146,7 +145,7 @@ object LyricsRepository {
         val doc = found ?: return null
         return runCatching {
             context.contentResolver.openInputStream(doc)?.use { input ->
-                input.readBytes().takeIf { it.size < 512 * 1024 }?.let(::decode)
+                readCapped(input)?.let(::decode)
             }
         }.getOrNull()
     }
@@ -176,6 +175,19 @@ object LyricsRepository {
             }
         }
         return out
+    }
+
+    /** Lyrics files are small: reads at most 512 KB + 1 byte, and gives up on anything bigger (clearly not lyrics). */
+    private fun readCapped(input: java.io.InputStream): ByteArray? {
+        val limit = 512 * 1024
+        val buf = java.io.ByteArrayOutputStream()
+        val chunk = ByteArray(16 * 1024)
+        while (buf.size() <= limit) {
+            val n = input.read(chunk, 0, minOf(chunk.size, limit + 1 - buf.size()))
+            if (n < 0) break
+            buf.write(chunk, 0, n)
+        }
+        return buf.toByteArray().takeIf { it.size <= limit }
     }
 
     private fun decode(bytes: ByteArray) = bytes.decodeToString().removePrefix("\uFEFF")

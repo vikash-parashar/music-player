@@ -2,10 +2,8 @@
 <resources>
     <string name="disc_anim_title">सीडी प्लेयर अ‍ॅनिमेशन</string>
     <string name="disc_anim_desc">गाणे निवडल्यावर सीडी प्लेयर त्याची सीडी लावतो. गाणे लगेच सुरू होते.</string>
-    <string name="disc_tap_skip">वगळण्यासाठी टॅप करा</string>
     <string name="disc_status_ready">तयार</string>
     <string name="disc_status_opening">उघडत आहे</string>
     <string name="disc_status_reading">सीडी वाचत आहे</string>
     <string name="disc_status_paused">थांबवले</string>
-    <string name="disc_swipe_back">मागे जाण्यासाठी डावीकडे किंवा उजवीकडे स्वाइप करा</string>
 </resources>
