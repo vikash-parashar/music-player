@@ -20,6 +20,8 @@ data class Song(
     val dateAddedSec: Long = 0,
     /** File size in bytes, 0 if unknown. Used to keep the best copy when cleaning duplicates. */
     val sizeBytes: Long = 0,
+    /** File name such as "Tum Hi Ho.mp3", empty for online tracks. Used for M3U playlists. */
+    val fileName: String = "",
 )
 
 /**

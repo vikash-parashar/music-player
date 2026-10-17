@@ -11,6 +11,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
+import com.google.android.gms.ads.LoadAdError
+import com.google.android.gms.ads.rewarded.RewardedAd
+import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.MobileAds
 import com.google.android.ump.ConsentRequestParameters
@@ -44,6 +47,28 @@ object Ads {
         )
         // Consent from a previous session lets ads start loading right away.
         if (consent.canRequestAds()) init(activity)
+    }
+
+    /** True when a Rewarded ad unit is configured for this build. */
+    val rewardedConfigured: Boolean get() = BuildConfig.ADMOB_REWARDED_ID.isNotBlank()
+
+    /**
+     * Loads and shows one opt-in rewarded ad. [onReward] runs only if the person watched it to the
+     * end; [onUnavailable] runs when no ad could be loaded (offline, no consent, no fill).
+     */
+    fun showRewarded(activity: Activity, onReward: () -> Unit, onUnavailable: () -> Unit) {
+        if (!rewardedConfigured || !_ready.value) { onUnavailable(); return }
+        RewardedAd.load(
+            activity, BuildConfig.ADMOB_REWARDED_ID, AdRequest.Builder().build(),
+            object : RewardedAdLoadCallback() {
+                override fun onAdLoaded(ad: RewardedAd) {
+                    if (activity.isFinishing || activity.isDestroyed) return
+                    ad.show(activity) { onReward() }
+                }
+
+                override fun onAdFailedToLoad(error: LoadAdError) = onUnavailable()
+            },
+        )
     }
 
     private fun init(activity: Activity) {

@@ -83,6 +83,24 @@ class AppPrefs(context: Context) {
         prefs.edit().putString(KEY_HIDDEN, next.joinToString("\n")).apply()
     }
 
+    /** Pro: pure black backgrounds in the dark theme (saves battery on AMOLED screens). */
+    private val _amoledBlack = MutableStateFlow(prefs.getBoolean(KEY_AMOLED, false))
+    val amoledBlack: StateFlow<Boolean> = _amoledBlack.asStateFlow()
+
+    fun setAmoledBlack(on: Boolean) {
+        _amoledBlack.value = on
+        prefs.edit().putBoolean(KEY_AMOLED, on).apply()
+    }
+
+    /** Pro: colours taken from the phone's wallpaper (Android 12+), instead of Ampli rose. */
+    private val _wallpaperColors = MutableStateFlow(prefs.getBoolean(KEY_WALLPAPER, false))
+    val wallpaperColors: StateFlow<Boolean> = _wallpaperColors.asStateFlow()
+
+    fun setWallpaperColors(on: Boolean) {
+        _wallpaperColors.value = on
+        prefs.edit().putBoolean(KEY_WALLPAPER, on).apply()
+    }
+
     /** True once the first-run welcome screens were finished. */
     val welcomeDone: Boolean get() = prefs.getBoolean(KEY_WELCOME, false)
 
@@ -110,5 +128,7 @@ class AppPrefs(context: Context) {
         const val KEY_SORT = "song_sort"
         const val KEY_HIDDEN = "hidden_folders"
         const val KEY_WELCOME = "welcome_done"
+        const val KEY_AMOLED = "amoled_black"
+        const val KEY_WALLPAPER = "wallpaper_colors"
     }
 }

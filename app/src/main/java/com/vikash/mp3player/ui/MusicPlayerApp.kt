@@ -77,6 +77,12 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     val adsRemoved by vm.billing.adsRemoved.collectAsStateWithLifecycle()
     val price by vm.billing.price.collectAsStateWithLifecycle()
     val adsReady by Ads.ready.collectAsStateWithLifecycle()
+    val app = context.applicationContext as com.vikash.mp3player.MusicApp
+    val proUnlocked by app.proUnlocked.collectAsStateWithLifecycle()
+    val trialUntil by com.vikash.mp3player.monetization.ProTrial.until.collectAsStateWithLifecycle()
+    val tipPrices by vm.billing.tipPrices.collectAsStateWithLifecycle()
+    val tipsReceived by vm.billing.tipsReceived.collectAsStateWithLifecycle()
+    var showVisualizer by rememberSaveable { mutableStateOf(false) }
     val videos by vm.videos.collectAsStateWithLifecycle()
     val favorites by vm.prefs.favorites.collectAsStateWithLifecycle()
     val themeMode by vm.prefs.themeMode.collectAsStateWithLifecycle()
@@ -132,6 +138,9 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     val updateReady by AppUpdates.ready.collectAsStateWithLifecycle()
     val updateText = stringResource(R.string.update_ready)
     val updateAction = stringResource(R.string.update_restart)
+    LaunchedEffect(tipsReceived) {
+        if (tipsReceived > 0) snackbar.showSnackbar(context.getString(R.string.tip_thanks))
+    }
     LaunchedEffect(updateReady) {
         if (updateReady) {
             val result = snackbar.showSnackbar(updateText, actionLabel = updateAction, duration = SnackbarDuration.Indefinite)
@@ -242,6 +251,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                         onFolderHidden = vm.prefs::setFolderHidden,
                         onLibraryChanged = vm::loadLibrary,
                         onOpenHelp = { showHelp = true },
+                        proUnlocked = proUnlocked,
                     )
                 }
             }
@@ -266,6 +276,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                 isPro = adsRemoved,
                 onGetPro = openPro,
                 onClose = { showPlayer = false },
+                onVisualizer = { if (proUnlocked) showVisualizer = true else openPro() },
             )
         }
 
@@ -323,6 +334,29 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                 },
                 onTestPro = { vm.billing.setTestPro(true) },
                 onClose = { showPro = false },
+                trialAvailable = Ads.rewardedConfigured,
+                trialUntil = trialUntil,
+                onTrial = {
+                    val activity = context as? android.app.Activity
+                    if (activity == null) return@ProScreen
+                    Ads.showRewarded(
+                        activity,
+                        onReward = {
+                            com.vikash.mp3player.monetization.ProTrial.grant(context)
+                            Toast.makeText(context, context.getString(R.string.trial_started), Toast.LENGTH_LONG).show()
+                        },
+                        onUnavailable = {
+                            Toast.makeText(context, context.getString(R.string.trial_no_ad), Toast.LENGTH_SHORT).show()
+                        },
+                    )
+                },
+                tipPrices = tipPrices,
+                onTip = { id ->
+                    val activity = context as? android.app.Activity
+                    if (activity == null || !vm.billing.purchaseTip(activity, id)) {
+                        Toast.makeText(context, context.getString(R.string.tip_unavailable), Toast.LENGTH_SHORT).show()
+                    }
+                },
             )
         }
 
@@ -377,6 +411,16 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                     },
                 )
             }
+        }
+
+        AnimatedVisibility(visible = showVisualizer, enter = fadeIn(), exit = fadeOut()) {
+            VisualizerScreen(
+                title = player.current?.title.orEmpty(),
+                artist = player.current?.artist.orEmpty(),
+                isPlaying = player.isPlaying,
+                onTogglePlay = vm.player::togglePlay,
+                onClose = { showVisualizer = false },
+            )
         }
 
         val report = crashReport

@@ -51,6 +51,7 @@ class PlaybackService : MediaLibraryService() {
 
     private var session: MediaLibrarySession? = null
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+    private var autoPlay: AutoPlay? = null
     private lateinit var library: LocalMusicRepository
     private val resume by lazy { ResumePositions(this) }
     private var cast: CastSwitcher? = null
@@ -67,10 +68,12 @@ class PlaybackService : MediaLibraryService() {
     private var heardMs = 0L
     private var playingSince = 0L // elapsedRealtime when playback started; 0 while paused
 
+    @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
     override fun onCreate() {
         super.onCreate()
         library = LocalMusicRepository(this)
-        val player = ExoPlayer.Builder(this)
+        // The renderers factory adds a pass-through tap that feeds the Pro visualiser.
+        val player = ExoPlayer.Builder(this, VisualizerTap.renderersFactory(this))
             .setAudioAttributes(
                 AudioAttributes.Builder()
                     .setUsage(C.USAGE_MEDIA)
@@ -84,6 +87,9 @@ class PlaybackService : MediaLibraryService() {
 
         phonePlayer = player
         EqualizerController.attach(this, player.audioSessionId)
+        ProSound.attach(this, player.audioSessionId)
+        scope.launch { (application as MusicApp).proUnlocked.collect { ProSound.setUnlocked(it) } }
+        autoPlay = AutoPlay(this) { session?.player ?: phonePlayer }.also { it.start() }
 
         setMediaNotificationProvider(
             DefaultMediaNotificationProvider.Builder(this).build().apply { setSmallIcon(R.drawable.ic_stat_ampli) }
@@ -255,6 +261,9 @@ class PlaybackService : MediaLibraryService() {
         cast = null
         scope.cancel()
         EqualizerController.release()
+        ProSound.release()
+        autoPlay?.release()
+        autoPlay = null
         // While casting the session holds the cast player (released above); always free the phone's.
         phonePlayer?.release()
         phonePlayer = null

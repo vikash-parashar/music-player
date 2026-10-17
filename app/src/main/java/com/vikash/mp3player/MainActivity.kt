@@ -50,8 +50,13 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            val themeMode by (application as MusicApp).prefs.themeMode.collectAsState()
-            Mp3PlayerTheme(themeMode) {
+            val app = application as MusicApp
+            val themeMode by app.prefs.themeMode.collectAsState()
+            val pro by app.proUnlocked.collectAsState()
+            val amoled by app.prefs.amoledBlack.collectAsState()
+            val wallpaper by app.prefs.wallpaperColors.collectAsState()
+            // Pro looks fall back to the brand theme if Pro (or the trial) ends.
+            Mp3PlayerTheme(themeMode, amoledBlack = pro && amoled, wallpaperColors = pro && wallpaper) {
                 MusicPlayerApp(vm, onRemoveAds = {
                     if (!billing.purchaseRemoveAds(this)) {
                         Toast.makeText(

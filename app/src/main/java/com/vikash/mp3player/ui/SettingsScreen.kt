@@ -91,6 +91,7 @@ fun SettingsScreen(
     onFolderHidden: (String, Boolean) -> Unit,
     onLibraryChanged: () -> Unit,
     onOpenHelp: () -> Unit,
+    proUnlocked: Boolean = adsRemoved,
 ) {
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
@@ -100,11 +101,14 @@ fun SettingsScreen(
         if (BuildConfig.DEBUG) TestProCard(adsRemoved, onTestPro)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) LanguageCard()
         AppearanceCard(themeMode, onThemeMode)
+        ProLookCard(proUnlocked, onRemoveAds)
         SeekStyleCard(seekStyle, isPro = adsRemoved, onPick = onSeekStyle, onGetPro = onRemoveAds)
         SleepTimerCard()
         FadeCard()
         EvenVolumeCard()
         EqualizerCard()
+        ProSoundCard(proUnlocked, onRemoveAds)
+        AutoPlayCard()
         HeadsetClicksCard()
         CarModeCard(onOpenCarMode)
         TransferCard(onOpenTransfer)
@@ -112,6 +116,7 @@ fun SettingsScreen(
         DuplicatesCard(onOpenDuplicates)
         ConvertCard(onConverted = onLibraryChanged)
         BackupCard(onBackup, onRestore)
+        InviteCard()
         HelpCard(onOpenHelp)
     }
 }

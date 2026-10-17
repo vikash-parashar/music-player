@@ -1,6 +1,7 @@
 package com.vikash.mp3player
 
 import android.app.Application
+import kotlinx.coroutines.flow.stateIn
 import coil3.ImageLoader
 import coil3.PlatformContext
 import coil3.SingletonImageLoader
@@ -30,9 +31,18 @@ class MusicApp : Application(), SingletonImageLoader.Factory {
     val podcastFollows by lazy { com.vikash.mp3player.data.PodcastFollows(this) }
     val engagement by lazy { com.vikash.mp3player.data.Engagement(this) }
 
+    private val appScope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.SupervisorJob() + kotlinx.coroutines.Dispatchers.Main)
+
+    /** Pro sound and themes: bought, or inside the 24-hour trial. Ad removal still needs the purchase. */
+    val proUnlocked: kotlinx.coroutines.flow.StateFlow<Boolean> by lazy {
+        kotlinx.coroutines.flow.combine(billing.adsRemoved, com.vikash.mp3player.monetization.ProTrial.active) { bought, trial -> bought || trial }
+            .stateIn(appScope, kotlinx.coroutines.flow.SharingStarted.Eagerly, billing.adsRemoved.value || com.vikash.mp3player.monetization.ProTrial.isActive())
+    }
+
     override fun onCreate() {
         super.onCreate()
         com.vikash.mp3player.data.CrashLog.install(this)
+        com.vikash.mp3player.monetization.ProTrial.init(this)
     }
 
     override fun newImageLoader(context: PlatformContext): ImageLoader =

@@ -8,6 +8,7 @@ import com.android.billingclient.api.BillingClient.ProductType
 import com.android.billingclient.api.BillingClientStateListener
 import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.BillingResult
+import com.android.billingclient.api.ConsumeParams
 import com.android.billingclient.api.PendingPurchasesParams
 import com.android.billingclient.api.ProductDetails
 import com.android.billingclient.api.Purchase
@@ -40,6 +41,15 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
 
     private var productDetails: ProductDetails? = null
 
+    /** Tip product id to its localised price, filled once Play answers. */
+    private val _tipPrices = MutableStateFlow<Map<String, String>>(emptyMap())
+    val tipPrices: StateFlow<Map<String, String>> = _tipPrices.asStateFlow()
+    private var tipDetails: Map<String, ProductDetails> = emptyMap()
+
+    /** Goes up by one each time a tip goes through, so the UI can say thank you. */
+    private val _tipsReceived = MutableStateFlow(0)
+    val tipsReceived: StateFlow<Int> = _tipsReceived.asStateFlow()
+
     private val client = BillingClient.newBuilder(context)
         .setListener(this)
         .enablePendingPurchases(PendingPurchasesParams.newBuilder().enableOneTimeProducts().build())
@@ -63,6 +73,18 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
     /** Opens Google Play's payment sheet. Returns false when Play has no product to sell yet. */
     fun purchaseRemoveAds(activity: Activity): Boolean {
         val details = productDetails ?: run { start(); return false }
+        val params = BillingFlowParams.newBuilder()
+            .setProductDetailsParamsList(
+                listOf(BillingFlowParams.ProductDetailsParams.newBuilder().setProductDetails(details).build())
+            )
+            .build()
+        client.launchBillingFlow(activity, params)
+        return true
+    }
+
+    /** Opens Play's payment sheet for a "buy the developer a chai" tip. False when Play has no such product yet. */
+    fun purchaseTip(activity: Activity, productId: String): Boolean {
+        val details = tipDetails[productId] ?: run { start(); return false }
         val params = BillingFlowParams.newBuilder()
             .setProductDetailsParamsList(
                 listOf(BillingFlowParams.ProductDetailsParams.newBuilder().setProductDetails(details).build())
@@ -101,6 +123,18 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
             productDetails = list.firstOrNull()
             _price.value = productDetails?.oneTimePurchaseOfferDetails?.formattedPrice
         }
+        val tipParams = QueryProductDetailsParams.newBuilder()
+            .setProductList(
+                TIP_IDS.map {
+                    QueryProductDetailsParams.Product.newBuilder().setProductId(it).setProductType(ProductType.INAPP).build()
+                }
+            )
+            .build()
+        client.queryProductDetailsAsync(tipParams) { result, list ->
+            if (result.responseCode != BillingClient.BillingResponseCode.OK) return@queryProductDetailsAsync
+            tipDetails = list.associateBy { it.productId }
+            _tipPrices.value = list.mapNotNull { d -> d.oneTimePurchaseOfferDetails?.formattedPrice?.let { d.productId to it } }.toMap()
+        }
     }
 
     private fun refreshPurchases() {
@@ -115,6 +149,14 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
     }
 
     private fun handlePurchase(purchase: Purchase) {
+        if (purchase.isTip()) {
+            // Tips are consumable, so the same tip can be bought again later.
+            val params = ConsumeParams.newBuilder().setPurchaseToken(purchase.purchaseToken).build()
+            client.consumeAsync(params) { result, _ ->
+                if (result.responseCode == BillingClient.BillingResponseCode.OK) _tipsReceived.value += 1
+            }
+            return
+        }
         if (!purchase.ownsRemoveAds()) return
         setAdsRemoved(true)
         // Purchases not acknowledged within 3 days are refunded automatically by Play.
@@ -128,6 +170,9 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
         purchaseState == Purchase.PurchaseState.PURCHASED &&
             BuildConfig.REMOVE_ADS_PRODUCT_ID in products
 
+    private fun Purchase.isTip() =
+        purchaseState == Purchase.PurchaseState.PURCHASED && products.any { it in TIP_IDS }
+
     /** Sideloaded test builds can't reach Play Billing, so they get a switch to try Pro. */
     fun setTestPro(value: Boolean) {
         if (BuildConfig.DEBUG) setAdsRemoved(value)
@@ -138,7 +183,8 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
         prefs.edit().putBoolean(KEY_ADS_REMOVED, value).apply()
     }
 
-    private companion object {
-        const val KEY_ADS_REMOVED = "ads_removed"
+    companion object {
+        private const val KEY_ADS_REMOVED = "ads_removed"
+        val TIP_IDS = listOf(BuildConfig.TIP_SMALL_ID, BuildConfig.TIP_LARGE_ID)
     }
 }

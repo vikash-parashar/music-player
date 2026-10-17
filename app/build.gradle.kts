@@ -34,6 +34,9 @@ android {
         buildConfigField("String", "OWNER_API_URL", "\"${prop("OWNER_API_URL")}\"")
         buildConfigField("String", "SUPPORT_EMAIL", "\"${prop("SUPPORT_EMAIL").ifBlank { "support@ampliapps.in" }}\"")
         buildConfigField("String", "REMOVE_ADS_PRODUCT_ID", "\"${prop("REMOVE_ADS_PRODUCT_ID", "ampli_pro")}\"")
+        // Consumable "buy the developer a chai" tips; create both in Play Console as in-app products.
+        buildConfigField("String", "TIP_SMALL_ID", "\"${prop("TIP_SMALL_ID").ifBlank { "ampli_tip_49" }}\"")
+        buildConfigField("String", "TIP_LARGE_ID", "\"${prop("TIP_LARGE_ID").ifBlank { "ampli_tip_99" }}\"")
     }
 
     // One fixed key for test APKs. Without it every CI machine signs with a new random key,
@@ -63,6 +66,7 @@ android {
             signingConfig = signingConfigs.getByName("debug")
             manifestPlaceholders["admobAppId"] = "ca-app-pub-3940256099942544~3347511713"
             buildConfigField("String", "ADMOB_BANNER_ID", "\"ca-app-pub-3940256099942544/9214589741\"")
+            buildConfigField("String", "ADMOB_REWARDED_ID", "\"ca-app-pub-3940256099942544/5224354917\"")
             buildConfigField("boolean", "ONLINE_MUSIC", "true")
         }
         release {
@@ -76,6 +80,8 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             manifestPlaceholders["admobAppId"] = prop("ADMOB_APP_ID", "ca-app-pub-8097353665002950~8534221783")
             buildConfigField("String", "ADMOB_BANNER_ID", "\"${prop("ADMOB_BANNER_ID", "ca-app-pub-8097353665002950/5945560776")}\"")
+            // Blank until a Rewarded ad unit exists in AdMob; the "try Pro for 24 hours" button hides itself then.
+            buildConfigField("String", "ADMOB_REWARDED_ID", "\"${prop("ADMOB_REWARDED_ID")}\"")
         }
     }
 
