@@ -1,5 +1,8 @@
 package com.vikash.mp3player.ui
 
+import androidx.compose.material.icons.automirrored.filled.PlaylistPlay
+import androidx.compose.material.icons.automirrored.filled.QueueMusic
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -73,9 +76,9 @@ fun OnlineScreen(
                         isCurrent = song.id == currentId,
                         onClick = { onPlay(state.results, i, onlineQueue) },
                         actions = buildList {
-                            add(SongAction(playNextLabel) { onPlayNext(song) })
-                            add(SongAction(addToQueueLabel) { onAddToQueue(song) })
-                            if (song.downloadUrl != null) add(SongAction(downloadLabel) { onDownload(song) })
+                            add(SongAction(playNextLabel, Icons.AutoMirrored.Filled.PlaylistPlay) { onPlayNext(song) })
+                            add(SongAction(addToQueueLabel, Icons.AutoMirrored.Filled.QueueMusic) { onAddToQueue(song) })
+                            if (song.downloadUrl != null) add(SongAction(downloadLabel, Icons.Default.Download) { onDownload(song) })
                         },
                     )
                 }

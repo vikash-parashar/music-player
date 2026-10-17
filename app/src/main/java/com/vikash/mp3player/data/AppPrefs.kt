@@ -92,6 +92,15 @@ class AppPrefs(context: Context) {
         prefs.edit().putBoolean(KEY_AMOLED, on).apply()
     }
 
+    /** Robot arm CD change animation when a song is tapped. */
+    private val _discAnimation = MutableStateFlow(prefs.getBoolean(KEY_DISC_ANIM, true))
+    val discAnimation: StateFlow<Boolean> = _discAnimation.asStateFlow()
+
+    fun setDiscAnimation(on: Boolean) {
+        _discAnimation.value = on
+        prefs.edit().putBoolean(KEY_DISC_ANIM, on).apply()
+    }
+
     /** Pro: colours taken from the phone's wallpaper (Android 12+), instead of Ampli rose. */
     private val _wallpaperColors = MutableStateFlow(prefs.getBoolean(KEY_WALLPAPER, false))
     val wallpaperColors: StateFlow<Boolean> = _wallpaperColors.asStateFlow()
@@ -129,6 +138,7 @@ class AppPrefs(context: Context) {
         const val KEY_HIDDEN = "hidden_folders"
         const val KEY_WELCOME = "welcome_done"
         const val KEY_AMOLED = "amoled_black"
+        const val KEY_DISC_ANIM = "disc_animation"
         const val KEY_WALLPAPER = "wallpaper_colors"
     }
 }

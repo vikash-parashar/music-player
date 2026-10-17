@@ -1,5 +1,8 @@
 package com.vikash.mp3player.ui
 
+import androidx.compose.material.icons.automirrored.filled.PlaylistPlay
+import androidx.compose.material.icons.automirrored.filled.QueueMusic
+import androidx.compose.material.icons.filled.Download
 import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
@@ -134,9 +137,9 @@ private fun CoverRow(art: Uri?, title: String, line1: String, line2: String?, on
 
 @Composable
 private fun spokenActions(song: Song, folder: String, actions: DiscoverActions): List<SongAction> = listOf(
-    SongAction(stringResource(R.string.song_play_next)) { actions.playNext(song) },
-    SongAction(stringResource(R.string.song_add_to_queue)) { actions.addToQueue(song) },
-    SongAction(stringResource(R.string.online_download)) { actions.download(song, folder) },
+    SongAction(stringResource(R.string.song_play_next), Icons.AutoMirrored.Filled.PlaylistPlay) { actions.playNext(song) },
+    SongAction(stringResource(R.string.song_add_to_queue), Icons.AutoMirrored.Filled.QueueMusic) { actions.addToQueue(song) },
+    SongAction(stringResource(R.string.online_download), Icons.Default.Download) { actions.download(song, folder) },
 )
 
 // ---------------------------------------------------------------------------------- audiobooks

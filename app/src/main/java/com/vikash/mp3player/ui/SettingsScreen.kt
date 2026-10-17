@@ -109,6 +109,7 @@ fun SettingsScreen(
         EqualizerCard()
         ProSoundCard(proUnlocked, onRemoveAds)
         AutoPlayCard()
+        DiscAnimationCard()
         HeadsetClicksCard()
         CarModeCard(onOpenCarMode)
         TransferCard(onOpenTransfer)
