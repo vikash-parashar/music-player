@@ -64,8 +64,10 @@ import coil3.request.SuccessResult
 import coil3.request.allowHardware
 import coil3.toBitmap
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.coroutines.resume
 
@@ -82,7 +84,7 @@ import kotlin.coroutines.resume
  */
 class AmpliWidget : GlanceAppWidget() {
 
-    override val sizeMode: SizeMode = SizeMode.Responsive(setOf(SMALL, WIDE, MEDIUM, TALL))
+    override val sizeMode: SizeMode = SizeMode.Responsive(setOf(SMALL, COMPACT, WIDE, MEDIUM, TALL))
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         val s = WidgetState.read(context)
@@ -96,7 +98,8 @@ class AmpliWidget : GlanceAppWidget() {
         when {
             size.width >= TALL.width && size.height >= TALL.height -> Tall(s, art)
             size.width >= MEDIUM.width && size.height >= MEDIUM.height -> Medium(s, art)
-            size.width >= WIDE.width -> Wide(s)
+            size.width >= WIDE.width -> Wide(s, art)
+            size.width >= COMPACT.width -> Compact(s, art)
             else -> Small(s, art)
         }
     }
@@ -116,19 +119,42 @@ class AmpliWidget : GlanceAppWidget() {
         }
     }
 
-    /** 4x1: the original widget, unchanged. */
+    /** 3x1: art, title and artist, then play/pause. */
     @Composable
-    private fun Wide(s: WidgetState) {
+    private fun Compact(s: WidgetState, art: Bitmap?) {
+        val context = LocalContext.current
+        Row(
+            GlanceModifier.fillMaxSize().background(ImageProvider(R.drawable.widget_bg))
+                .clickable(actionStartActivity<MainActivity>()).padding(horizontal = 10.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Art(art, 40.dp)
+            Spacer(GlanceModifier.width(10.dp))
+            Column(GlanceModifier.defaultWeight()) {
+                Text(
+                    s.title.ifEmpty { "Ampli" }, maxLines = 1,
+                    style = TextStyle(color = ColorProvider(Color.White), fontWeight = FontWeight.Bold, fontSize = 14.sp),
+                )
+                Text(
+                    s.artist.ifEmpty { context.getString(R.string.widget_tap_play) }, maxLines = 1,
+                    style = TextStyle(color = ColorProvider(Color.White.copy(alpha = 0.85f)), fontSize = 12.sp),
+                )
+            }
+            Spacer(GlanceModifier.width(8.dp))
+            PlayButton(s, 40.dp, 9.dp)
+        }
+    }
+
+    /** 4x1: the original row, now with the song's album art. */
+    @Composable
+    private fun Wide(s: WidgetState, art: Bitmap?) {
         val white = ColorProvider(Color.White)
         val context = LocalContext.current
         Row(
             GlanceModifier.fillMaxSize().background(ImageProvider(R.drawable.widget_bg)).padding(horizontal = 12.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Image(
-                ImageProvider(R.drawable.ic_launcher_foreground), context.getString(R.string.widget_open_app),
-                GlanceModifier.size(40.dp).clickable(actionStartActivity<MainActivity>()),
-            )
+            Box(GlanceModifier.size(40.dp).clickable(actionStartActivity<MainActivity>())) { Art(art, 40.dp) }
             Spacer(GlanceModifier.width(8.dp))
             Column(GlanceModifier.defaultWeight().clickable(actionStartActivity<MainActivity>())) {
                 Text(
@@ -323,6 +349,7 @@ class AmpliWidget : GlanceAppWidget() {
 
         private const val ART_PX = 288
         private val SMALL = DpSize(100.dp, 40.dp)
+        private val COMPACT = DpSize(170.dp, 40.dp)
         private val WIDE = DpSize(250.dp, 40.dp)
         private val MEDIUM = DpSize(250.dp, 110.dp)
         private val TALL = DpSize(250.dp, 180.dp)
@@ -337,6 +364,12 @@ class AmpliWidgetReceiver : GlanceAppWidgetReceiver() {
 class PlayerAction : ActionCallback {
     override suspend fun onAction(context: Context, glanceId: GlanceId, parameters: ActionParameters) {
         val command = parameters[AmpliWidget.CommandKey] ?: return
+        // Glance runs this off the main thread, but a MediaController built there uses the main
+        // looper and refuses calls from any other thread, so every button press was dropped.
+        withContext(Dispatchers.Main) { send(context, command) }
+    }
+
+    private suspend fun send(context: Context, command: String) {
         val controller = connect(context) ?: return
         try {
             when (command) {
