@@ -112,6 +112,22 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         _messages.tryEmit(str(R.string.msg_removed_song, song.title))
     }
 
+    /**
+     * Imports several .m3u/.m3u8 files as playlists (the Switching screen). Calls [onDone] on the
+     * main thread with how many playlists were made; files that match no songs are skipped.
+     */
+    fun importM3uPlaylists(uris: List<android.net.Uri>, onDone: (Int) -> Unit) {
+        val app = getApplication<Application>()
+        val songs = _library.value.songs
+        viewModelScope.launch {
+            val found = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                uris.mapNotNull { uri -> com.vikash.mp3player.data.M3u.import(app, uri, songs)?.takeIf { it.second.isNotEmpty() } }
+            }
+            found.forEach { (name, list) -> musicApp.playlists.create(name, list.map { it.id }) }
+            onDone(found.size)
+        }
+    }
+
     fun renamePlaylist(id: String, name: String) = musicApp.playlists.rename(id, name)
 
     fun deletePlaylist(id: String) {

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- One-time "Switching from Wynk or Samsung Music?" screen after first-run welcome. -->
+    <string name="switch_skip">এড়িয়ে যান</string>
+    <string name="switch_title">Wynk বা Samsung Music থেকে আসছেন?</string>
+    <string name="switch_subtitle">Ampli আপনার গান খুঁজে পেয়েছে। একে নিজের মতো করে নিতে:</string>
+    <string name="switch_stat_songs">গান</string>
+    <string name="switch_stat_albums">অ্যালবাম</string>
+    <string name="switch_stat_folders">ফোল্ডার</string>
+    <string name="switch_hide_whatsapp">WhatsApp অডিও লুকান</string>
+    <string name="switch_hide_whatsapp_sub">ভয়েস নোট আর ফরওয়ার্ড করা ক্লিপ</string>
+    <string name="switch_hide_calls">কল রেকর্ডিং লুকান</string>
+    <string name="switch_hide_calls_sub">রেকর্ডার আর কল ফোল্ডার</string>
+    <string name="switch_import">প্লেলিস্ট আনুন</string>
+    <string name="switch_import_sub">Samsung Music-এর .m3u ফাইল বেছে নিন</string>
+    <string name="switch_pick">বেছে নিন</string>
+    <string name="switch_note">Wynk-এ ডাউনলোড করা গান শুধু Wynk-এই চলে, অন্য অ্যাপে চলে না। MP3 ফাইল হিসেবে সেভ করা গান এখানে দেখা যাবে।</string>
+    <string name="switch_start">শোনা শুরু করুন</string>
+    <plurals name="switch_imported">
+        <item quantity="one">%dটি প্লেলিস্ট আনা হয়েছে</item>
+        <item quantity="other">%dটি প্লেলিস্ট আনা হয়েছে</item>
+    </plurals>
+</resources>

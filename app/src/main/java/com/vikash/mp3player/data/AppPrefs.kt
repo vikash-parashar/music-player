@@ -114,7 +114,22 @@ class AppPrefs(context: Context) {
     val welcomeDone: Boolean get() = prefs.getBoolean(KEY_WELCOME, false)
 
     fun setWelcomeDone() {
-        prefs.edit().putBoolean(KEY_WELCOME, true).apply()
+        val edit = prefs.edit().putBoolean(KEY_WELCOME, true)
+        // A fresh install gets the "Switching from Wynk or Samsung Music?" screen next. Written
+        // here so it survives the app being closed between welcome and that screen.
+        if (!prefs.contains(KEY_SWITCH)) edit.putBoolean(KEY_SWITCH, false)
+        edit.apply()
+    }
+
+    /**
+     * True once the one-time "Switching from Wynk or Samsung Music?" screen was finished or
+     * skipped. Users upgrading from a build that had already finished welcome never set the key,
+     * so for them it falls back to [welcomeDone] (true) and the screen is not shown.
+     */
+    val switchScreenDone: Boolean get() = prefs.getBoolean(KEY_SWITCH, welcomeDone)
+
+    fun setSwitchScreenDone() {
+        prefs.edit().putBoolean(KEY_SWITCH, true).apply()
     }
 
     private fun readSort() = runCatching { SongSort.valueOf(prefs.getString(KEY_SORT, null) ?: "") }.getOrDefault(SongSort.Title)
@@ -137,6 +152,7 @@ class AppPrefs(context: Context) {
         const val KEY_SORT = "song_sort"
         const val KEY_HIDDEN = "hidden_folders"
         const val KEY_WELCOME = "welcome_done"
+        const val KEY_SWITCH = "switch_screen_done"
         const val KEY_AMOLED = "amoled_black"
         const val KEY_DISC_ANIM = "disc_animation"
         const val KEY_WALLPAPER = "wallpaper_colors"
