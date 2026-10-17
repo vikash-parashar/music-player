@@ -101,6 +101,17 @@
                 android:resource="@xml/ampli_widget_info" />
         </receiver>
 
+        <!-- Lyric cards: hands the picture to WhatsApp, Instagram or the share sheet. -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
         <service
             android:name=".playback.PlaybackService"
             android:exported="true"

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- Lyric card pictures, written to the cache just before sharing. -->
+    <cache-path name="lyric_cards" path="lyric_cards/" />
+</paths>
