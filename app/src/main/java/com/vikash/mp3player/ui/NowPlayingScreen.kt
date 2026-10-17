@@ -180,7 +180,8 @@ fun NowPlayingScreen(
                     )
                 } else {
                     Spacer(Modifier.weight(0.2f))
-                    Artwork(current.artworkUri, 300.dp, Modifier.align(Alignment.CenterHorizontally))
+                    // The poster as a CD sticker that turns with the song.
+                    SpinningCd(current.artworkUri, 300.dp, Modifier.align(Alignment.CenterHorizontally))
                     Spacer(Modifier.weight(0.2f))
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {

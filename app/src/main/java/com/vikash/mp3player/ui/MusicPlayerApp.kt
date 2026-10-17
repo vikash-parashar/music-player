@@ -171,7 +171,8 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
         )
     }
 
-    CompositionLocalProvider(LocalIsPlaying provides player.isPlaying) {
+    val discAngle = rememberDiscSpin(vm.player)
+    CompositionLocalProvider(LocalIsPlaying provides player.isPlaying, LocalDiscAngle provides discAngle) {
     Box(Modifier.fillMaxSize()) {
         Scaffold(
             topBar = { BrandHeader(showAdFreePill = !adsRemoved, onAdFreeClick = openPro, onRecognize = { showRecognize = true }) },

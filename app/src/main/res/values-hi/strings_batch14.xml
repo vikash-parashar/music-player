@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="disc_anim_title">सीडी बदलने का एनिमेशन</string>
-    <string name="disc_anim_desc">गाना चुनने पर रोबोट हाथ उसकी सीडी प्लेयर पर रखता है। गाना तुरंत शुरू हो जाता है।</string>
+    <string name="disc_anim_title">सीडी प्लेयर एनिमेशन</string>
+    <string name="disc_anim_desc">गाना चुनने पर सीडी प्लेयर उसकी सीडी लगाता है। गाना तुरंत शुरू हो जाता है।</string>
     <string name="disc_tap_skip">छोड़ने के लिए टैप करें</string>
+    <string name="disc_status_ready">तैयार</string>
+    <string name="disc_status_opening">खुल रहा है</string>
+    <string name="disc_status_reading">सीडी पढ़ रहा है</string>
 </resources>
