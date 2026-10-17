@@ -1,0 +1,52 @@
+name: Website
+
+# Builds the ampliapps.in landing page (website/, Next.js static export).
+# Every push touching website/ is built as a check; pushes to main also deploy to GitHub Pages.
+# One-time setup: Settings > Pages > Build and deployment > Source = "GitHub Actions".
+
+on:
+  push:
+    branches: [main, "claude/**"]
+    paths: ["website/**", ".github/workflows/deploy-site.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: website
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: website/package-lock.json
+      - run: npm ci
+      - run: npm run lint --if-present
+      - run: npm run build
+      - uses: actions/upload-pages-artifact@v3
+        if: github.ref == 'refs/heads/main'
+        with:
+          path: website/out
+
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
