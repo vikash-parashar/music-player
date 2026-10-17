@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_up_next">அடுத்து · %1$s</string>
+    <string name="widget_queue_end">வரிசையின் கடைசிப் பாடல்</string>
+    <string name="widget_album_art">ஆல்பம் படம்</string>
+</resources>

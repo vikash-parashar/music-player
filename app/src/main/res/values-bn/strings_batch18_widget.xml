@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_up_next">এরপর · %1$s</string>
+    <string name="widget_queue_end">সারির শেষ গান</string>
+    <string name="widget_album_art">অ্যালবাম আর্ট</string>
+</resources>

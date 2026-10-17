@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_up_next">पुढे · %1$s</string>
+    <string name="widget_queue_end">रांगेतील शेवटचे गाणे</string>
+    <string name="widget_album_art">अल्बम आर्ट</string>
+</resources>

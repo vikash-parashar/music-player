@@ -9,6 +9,7 @@ import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
+import androidx.media3.common.Timeline
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.CommandButton
 import androidx.media3.session.DefaultMediaNotificationProvider
@@ -111,10 +112,16 @@ class PlaybackService : MediaLibraryService() {
         player.addListener(object : Player.Listener {
             override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
                 librarySession.setCustomLayout(controlButtons(player))
+                refreshWidget(player) // the widget's "Up next" follows shuffle order
             }
 
             override fun onRepeatModeChanged(repeatMode: Int) {
                 librarySession.setCustomLayout(controlButtons(player))
+                refreshWidget(player)
+            }
+
+            override fun onTimelineChanged(timeline: Timeline, reason: Int) {
+                refreshWidget(player) // queue edited: the next song may have changed
             }
 
             override fun onIsPlayingChanged(isPlaying: Boolean) {
@@ -215,11 +222,8 @@ class PlaybackService : MediaLibraryService() {
     }
 
     private fun refreshWidget(player: Player) {
-        val meta = player.currentMediaItem?.mediaMetadata
-        val title = meta?.title?.toString().orEmpty()
-        val artist = meta?.artist?.toString().orEmpty()
-        val playing = player.isPlaying
-        scope.launch { WidgetState.update(this@PlaybackService, title, artist, playing) }
+        val state = WidgetState.from(player)
+        scope.launch { WidgetState.update(this@PlaybackService, state) }
     }
 
     private fun addHeardTime() {
@@ -250,10 +254,10 @@ class PlaybackService : MediaLibraryService() {
     override fun onDestroy() {
         reportListening()
         session?.player?.let { p ->
-            val meta = p.currentMediaItem?.mediaMetadata
+            val state = WidgetState.from(p, playing = false)
             // The scope is cancelled below, so this update runs on its own.
             kotlinx.coroutines.GlobalScope.launch {
-                WidgetState.update(applicationContext, meta?.title?.toString().orEmpty(), meta?.artist?.toString().orEmpty(), false)
+                WidgetState.update(applicationContext, state)
             }
         }
         clicks.release()
