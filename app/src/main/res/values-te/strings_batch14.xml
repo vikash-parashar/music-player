@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="disc_anim_title">సీడీ మార్చే యానిమేషన్</string>
+    <string name="disc_anim_desc">పాటను నొక్కినప్పుడు రోబో చేయి దాని సీడీని ప్లేయర్‌పై పెడుతుంది. పాట వెంటనే మొదలవుతుంది.</string>
+    <string name="disc_tap_skip">దాటవేయడానికి నొక్కండి</string>
+</resources>

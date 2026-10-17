@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="disc_anim_title">சிடி மாற்றும் அனிமேஷன்</string>
+    <string name="disc_anim_desc">பாடலைத் தட்டும்போது ரோபோ கை அதன் சிடியை பிளேயரில் வைக்கும். பாடல் உடனே தொடங்கும்.</string>
+    <string name="disc_tap_skip">தவிர்க்க தட்டவும்</string>
+</resources>

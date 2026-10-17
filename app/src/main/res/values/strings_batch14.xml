@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="disc_anim_title">CD change animation</string>
+    <string name="disc_anim_desc">A robot arm puts the song CD on the player when you tap a song. The song starts right away.</string>
+    <string name="disc_tap_skip">Tap to skip</string>
+</resources>

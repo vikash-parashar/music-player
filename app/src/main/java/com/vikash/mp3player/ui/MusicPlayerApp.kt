@@ -25,13 +25,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -83,6 +82,13 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     val tipPrices by vm.billing.tipPrices.collectAsStateWithLifecycle()
     val tipsReceived by vm.billing.tipsReceived.collectAsStateWithLifecycle()
     var showVisualizer by rememberSaveable { mutableStateOf(false) }
+    val discAnim by app.prefs.discAnimation.collectAsStateWithLifecycle()
+    // The song starts at once; the CD change animation only plays on top.
+    var discSong by remember { mutableStateOf<Song?>(null) }
+    val playWithDisc: (List<Song>, Int, String) -> Unit = { songs, i, src ->
+        vm.player.play(songs, i, src)
+        if (discAnim) discSong = songs.getOrNull(i)
+    }
     val videos by vm.videos.collectAsStateWithLifecycle()
     val favorites by vm.prefs.favorites.collectAsStateWithLifecycle()
     val themeMode by vm.prefs.themeMode.collectAsStateWithLifecycle()
@@ -158,39 +164,38 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     val currentId = player.current?.mediaId
     val discoverActions = remember(vm) {
         DiscoverActions(
-            play = vm.player::play,
+            play = playWithDisc,
             playNext = { vm.player.playNext(it); vm.notify(context.getString(R.string.msg_playing_next, it.title)) },
             addToQueue = { vm.player.addToQueue(it); vm.notify(context.getString(R.string.msg_added_to_queue)) },
             download = { song, folder -> vm.download(song, folder) },
         )
     }
 
+    CompositionLocalProvider(LocalIsPlaying provides player.isPlaying) {
     Box(Modifier.fillMaxSize()) {
         Scaffold(
             topBar = { BrandHeader(showAdFreePill = !adsRemoved, onAdFreeClick = openPro, onRecognize = { showRecognize = true }) },
             snackbarHost = { SnackbarHost(snackbar) },
             bottomBar = {
                 Column {
-                    MiniPlayer(player, onOpen = { showPlayer = true }, onToggle = vm.player::togglePlay, onNext = vm.player::next)
+                    MiniPlayer(
+                        player,
+                        onOpen = { showPlayer = true },
+                        onToggle = vm.player::togglePlay,
+                        onNext = vm.player::next,
+                        onPrevious = vm.player::previous,
+                    )
                     if (!adsRemoved && adsReady) BannerAd()
-                    NavigationBar {
-                        NavigationBarItem(
-                            selected = tab == 0, onClick = { tab = 0 },
-                            icon = { Icon(Icons.Default.LibraryMusic, null) }, label = { Text(stringResource(R.string.nav_library)) },
-                        )
-                        NavigationBarItem(
-                            selected = tab == 1, onClick = { tab = 1 },
-                            icon = { Icon(Icons.Default.Public, null) }, label = { Text(stringResource(R.string.nav_online)) },
-                        )
-                        NavigationBarItem(
-                            selected = tab == 2, onClick = { tab = 2 },
-                            icon = { Icon(Icons.Default.VideoLibrary, null) }, label = { Text(stringResource(R.string.nav_videos)) },
-                        )
-                        NavigationBarItem(
-                            selected = tab == 3, onClick = { tab = 3 },
-                            icon = { Icon(Icons.Default.Settings, null) }, label = { Text(stringResource(R.string.nav_settings)) },
-                        )
-                    }
+                    CompactNavBar(
+                        tabs = listOf(
+                            NavTab(stringResource(R.string.nav_library), Icons.Default.LibraryMusic),
+                            NavTab(stringResource(R.string.nav_online), Icons.Default.Public),
+                            NavTab(stringResource(R.string.nav_videos), Icons.Default.VideoLibrary),
+                            NavTab(stringResource(R.string.nav_settings), Icons.Default.Settings),
+                        ),
+                        selected = tab,
+                        onSelect = { tab = it },
+                    )
                 }
             },
         ) { padding ->
@@ -201,7 +206,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                         hasPermission = hasPermission,
                         currentId = currentId,
                         onRequestPermission = { permissionLauncher.launch(launchPermissions) },
-                        onPlay = vm.player::play,
+                        onPlay = playWithDisc,
                         onPlayNext = { vm.player.playNext(it); vm.notify(context.getString(R.string.msg_playing_next, it.title)) },
                         onAddToQueue = { vm.player.addToQueue(it); vm.notify(context.getString(R.string.msg_added_to_queue)) },
                         favorites = favorites,
@@ -229,7 +234,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                             currentId = currentId,
                             onQueryChange = { vm.searchOnline(it) },
                             onLoadPopular = { vm.searchOnline("", debounce = false) },
-                            onPlay = vm.player::play,
+                            onPlay = playWithDisc,
                             onPlayNext = discoverActions.playNext,
                             onAddToQueue = discoverActions.addToQueue,
                             onDownload = { vm.download(it) },
@@ -413,6 +418,15 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
             }
         }
 
+        AnimatedVisibility(visible = discSong != null, enter = fadeIn(), exit = fadeOut()) {
+            // Keep the last song while fading out.
+            val shown = remember { mutableStateOf<Song?>(null) }
+            discSong?.let { shown.value = it }
+            shown.value?.let { song ->
+                key(song.id) { DiscChangeOverlay(song, onDone = { discSong = null }) }
+            }
+        }
+
         AnimatedVisibility(visible = showVisualizer, enter = fadeIn(), exit = fadeOut()) {
             VisualizerScreen(
                 title = player.current?.title.orEmpty(),
@@ -455,5 +469,6 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                 permissionLauncher.launch(launchPermissions)
             })
         }
+    }
     }
 }

@@ -1,5 +1,9 @@
 package com.vikash.mp3player.ui
 
+import androidx.compose.material.icons.automirrored.filled.PlaylistPlay
+import androidx.compose.material.icons.filled.RemoveCircleOutline
+import androidx.compose.material.icons.filled.HeartBroken
+import androidx.compose.material.icons.filled.RingVolume
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -587,16 +591,16 @@ private fun SongList(
                 isCurrent = song.id == currentId,
                 onClick = { if (selecting) toggle(song) else onPlay(songs, i, source) },
                 actions = buildList {
-                    add(SongAction(playNextLabel) { onPlayNext(song) })
-                    add(SongAction(addToQueueLabel) { onAddToQueue(song) })
-                    add(SongAction(addToPlaylistLabel) { onAddToPlaylist(listOf(song)) })
-                    if (onRemove != null) add(SongAction(removeFromPlaylistLabel) { onRemove(song) })
-                    add(SongAction(if (fav) removeFavoriteLabel else addFavoriteLabel) { onToggleFavorite(song) })
-                    add(SongAction(setRingtoneLabel) { onSetRingtone(song) })
-                    add(SongAction(editInfoLabel) { onEditTags(song) })
-                    if (!song.isOnline) add(SongAction(shareLabel) { shareSongs(context, listOf(song)) })
-                    if (!song.isOnline) add(SongAction(moveLabel) { onMove(listOf(song)) })
-                    if (!song.isOnline) add(SongAction(deleteLabel) { onDelete(listOf(song)) })
+                    add(SongAction(playNextLabel, Icons.AutoMirrored.Filled.PlaylistPlay) { onPlayNext(song) })
+                    add(SongAction(addToQueueLabel, Icons.AutoMirrored.Filled.QueueMusic) { onAddToQueue(song) })
+                    add(SongAction(addToPlaylistLabel, Icons.AutoMirrored.Filled.PlaylistAdd) { onAddToPlaylist(listOf(song)) })
+                    if (onRemove != null) add(SongAction(removeFromPlaylistLabel, Icons.Default.RemoveCircleOutline) { onRemove(song) })
+                    add(SongAction(if (fav) removeFavoriteLabel else addFavoriteLabel, if (fav) Icons.Default.HeartBroken else Icons.Default.Favorite) { onToggleFavorite(song) })
+                    add(SongAction(setRingtoneLabel, Icons.Default.RingVolume) { onSetRingtone(song) })
+                    add(SongAction(editInfoLabel, Icons.Default.Edit) { onEditTags(song) })
+                    if (!song.isOnline) add(SongAction(shareLabel, Icons.Default.Share) { shareSongs(context, listOf(song)) })
+                    if (!song.isOnline) add(SongAction(moveLabel, Icons.Default.DriveFileMove) { onMove(listOf(song)) })
+                    if (!song.isOnline) add(SongAction(deleteLabel, Icons.Default.Delete, danger = true) { onDelete(listOf(song)) })
                 },
                 isFavorite = fav,
                 onToggleFavorite = { onToggleFavorite(song) },

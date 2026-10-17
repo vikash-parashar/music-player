@@ -104,7 +104,13 @@ fun FavoriteButton(isFavorite: Boolean, onToggle: () -> Unit, modifier: Modifier
     }
 }
 
-data class SongAction(val label: String, val onClick: () -> Unit)
+/** One entry in a song's menu. [icon] shows in the round button; [danger] tints it red (Delete). */
+data class SongAction(
+    val label: String,
+    val icon: androidx.compose.ui.graphics.vector.ImageVector? = null,
+    val danger: Boolean = false,
+    val onClick: () -> Unit,
+)
 
 @Composable
 fun SongRow(
@@ -149,85 +155,6 @@ fun SongRow(
         },
     ) {
         Surface { SongRowContent(song, isCurrent, onClick, actions, isFavorite, onToggleFavorite, onLongClick, null) }
-    }
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-private fun SongRowContent(
-    song: Song,
-    isCurrent: Boolean,
-    onClick: () -> Unit,
-    actions: List<SongAction>,
-    isFavorite: Boolean?,
-    onToggleFavorite: () -> Unit,
-    onLongClick: (() -> Unit)?,
-    selected: Boolean?,
-) {
-    var menuOpen by remember { mutableStateOf(false) }
-    Row(
-        Modifier.fillMaxWidth()
-            .background(if (selected == true) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent)
-            .combinedClickable(onClick = onClick, onLongClick = onLongClick)
-            .padding(start = 16.dp, top = 8.dp, bottom = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Artwork(song.artworkUri, 48.dp)
-        Spacer(Modifier.width(12.dp))
-        Column(Modifier.weight(1f)) {
-            Text(
-                song.title,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Normal,
-                color = if (isCurrent) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
-            )
-            Text(
-                listOf(song.artist, formatDuration(song.durationMs)).filter { it.isNotBlank() }.joinToString(" · "),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        if (selected != null) {
-            Checkbox(checked = selected, onCheckedChange = { onClick() }, modifier = Modifier.padding(end = 8.dp))
-        } else {
-            if (isFavorite != null) FavoriteButton(isFavorite, onToggleFavorite)
-            Box {
-                IconButton(onClick = { menuOpen = true }) { Icon(Icons.Default.MoreVert, stringResource(R.string.common_more_options)) }
-                DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
-                    actions.forEach { action ->
-                        DropdownMenuItem(
-                            text = { Text(action.label) },
-                            onClick = { menuOpen = false; action.onClick() },
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun MiniPlayer(state: PlayerUiState, onOpen: () -> Unit, onToggle: () -> Unit, onNext: () -> Unit) {
-    val current = state.current ?: return
-    Surface(tonalElevation = 3.dp, modifier = Modifier.fillMaxWidth().clickable(onClick = onOpen)) {
-        Row(Modifier.padding(horizontal = 12.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-            Artwork(current.artworkUri, 44.dp)
-            Spacer(Modifier.width(12.dp))
-            Column(Modifier.weight(1f)) {
-                Text(current.title, maxLines = 1, overflow = TextOverflow.Ellipsis, fontWeight = FontWeight.SemiBold)
-                Text(
-                    current.artist, maxLines = 1, overflow = TextOverflow.Ellipsis,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            GradientPlayButton(state.isPlaying, 40.dp, onToggle)
-            Spacer(Modifier.width(4.dp))
-            IconButton(onClick = onNext) { Icon(Icons.Default.SkipNext, stringResource(R.string.common_next)) }
-        }
     }
 }
 

@@ -76,6 +76,25 @@ fun AutoPlayCard() {
     }
 }
 
+/** Free: robot arm CD change animation when a song is tapped. */
+@Composable
+fun DiscAnimationCard() {
+    val prefs = (LocalContext.current.applicationContext as MusicApp).prefs
+    val on by prefs.discAnimation.collectAsState()
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(16.dp)) {
+            CardTitle(stringResource(R.string.disc_anim_title), pro = false, unlocked = true) {
+                Switch(checked = on, onCheckedChange = prefs::setDiscAnimation)
+            }
+            Text(
+                stringResource(R.string.disc_anim_desc),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
 /** Pro: 10-band equaliser, bass boost and 3D surround. */
 @Composable
 fun ProSoundCard(unlocked: Boolean, onGetPro: () -> Unit) {

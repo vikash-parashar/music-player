@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="disc_anim_title">সিডি বদলের অ্যানিমেশন</string>
+    <string name="disc_anim_desc">গানে ট্যাপ করলে রোবট হাত তার সিডি প্লেয়ারে রাখে। গান সঙ্গে সঙ্গে শুরু হয়।</string>
+    <string name="disc_tap_skip">এড়াতে ট্যাপ করুন</string>
+</resources>
