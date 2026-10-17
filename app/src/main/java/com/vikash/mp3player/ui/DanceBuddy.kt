@@ -33,15 +33,13 @@ import kotlin.math.roundToInt
 import kotlin.math.sin
 
 /**
- * Car mode's dancing buddy. Each buddy has nine drawn poses:
+ * Car mode's dancing buddy (an anime girl or boy). Each has nine drawn poses:
  * 0 stand, 1 cheer, 2 point left, 3 point right, 4 clap with a knee up, 5 star jump,
  * 6 hands on hips, 7 bhangra, 8 disco point.
  */
 enum class Buddy(val key: String, @StringRes val label: Int, val frames: List<Int>) {
     GIRL("girl", R.string.buddy_girl, listOf(R.drawable.buddy_girl_0, R.drawable.buddy_girl_1, R.drawable.buddy_girl_2, R.drawable.buddy_girl_3, R.drawable.buddy_girl_4, R.drawable.buddy_girl_5, R.drawable.buddy_girl_6, R.drawable.buddy_girl_7, R.drawable.buddy_girl_8)),
-    BOY("boy", R.string.buddy_boy, listOf(R.drawable.buddy_boy_0, R.drawable.buddy_boy_1, R.drawable.buddy_boy_2, R.drawable.buddy_boy_3, R.drawable.buddy_boy_4, R.drawable.buddy_boy_5, R.drawable.buddy_boy_6, R.drawable.buddy_boy_7, R.drawable.buddy_boy_8)),
-    CAT("cat", R.string.buddy_cat, listOf(R.drawable.buddy_cat_0, R.drawable.buddy_cat_1, R.drawable.buddy_cat_2, R.drawable.buddy_cat_3, R.drawable.buddy_cat_4, R.drawable.buddy_cat_5, R.drawable.buddy_cat_6, R.drawable.buddy_cat_7, R.drawable.buddy_cat_8)),
-    DOG("dog", R.string.buddy_dog, listOf(R.drawable.buddy_dog_0, R.drawable.buddy_dog_1, R.drawable.buddy_dog_2, R.drawable.buddy_dog_3, R.drawable.buddy_dog_4, R.drawable.buddy_dog_5, R.drawable.buddy_dog_6, R.drawable.buddy_dog_7, R.drawable.buddy_dog_8));
+    BOY("boy", R.string.buddy_boy, listOf(R.drawable.buddy_boy_0, R.drawable.buddy_boy_1, R.drawable.buddy_boy_2, R.drawable.buddy_boy_3, R.drawable.buddy_boy_4, R.drawable.buddy_boy_5, R.drawable.buddy_boy_6, R.drawable.buddy_boy_7, R.drawable.buddy_boy_8));
 
     companion object {
         private const val PREFS = "ampli_prefs"
@@ -49,7 +47,8 @@ enum class Buddy(val key: String, @StringRes val label: Int, val frames: List<In
         /** The saved pick; null means the driver chose "Off". */
         fun load(context: Context): Buddy? {
             val v = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(KEY, GIRL.key)
-            return entries.firstOrNull { it.key == v }
+            if (v == "off") return null
+            return entries.firstOrNull { it.key == v } ?: GIRL
         }
         fun save(context: Context, buddy: Buddy?) {
             context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putString(KEY, buddy?.key ?: "off").apply()
@@ -149,7 +148,8 @@ fun DanceBuddy(buddy: Buddy, isPlaying: Boolean, songKey: String?, modifier: Mod
         val img = images[shown.intValue]
         val prev = images[previous.intValue]
         val d = density
-        val sc = min((size.height - 24 * d) / img.height, size.width * 0.86f / img.width)
+        // 70% of the space it could fill (the driver asked for smaller buddies).
+        val sc = min((size.height - 24 * d) / img.height, size.width * 0.86f / img.width) * 0.7f
         val w = img.width * sc
         val h = img.height * sc
         val gx = size.width / 2f

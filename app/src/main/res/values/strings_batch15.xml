@@ -2,8 +2,6 @@
 <resources>
     <string name="buddy_girl">Girl</string>
     <string name="buddy_boy">Boy</string>
-    <string name="buddy_cat">Cat</string>
-    <string name="buddy_dog">Dog</string>
     <string name="buddy_off">Off</string>
     <string name="carhub_promo_line">Your car\'s screen, talking in Haryanvi</string>
     <string name="more_apps_label">More from Ampli</string>

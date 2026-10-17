@@ -2,8 +2,6 @@
 <resources>
     <string name="buddy_girl">பெண்</string>
     <string name="buddy_boy">பையன்</string>
-    <string name="buddy_cat">பூனை</string>
-    <string name="buddy_dog">நாய்</string>
     <string name="buddy_off">அணை</string>
     <string name="carhub_promo_line">ஹரியான்வியில் பேசும் உங்கள் கார் திரை</string>
     <string name="more_apps_label">Ampli-யின் மேலும் ஆப்கள்</string>

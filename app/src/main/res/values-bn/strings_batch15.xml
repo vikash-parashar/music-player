@@ -2,8 +2,6 @@
 <resources>
     <string name="buddy_girl">মেয়ে</string>
     <string name="buddy_boy">ছেলে</string>
-    <string name="buddy_cat">বিড়াল</string>
-    <string name="buddy_dog">কুকুর</string>
     <string name="buddy_off">বন্ধ</string>
     <string name="carhub_promo_line">আপনার গাড়ির স্ক্রিন, হরিয়ানভিতে কথা বলে</string>
     <string name="more_apps_label">Ampli-র আরও অ্যাপ</string>

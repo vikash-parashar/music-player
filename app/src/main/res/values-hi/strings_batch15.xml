@@ -2,8 +2,6 @@
 <resources>
     <string name="buddy_girl">लड़की</string>
     <string name="buddy_boy">लड़का</string>
-    <string name="buddy_cat">बिल्ली</string>
-    <string name="buddy_dog">कुत्ता</string>
     <string name="buddy_off">बंद</string>
     <string name="carhub_promo_line">आपकी कार की स्क्रीन, हरियाणवी में बात करती</string>
     <string name="more_apps_label">Ampli के और ऐप</string>

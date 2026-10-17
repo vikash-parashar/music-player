@@ -2,8 +2,6 @@
 <resources>
     <string name="buddy_girl">అమ్మాయి</string>
     <string name="buddy_boy">అబ్బాయి</string>
-    <string name="buddy_cat">పిల్లి</string>
-    <string name="buddy_dog">కుక్క</string>
     <string name="buddy_off">ఆఫ్</string>
     <string name="carhub_promo_line">హర్యాన్వీలో మాట్లాడే మీ కార్ స్క్రీన్</string>
     <string name="more_apps_label">Ampli నుండి మరిన్ని యాప్‌లు</string>
