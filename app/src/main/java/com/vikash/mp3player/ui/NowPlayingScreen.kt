@@ -83,6 +83,7 @@ fun NowPlayingScreen(
     onClose: () -> Unit,
     onVisualizer: () -> Unit = {},
 ) {
+    androidx.compose.runtime.LaunchedEffect(Unit) { com.vikash.mp3player.data.OwnerHooks.event("feature_record_player") }
     var showCast by remember { mutableStateOf(false) }
     val casting by com.vikash.mp3player.cast.CastState.casting.collectAsState()
     var showQueue by remember { mutableStateOf(false) }

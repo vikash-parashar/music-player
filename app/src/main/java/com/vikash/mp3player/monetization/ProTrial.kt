@@ -33,6 +33,7 @@ object ProTrial {
         val end = now + HOURS * 60L * 60L * 1000L
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putLong(KEY_UNTIL, end).apply()
         _until.value = end
+        com.vikash.mp3player.data.OwnerHooks.event("pro_trial")
     }
 
     /** True while a trial runs; flips back to false the moment it ends. */

@@ -56,6 +56,7 @@ import kotlinx.coroutines.withContext
 /** "Send songs from your computer": shows the address to open on a laptop on the same Wi-Fi. */
 @Composable
 fun WifiTransferScreen(onClose: () -> Unit) {
+    androidx.compose.runtime.LaunchedEffect(Unit) { com.vikash.mp3player.data.OwnerHooks.event("feature_wifi_transfer") }
     BackHandler(onBack = onClose)
     val context = LocalContext.current
     val server = remember { WifiTransferServer(context.applicationContext) }

@@ -129,6 +129,12 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     var showPro by rememberSaveable { mutableStateOf(false) }
     var showHelp by rememberSaveable { mutableStateOf(false) }
     val openPro: () -> Unit = { showPro = true }
+    val onTip: (String) -> Unit = { id ->
+        val activity = context as? android.app.Activity
+        if (activity == null || !vm.billing.purchaseTip(activity, id)) {
+            Toast.makeText(context, context.getString(R.string.tip_unavailable), Toast.LENGTH_SHORT).show()
+        }
+    }
     val snackbar = remember { SnackbarHostState() }
 
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
@@ -258,6 +264,9 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                         onLibraryChanged = vm::loadLibrary,
                         onOpenHelp = { showHelp = true },
                         proUnlocked = proUnlocked,
+                        tipPrices = tipPrices,
+                        tipsReceived = tipsReceived,
+                        onTip = onTip,
                     )
                 }
             }
@@ -357,12 +366,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                     )
                 },
                 tipPrices = tipPrices,
-                onTip = { id ->
-                    val activity = context as? android.app.Activity
-                    if (activity == null || !vm.billing.purchaseTip(activity, id)) {
-                        Toast.makeText(context, context.getString(R.string.tip_unavailable), Toast.LENGTH_SHORT).show()
-                    }
-                },
+                onTip = onTip,
             )
         }
 

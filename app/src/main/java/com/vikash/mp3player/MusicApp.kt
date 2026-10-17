@@ -43,6 +43,7 @@ class MusicApp : Application(), SingletonImageLoader.Factory {
         super.onCreate()
         com.vikash.mp3player.data.CrashLog.install(this)
         com.vikash.mp3player.monetization.ProTrial.init(this)
+        com.vikash.mp3player.data.OwnerHooks.init(this)
     }
 
     override fun newImageLoader(context: PlatformContext): ImageLoader =

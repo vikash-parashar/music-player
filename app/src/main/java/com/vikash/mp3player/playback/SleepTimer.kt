@@ -10,6 +10,7 @@ object SleepTimer {
     val endsAtMillis: StateFlow<Long?> = _endsAtMillis.asStateFlow()
 
     fun start(minutes: Int) {
+        com.vikash.mp3player.data.OwnerHooks.event("feature_sleep_timer")
         _endsAtMillis.value = System.currentTimeMillis() + minutes * 60_000L
     }
 

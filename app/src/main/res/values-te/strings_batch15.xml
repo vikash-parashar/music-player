@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="buddy_girl">అమ్మాయి</string>
+    <string name="buddy_boy">అబ్బాయి</string>
+    <string name="buddy_cat">పిల్లి</string>
+    <string name="buddy_dog">కుక్క</string>
+    <string name="buddy_off">ఆఫ్</string>
+    <string name="carhub_promo_line">హర్యాన్వీలో మాట్లాడే మీ కార్ స్క్రీన్</string>
+    <string name="more_apps_label">Ampli నుండి మరిన్ని యాప్‌లు</string>
+    <string name="more_apps_get">పొందండి</string>
+    <string name="more_apps_coming_soon">త్వరలో</string>
+    <string name="more_apps_carhub">హర్యాన్వీ మాట్లాడే కారు</string>
+    <string name="more_apps_naukri">ఉచిత ప్రభుత్వ ఉద్యోగ అలర్ట్‌లు</string>
+    <string name="support_dev_label">డెవలపర్‌కు సహాయం చేయండి</string>
+    <string name="support_dev_desc">Ampliని భారతదేశంలో ఒక డెవలపర్ తయారు చేశారు, నెలవారీ ఫీజు లేదు. చిన్న టిప్ కొత్త ఫీచర్లకు సహాయపడుతుంది. ఇది ఏదీ అన్‌లాక్ చేయదు, సహాయం మాత్రమే.</string>
+    <string name="support_dev_thanks">చాయ్‌కి ధన్యవాదాలు! మీ మద్దతుతో Ampli ఎదుగుతుంది.</string>
+    <string name="tip_pill_small">చాయ్ %1$s</string>
+    <string name="tip_pill_large">సమోసా %1$s</string>
+    <string name="tip_pill_xl">థాలీ %1$s</string>
+</resources>

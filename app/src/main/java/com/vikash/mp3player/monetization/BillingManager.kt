@@ -153,7 +153,10 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
             // Tips are consumable, so the same tip can be bought again later.
             val params = ConsumeParams.newBuilder().setPurchaseToken(purchase.purchaseToken).build()
             client.consumeAsync(params) { result, _ ->
-                if (result.responseCode == BillingClient.BillingResponseCode.OK) _tipsReceived.value += 1
+                if (result.responseCode == BillingClient.BillingResponseCode.OK) {
+                    _tipsReceived.value += 1
+                    report("tip", purchase)
+                }
             }
             return
         }
@@ -162,8 +165,19 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
         // Purchases not acknowledged within 3 days are refunded automatically by Play.
         if (!purchase.isAcknowledged) {
             val params = AcknowledgePurchaseParams.newBuilder().setPurchaseToken(purchase.purchaseToken).build()
-            client.acknowledgePurchase(params) { }
+            client.acknowledgePurchase(params) { result ->
+                if (result.responseCode == BillingClient.BillingResponseCode.OK) report("pro", purchase)
+            }
         }
+    }
+
+    /** Tells the Ampli Owner app about a completed purchase (skipped when no server is set). */
+    private fun report(kind: String, purchase: Purchase) {
+        val sku = purchase.products.firstOrNull() ?: return
+        val offer = (if (kind == "tip") tipDetails[sku] else productDetails)?.oneTimePurchaseOfferDetails
+        com.vikash.mp3player.data.OwnerHooks.purchase(
+            kind, sku, offer?.priceAmountMicros ?: 0L, offer?.priceCurrencyCode ?: "INR", purchase.orderId, purchase.purchaseToken,
+        )
     }
 
     private fun Purchase.ownsRemoveAds() =
@@ -185,6 +199,6 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
 
     companion object {
         private const val KEY_ADS_REMOVED = "ads_removed"
-        val TIP_IDS = listOf(BuildConfig.TIP_SMALL_ID, BuildConfig.TIP_LARGE_ID)
+        val TIP_IDS = listOf(BuildConfig.TIP_SMALL_ID, BuildConfig.TIP_LARGE_ID, BuildConfig.TIP_XL_ID)
     }
 }

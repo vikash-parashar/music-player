@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="buddy_girl">मुलगी</string>
+    <string name="buddy_boy">मुलगा</string>
+    <string name="buddy_cat">मांजर</string>
+    <string name="buddy_dog">कुत्रा</string>
+    <string name="buddy_off">बंद</string>
+    <string name="carhub_promo_line">तुमच्या कारची स्क्रीन, हरियाणवीत बोलणारी</string>
+    <string name="more_apps_label">Ampli ची आणखी ॲप्स</string>
+    <string name="more_apps_get">मिळवा</string>
+    <string name="more_apps_coming_soon">लवकरच येत आहे</string>
+    <string name="more_apps_carhub">हरियाणवी बोलणारी कार</string>
+    <string name="more_apps_naukri">मोफत सरकारी नोकरी अलर्ट</string>
+    <string name="support_dev_label">डेव्हलपरला मदत करा</string>
+    <string name="support_dev_desc">Ampli भारतातील एका डेव्हलपरने बनवले आहे, कोणत्याही मासिक फीशिवाय. छोट्या टिपमधून नवीन फीचर्स बनतात. यातून काही अनलॉक होत नाही, फक्त मदत होते.</string>
+    <string name="support_dev_thanks">चहासाठी धन्यवाद! तुमच्या साथीने Ampli पुढे जाते.</string>
+    <string name="tip_pill_small">चहा %1$s</string>
+    <string name="tip_pill_large">समोसा %1$s</string>
+    <string name="tip_pill_xl">थाळी %1$s</string>
+</resources>

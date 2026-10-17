@@ -93,6 +93,7 @@ private const val NUDGE_MS = 100L
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun RingtoneEditorScreen(song: Song, onClose: () -> Unit) {
+    androidx.compose.runtime.LaunchedEffect(Unit) { com.vikash.mp3player.data.OwnerHooks.event("feature_ringtone") }
     val context = LocalContext.current
     val maker = remember { RingtoneMaker(context.applicationContext) }
     val scope = rememberCoroutineScope()

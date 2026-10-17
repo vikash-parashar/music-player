@@ -163,7 +163,7 @@ fun DiscChangeOverlay(
         ) {
             RecordPlayerView(
                 artworkUri = artworkUri, title = title, artist = artist,
-                isPlaying = isPlaying, progress = progress, intro = { intro.value },
+                isPlaying = isPlaying, progress = progress, intro = { intro.value }, alignBottom = true,
                 modifier = Modifier.fillMaxWidth().weight(1f).padding(bottom = 12.dp),
             )
             // Song name right under the record player, on a tinted strip.
@@ -231,6 +231,7 @@ fun RecordPlayerView(
     progress: () -> Float,
     modifier: Modifier = Modifier,
     intro: () -> Float = { 1f },
+    alignBottom: Boolean = false,
 ) {
     val spin = LocalDiscAngle.current
     val art = rememberStickerPainter(artworkUri, 640)
@@ -243,7 +244,7 @@ fun RecordPlayerView(
         val w = min(size.width * 0.92f, size.height / DECK_RATIO)
         val rise = easeOut(seg(t, 0f, 0.25f))
         val x0 = (size.width - w) / 2f
-        val y0 = (size.height - w * DECK_RATIO) / 2f + (1f - rise) * w * 0.12f
+        val y0 = (if (alignBottom) size.height - w * DECK_RATIO else (size.height - w * DECK_RATIO) / 2f) + (1f - rise) * w * 0.12f
         drawDeck(
             x0, y0, w, colors, spin.value, arm.value, title, artist, art, logo, text,
             playing = isPlaying, drop = seg(t, 0.2f, 0.55f), alpha = rise,

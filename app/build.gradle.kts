@@ -37,6 +37,7 @@ android {
         // Consumable "buy the developer a chai" tips; create both in Play Console as in-app products.
         buildConfigField("String", "TIP_SMALL_ID", "\"${prop("TIP_SMALL_ID").ifBlank { "ampli_tip_49" }}\"")
         buildConfigField("String", "TIP_LARGE_ID", "\"${prop("TIP_LARGE_ID").ifBlank { "ampli_tip_99" }}\"")
+        buildConfigField("String", "TIP_XL_ID", "\"${prop("TIP_XL_ID").ifBlank { "ampli_tip_199" }}\"")
     }
 
     // One fixed key for test APKs. Without it every CI machine signs with a new random key,
@@ -124,6 +125,7 @@ dependencies {
     implementation(libs.coil.network.okhttp)
 
     implementation(libs.billing.ktx)
+    implementation(libs.installreferrer)
     implementation(libs.play.services.ads)
     implementation(libs.ump)
     implementation(libs.glance.appwidget)

@@ -92,12 +92,17 @@ fun SettingsScreen(
     onLibraryChanged: () -> Unit,
     onOpenHelp: () -> Unit,
     proUnlocked: Boolean = adsRemoved,
+    tipPrices: Map<String, String> = emptyMap(),
+    tipsReceived: Int = 0,
+    onTip: (String) -> Unit = {},
 ) {
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         ProCard(adsRemoved, price, onRemoveAds)
+        SupportDeveloperCard(tipPrices, tipsReceived, onTip)
+        MoreFromAmpliCard()
         if (BuildConfig.DEBUG) TestProCard(adsRemoved, onTestPro)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) LanguageCard()
         AppearanceCard(themeMode, onThemeMode)

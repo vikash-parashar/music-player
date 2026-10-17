@@ -65,6 +65,7 @@ object EqualizerController {
     }
 
     fun setEnabled(context: Context, enabled: Boolean) {
+        if (enabled) com.vikash.mp3player.data.OwnerHooks.event("feature_eq")
         equalizer?.setEnabled(enabled)
         prefs(context).edit().putBoolean(key("enabled"), enabled).apply()
         publish()
