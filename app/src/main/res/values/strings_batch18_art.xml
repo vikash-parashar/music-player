@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Find missing album art (MusicBrainz + Cover Art Archive, only when the user taps it) -->
+    <string name="album_art_find">Find album art</string>
+    <string name="album_art_consent_title">Find album art</string>
+    <string name="album_art_consent_text">Album and artist names are sent to MusicBrainz and Cover Art Archive to find covers. Nothing else is sent.</string>
+    <string name="album_art_continue">Continue</string>
+    <string name="album_art_found">Album art found</string>
+    <string name="album_art_not_found">No album art found for this album</string>
+    <string name="album_art_offline">Couldn\'t reach MusicBrainz. Check your internet and try again later.</string>
+    <string name="album_art_already">This album already has art</string>
+    <string name="album_art_settings_title">Find missing album art</string>
+    <string name="album_art_settings_desc">Looks up covers for albums that have none, one album a second. Covers are saved inside Ampli; your music files are never changed.</string>
+    <string name="album_art_settings_button">Find missing album art</string>
+    <string name="album_art_scanning">Checking which albums have no art…</string>
+    <string name="album_art_progress">Album %1$d of %2$d · %3$d found</string>
+    <string name="album_art_done">Found covers for %1$d of %2$d albums</string>
+    <string name="album_art_none_missing">Every album already has art</string>
+</resources>

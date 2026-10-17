@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="album_art_find">अल्बम कव्हर शोधा</string>
+    <string name="album_art_consent_title">अल्बम कव्हर शोधा</string>
+    <string name="album_art_consent_text">कव्हर शोधण्यासाठी अल्बम आणि कलाकाराची नावे MusicBrainz आणि Cover Art Archive ला पाठवली जातात. याशिवाय काहीही पाठवले जात नाही.</string>
+    <string name="album_art_continue">पुढे सुरू ठेवा</string>
+    <string name="album_art_found">अल्बम कव्हर सापडले</string>
+    <string name="album_art_not_found">या अल्बमचे कव्हर सापडले नाही</string>
+    <string name="album_art_offline">MusicBrainz शी जोडता आले नाही. इंटरनेट तपासा आणि नंतर पुन्हा प्रयत्न करा.</string>
+    <string name="album_art_already">या अल्बमचे कव्हर आधीपासून आहे</string>
+    <string name="album_art_settings_title">नसलेली अल्बम कव्हर शोधा</string>
+    <string name="album_art_settings_desc">ज्या अल्बमना कव्हर नाही त्यांची कव्हर शोधते, एका सेकंदाला एक अल्बम. कव्हर Ampli मध्येच सेव्ह होतात; तुमच्या गाण्यांच्या फाइल्स कधीही बदलल्या जात नाहीत.</string>
+    <string name="album_art_settings_button">नसलेली अल्बम कव्हर शोधा</string>
+    <string name="album_art_scanning">कोणत्या अल्बमना कव्हर नाही ते तपासत आहे…</string>
+    <string name="album_art_progress">अल्बम %1$d / %2$d · %3$d सापडली</string>
+    <string name="album_art_done">%2$d पैकी %1$d अल्बमची कव्हर सापडली</string>
+    <string name="album_art_none_missing">प्रत्येक अल्बमला आधीपासून कव्हर आहे</string>
+</resources>

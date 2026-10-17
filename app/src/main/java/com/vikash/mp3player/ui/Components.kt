@@ -43,6 +43,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -80,15 +82,19 @@ fun Artwork(uri: Uri?, size: Dp, modifier: Modifier = Modifier) {
             )
         }
     }
+    // Load again when "Find album art" saves a cover, so albums with no art pick it up.
+    val artVersion by com.vikash.mp3player.data.AlbumArtFinder.version.collectAsState()
     Box(modifier.size(size).clip(shape)) {
-        if (uri == null) placeholder() else SubcomposeAsyncImage(
-            model = uri,
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            loading = { placeholder() },
-            error = { placeholder() },
-            modifier = Modifier.fillMaxSize(),
-        )
+        if (uri == null) placeholder() else key(artVersion) {
+            SubcomposeAsyncImage(
+                model = uri,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                loading = { placeholder() },
+                error = { placeholder() },
+                modifier = Modifier.fillMaxSize(),
+            )
+        }
     }
 }
 

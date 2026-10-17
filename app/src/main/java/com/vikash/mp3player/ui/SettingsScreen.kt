@@ -96,6 +96,7 @@ fun SettingsScreen(
     tipPrices: Map<String, String> = emptyMap(),
     tipsReceived: Int = 0,
     onTip: (String) -> Unit = {},
+    songs: List<com.vikash.mp3player.data.Song> = emptyList(),
 ) {
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
@@ -121,6 +122,7 @@ fun SettingsScreen(
         TransferCard(onOpenTransfer)
         FoldersCard(folders, hiddenFolders, onFolderHidden)
         DuplicatesCard(onOpenDuplicates)
+        FindMissingArtCard(songs)
         ConvertCard(onConverted = onLibraryChanged)
         BackupCard(onBackup, onRestore)
         InviteCard()

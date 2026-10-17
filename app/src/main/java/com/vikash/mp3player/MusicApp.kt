@@ -51,5 +51,9 @@ class MusicApp : Application(), SingletonImageLoader.Factory {
     }
 
     override fun newImageLoader(context: PlatformContext): ImageLoader =
-        ImageLoader.Builder(context).crossfade(true).build()
+        ImageLoader.Builder(context)
+            .crossfade(true)
+            // Real album art first; covers found with "Find album art" only fill the gaps.
+            .components { add(com.vikash.mp3player.data.SavedAlbumArtInterceptor(this@MusicApp)) }
+            .build()
 }

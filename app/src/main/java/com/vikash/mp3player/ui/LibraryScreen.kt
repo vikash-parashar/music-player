@@ -403,8 +403,13 @@ fun LibraryScreen(
             }
             current == LibraryTab.Songs || openGroup != null -> {
                 val songs = if (openGroup == null) filtered else filtered.filter { current.key(it) == openGroup }
+                // An album's screen also offers "Find album art" (opt-in, asks before the first lookup).
+                val albumActions: @Composable () -> Unit = {
+                    sortMenu()
+                    FindAlbumArtButton(songs)
+                }
                 SongList(
-                    headerActions = sortMenu,
+                    headerActions = if (current == LibraryTab.Albums && openGroup != null && openGroup != UNKNOWN_ALBUM) albumActions else sortMenu,
                     title = openGroup?.let { groupLabel(it) },
                     songs = songs,
                     currentId = currentId,

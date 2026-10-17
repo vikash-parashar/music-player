@@ -100,7 +100,9 @@ private fun speedFactor(posMs: Long, durMs: Long): Float {
 @Composable
 fun rememberStickerPainter(uri: Uri?, px: Int = 512): Painter? {
     val context = LocalContext.current
-    val painter = rememberAsyncImagePainter(remember(uri) { ImageRequest.Builder(context).data(uri).size(px).build() })
+    // A new request when "Find album art" saves a cover, so an album with no art picks it up.
+    val artVersion by com.vikash.mp3player.data.AlbumArtFinder.version.collectAsState()
+    val painter = rememberAsyncImagePainter(remember(uri, artVersion) { ImageRequest.Builder(context).data(uri).size(px).build() })
     val state by painter.state.collectAsState()
     return painter.takeIf { uri != null && state is AsyncImagePainter.State.Success }
 }
