@@ -40,8 +40,8 @@ class WifiTransferServer(private val context: Context) {
     private val token = UUID.randomUUID().toString().replace("-", "").take(10)
     // A few uploads at once is plenty; extra connections wait their turn.
     // Made fresh on each start and shut down on stop, so no threads stay behind after the screen closes.
-    private var pool: java.util.concurrent.ExecutorService? = null
-    private var server: ServerSocket? = null
+    @Volatile private var pool: java.util.concurrent.ExecutorService? = null
+    @Volatile private var server: ServerSocket? = null
     @Volatile private var lastActivity = 0L
     private val active = java.util.concurrent.atomic.AtomicInteger(0)
 
@@ -185,12 +185,25 @@ class WifiTransferServer(private val context: Context) {
         } else {
             @Suppress("DEPRECATION")
             val dir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC), "Ampli").apply { mkdirs() }
-            val file = File(dir, name)
-            val ok = runCatching { FileOutputStream(file).use { copy(input, it, length) } }.getOrDefault(false)
-            if (ok) MediaScannerConnection.scanFile(context, arrayOf(file.absolutePath), arrayOf(mime), null)
-            else file.delete()
+            // Never touch an existing song: write to a .part file, then rename to a free name.
+            val part = File(dir, ".$name.part")
+            var ok = runCatching { FileOutputStream(part).use { copy(input, it, length) } }.getOrDefault(false)
+            val file = if (ok) freeFile(dir, name) else null
+            if (file != null) ok = part.renameTo(file)
+            if (ok && file != null) MediaScannerConnection.scanFile(context, arrayOf(file.absolutePath), arrayOf(mime), null)
+            else part.delete()
             ok
         }
+    }
+
+    /** "Song.mp3", or "Song (1).mp3", "Song (2).mp3"... when that name is taken. */
+    private fun freeFile(dir: File, name: String): File {
+        val base = name.substringBeforeLast('.', name)
+        val ext = name.substringAfterLast('.', "").let { if (it.isEmpty()) "" else ".$it" }
+        var file = File(dir, name)
+        var n = 1
+        while (file.exists() && n < 1000) { file = File(dir, "$base ($n)$ext"); n++ }
+        return file
     }
 
     private fun copy(input: InputStream, out: OutputStream, length: Long): Boolean {
@@ -217,7 +230,7 @@ class WifiTransferServer(private val context: Context) {
             .firstOrNull { it is Inet4Address && !it.isLoopbackAddress }?.hostAddress
     }
 
-    private companion object {
+    internal companion object {
         const val PORT = 8080
         const val MAX_FILE_BYTES = 500L * 1024 * 1024
         /** Room left over so a transfer never fills the phone completely. */

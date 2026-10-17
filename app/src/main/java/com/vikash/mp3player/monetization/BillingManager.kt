@@ -68,7 +68,12 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
         if (client.isReady) return
         client.startConnection(object : BillingClientStateListener {
             override fun onBillingSetupFinished(result: BillingResult) {
-                if (result.responseCode != BillingClient.BillingResponseCode.OK) return
+                if (result.responseCode != BillingClient.BillingResponseCode.OK) {
+                    // No Play services, or Play refused: answer a waiting tap instead of leaving "Loading…".
+                    settleWaiting(forPro = true)
+                    settleWaiting(forPro = false)
+                    return
+                }
                 queryProduct()
                 refreshPurchases()
             }
@@ -103,6 +108,11 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
         waitingFor = id
         waitingActivity = WeakReference(activity)
         waitingSince = SystemClock.elapsedRealtime()
+        // If Play never answers within 15 s, say so rather than leaving the tap hanging.
+        val since = waitingSince
+        timeout.postDelayed({
+            if (waitingFor == id && waitingSince == since) settleWaiting(forPro = id == BuildConfig.REMOVE_ADS_PRODUCT_ID, timedOut = true)
+        }, 15_000)
         if (client.isReady) queryProduct() else start()
         return Buy.LOADING
     }
@@ -116,12 +126,14 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
         client.launchBillingFlow(activity, params)
     }
 
+    private val timeout = android.os.Handler(android.os.Looper.getMainLooper())
+
     /**
-     * Called when Play answers a product query (or fails to): opens the sheet for a tap that was
-     * waiting on it, or, when Play has no such product or could not answer, says so instead of
-     * leaving the tap without any reply.
+     * Called when Play answers a product query (or fails to, or takes over 15 s): opens the sheet
+     * for a tap that was waiting on it, or says the product is unavailable instead of leaving the
+     * tap without any reply.
      */
-    private fun settleWaiting(forPro: Boolean) {
+    private fun settleWaiting(forPro: Boolean, timedOut: Boolean = false) {
         val id = waitingFor ?: return
         if ((id == BuildConfig.REMOVE_ADS_PRODUCT_ID) != forPro) return
         val details = if (forPro) productDetails else tipDetails[id]
@@ -129,9 +141,10 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
         waitingFor = null
         waitingActivity = null
         if (activity == null || activity.isFinishing || activity.isDestroyed) return
-        if (SystemClock.elapsedRealtime() - waitingSince > 15_000) return
+        // Too late to pop a payment sheet up out of nowhere; the message still goes out.
+        val late = timedOut || SystemClock.elapsedRealtime() - waitingSince > 15_000
         activity.runOnUiThread {
-            if (details != null) {
+            if (details != null && !late) {
                 launch(activity, details)
             } else {
                 val msg = when {
@@ -157,6 +170,8 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
     override fun onPurchasesUpdated(result: BillingResult, purchases: MutableList<Purchase>?) {
         if (result.responseCode == BillingClient.BillingResponseCode.OK) {
             purchases?.forEach(::handlePurchase)
+            // "Payment pending" follows Play's full list, so a chai tip can't hide a Pro payment still waiting.
+            if (purchases?.any { it.purchaseState == Purchase.PurchaseState.PURCHASED } == true) refreshPurchases()
         } else if (result.responseCode == BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED) {
             refreshPurchases()
         }
@@ -205,12 +220,16 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
         ) { result, purchases ->
             if (result.responseCode != BillingClient.BillingResponseCode.OK) return@queryPurchasesAsync
             val owned = purchases.any { it.ownsRemoveAds() }
-            setAdsRemoved(owned)
+            // Debug builds keep the test switch on; Play never knows about it.
+            setAdsRemoved(owned || (BuildConfig.DEBUG && prefs.getBoolean(KEY_TEST_PRO, false)))
             // Play drops a cancelled or failed UPI payment from this list, so "Payment pending" clears here.
             _pending.value = purchases.any { it.purchaseState == Purchase.PurchaseState.PENDING }
             purchases.forEach(::handlePurchase)
         }
     }
+
+    /** Tokens with an acknowledge or consume call still running. */
+    private val inFlight = java.util.Collections.synchronizedSet(mutableSetOf<String>())
 
     private fun handlePurchase(purchase: Purchase) {
         // UPI and cash payments can wait for the bank; nothing unlocks until Play says PURCHASED.
@@ -218,11 +237,13 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
             _pending.value = true
             return
         }
-        if (purchase.purchaseState == Purchase.PurchaseState.PURCHASED) _pending.value = false
         if (purchase.isTip()) {
+            // The purchase callback and the resume re-check can both see the same tip: consume it once.
+            if (!inFlight.add(purchase.purchaseToken)) return
             // Tips are consumable, so the same tip can be bought again later.
             val params = ConsumeParams.newBuilder().setPurchaseToken(purchase.purchaseToken).build()
             client.consumeAsync(params) { result, _ ->
+                inFlight.remove(purchase.purchaseToken)
                 if (result.responseCode == BillingClient.BillingResponseCode.OK) {
                     _tipsReceived.value += 1
                     report("tip", purchase)
@@ -234,8 +255,10 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
         setAdsRemoved(true)
         // Purchases not acknowledged within 3 days are refunded automatically by Play.
         if (!purchase.isAcknowledged) {
+            if (!inFlight.add(purchase.purchaseToken)) return
             val params = AcknowledgePurchaseParams.newBuilder().setPurchaseToken(purchase.purchaseToken).build()
             client.acknowledgePurchase(params) { result ->
+                inFlight.remove(purchase.purchaseToken)
                 if (result.responseCode == BillingClient.BillingResponseCode.OK) report("pro", purchase)
             }
         } else {
@@ -247,6 +270,7 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
     }
 
     /** Tells the Ampli Owner app about a completed purchase (skipped when no server is set). */
+    @Synchronized
     private fun report(kind: String, purchase: Purchase) {
         val sku = purchase.products.firstOrNull() ?: return
         // Every launch re-checks purchases, so remember which tokens were already queued.
@@ -267,7 +291,10 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
 
     /** Sideloaded test builds can't reach Play Billing, so they get a switch to try Pro. */
     fun setTestPro(value: Boolean) {
-        if (BuildConfig.DEBUG) setAdsRemoved(value)
+        if (BuildConfig.DEBUG) {
+            prefs.edit().putBoolean(KEY_TEST_PRO, value).apply()
+            setAdsRemoved(value)
+        }
     }
 
     private fun setAdsRemoved(value: Boolean) {
@@ -278,6 +305,7 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
     companion object {
         private const val KEY_ADS_REMOVED = "ads_removed"
         private const val KEY_REPORTED = "reported_tokens"
+        private const val KEY_TEST_PRO = "test_pro"
         val TIP_IDS = listOf(BuildConfig.TIP_SMALL_ID, BuildConfig.TIP_LARGE_ID, BuildConfig.TIP_XL_ID)
     }
 }

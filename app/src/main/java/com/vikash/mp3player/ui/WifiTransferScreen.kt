@@ -69,7 +69,13 @@ fun WifiTransferScreen(onClose: () -> Unit) {
     LaunchedEffect(attempt) {
         starting = true
         stoppedIdle = false
-        address = withContext(Dispatchers.IO) { runCatching { server.start() }.getOrNull() }
+        address = try {
+            withContext(Dispatchers.IO) { runCatching { server.start() }.getOrNull() }
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            // Left the screen while the server was starting: onDispose already ran, so close it here.
+            server.stop()
+            throw e
+        }
         starting = false
         // Close the door after 10 minutes with nothing sent, so the phone isn't left listening on the Wi-Fi.
         while (address != null) {

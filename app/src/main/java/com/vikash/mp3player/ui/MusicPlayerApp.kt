@@ -123,6 +123,9 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
         )
     }
     var showRingtone by remember { mutableStateOf(false) }
+    // Status video maker: like the ringtone maker, the song stays set while the panel slides away.
+    var statusSong by remember { mutableStateOf<Song?>(null) }
+    var showStatus by remember { mutableStateOf(false) }
     var showStats by rememberSaveable { mutableStateOf(false) }
     var showTransfer by rememberSaveable { mutableStateOf(false) }
     var showCarMode by rememberSaveable { mutableStateOf(false) }
@@ -151,6 +154,11 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     }
     // First run shows the welcome screens; its last page asks for music access.
     var welcomeDone by remember { mutableStateOf(vm.prefs.welcomeDone || context.hasAudioPermission()) }
+    // Then, once, "Switching from Wynk or Samsung Music?". Users who already had music access
+    // before the welcome screens existed (no welcome pref) skip it, like upgraders who finished welcome.
+    var switchDone by remember {
+        mutableStateOf(vm.prefs.switchScreenDone || (!vm.prefs.welcomeDone && context.hasAudioPermission()))
+    }
     LaunchedEffect(Unit) {
         if (welcomeDone && !hasPermission) permissionLauncher.launch(launchPermissions)
     }
@@ -234,6 +242,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                         favorites = favorites,
                         onToggleFavorite = { vm.toggleFavorite(it.id, it.title) },
                         onSetRingtone = { ringtoneSong = it; showRingtone = true },
+                        onMakeStatus = { statusSong = it; showStatus = true },
                         onEditTags = { tagSong = it },
                         onDelete = { if (it.isNotEmpty()) deleteSongs = it },
                         onMove = { if (it.isNotEmpty()) moveSongs = it },
@@ -307,6 +316,11 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                 onGetPro = openPro,
                 onClose = { showPlayer = false },
                 onVisualizer = { if (proUnlocked) showVisualizer = true else openPro() },
+                onMakeStatus = {
+                    val song = library.songs.firstOrNull { it.id == player.current?.mediaId }
+                    if (song != null) { statusSong = song; showStatus = true }
+                    else Toast.makeText(context, context.getString(R.string.status_needs_local), Toast.LENGTH_SHORT).show()
+                },
             )
         }
 
@@ -334,6 +348,18 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
         ) {
             ringtoneSong?.let { song ->
                 key(song.id) { RingtoneEditorScreen(song, onClose = { showRingtone = false }) }
+            }
+        }
+
+        AnimatedVisibility(
+            visible = showStatus && statusSong != null,
+            enter = slideInVertically { it },
+            exit = slideOutVertically { it },
+        ) {
+            statusSong?.let { song ->
+                key(song.id) {
+                    StatusMakerScreen(song, isPro = proUnlocked, onGetPro = openPro, onClose = { showStatus = false })
+                }
             }
         }
 
@@ -500,6 +526,27 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                 welcomeDone = true
                 permissionLauncher.launch(launchPermissions)
             })
+        }
+
+        AnimatedVisibility(
+            visible = welcomeDone && hasPermission && !switchDone,
+            enter = fadeIn() + slideInVertically { it / 6 },
+            exit = fadeOut() + slideOutVertically { -it / 4 },
+        ) {
+            SwitchScreen(
+                songs = library.songs,
+                allFolders = folders.map { it.first },
+                onImport = vm::importM3uPlaylists,
+                onStart = { hide ->
+                    hide.forEach { vm.prefs.setFolderHidden(it, true) }
+                    vm.prefs.setSwitchScreenDone()
+                    switchDone = true
+                },
+                onSkip = {
+                    vm.prefs.setSwitchScreenDone()
+                    switchDone = true
+                },
+            )
         }
     }
     }

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- One-time "Switching from Wynk or Samsung Music?" screen after first-run welcome. -->
+    <string name="switch_skip">Skip</string>
+    <string name="switch_title">Switching from Wynk or Samsung Music?</string>
+    <string name="switch_subtitle">Ampli found your music. Here\'s how to make it feel like home.</string>
+    <string name="switch_stat_songs">Songs</string>
+    <string name="switch_stat_albums">Albums</string>
+    <string name="switch_stat_folders">Folders</string>
+    <string name="switch_hide_whatsapp">Hide WhatsApp audio</string>
+    <string name="switch_hide_whatsapp_sub">Voice notes and forwarded clips</string>
+    <string name="switch_hide_calls">Hide call recordings</string>
+    <string name="switch_hide_calls_sub">Recorder and call folders</string>
+    <string name="switch_import">Import playlists</string>
+    <string name="switch_import_sub">Pick your Samsung Music .m3u files</string>
+    <string name="switch_pick">Pick</string>
+    <string name="switch_note">Songs downloaded inside Wynk are locked to Wynk and can\'t be played by other apps. Songs saved as MP3 files show up here.</string>
+    <string name="switch_start">Start listening</string>
+    <plurals name="switch_imported">
+        <item quantity="one">Imported %d playlist</item>
+        <item quantity="other">Imported %d playlists</item>
+    </plurals>
+</resources>

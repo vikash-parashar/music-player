@@ -93,19 +93,20 @@ fun DanceBuddy(buddy: Buddy, isPlaying: Boolean, songKey: String?, modifier: Mod
         onDispose { VisualizerTap.release() }
     }
     // Beat finder: a jump in bass energy well above its recent average.
+    // When the tap last heard a beat; the fallback step below stays quiet while real beats arrive.
+    val lastHeard = remember { mutableLongStateOf(0L) }
     // The tap hears the music before the speaker plays it (output buffer, and much more over
     // Bluetooth in cars), so each step waits that long to land on the beat you hear.
     val context = androidx.compose.ui.platform.LocalContext.current
     LaunchedEffect(Unit) {
         var avg = 0f
-        var lastHeard = 0L
         VisualizerTap.levels.collect { lv ->
             var bass = 0f
             for (i in 0 until 6) bass += lv[i]
             bass /= 6f
             val t = now()
-            if (playing && bass > 0.3f && bass > avg * 1.25f && t - lastHeard > 280) {
-                lastHeard = t
+            if (playing && bass > 0.3f && bass > avg * 1.25f && t - lastHeard.longValue > 280) {
+                lastHeard.longValue = t
                 val wait = outputDelayMs(context)
                 launch {
                     delay(wait)
@@ -120,7 +121,8 @@ fun DanceBuddy(buddy: Buddy, isPlaying: Boolean, songKey: String?, modifier: Mod
         while (true) {
             delay(50)
             val t = now()
-            if (playing && t - lastBeat.longValue > 650) beat(t, beats, lastBeat, interval, steady = true)
+            // Only when no real beat was heard for a while, so slow songs (under ~92 BPM) don't get two steps per beat.
+            if (playing && t - lastHeard.longValue > 1500 && t - lastBeat.longValue > 650) beat(t, beats, lastBeat, interval, steady = true)
         }
     }
 

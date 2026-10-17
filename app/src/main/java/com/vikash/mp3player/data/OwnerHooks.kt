@@ -175,6 +175,14 @@ object OwnerHooks {
         runCatching {
             client.startConnection(object : InstallReferrerStateListener {
                 override fun onInstallReferrerSetupFinished(code: Int) {
+                    // A passing error (Play busy or disconnected): try again on the next start rather
+                    // than recording this install with no campaign for good.
+                    if (code != InstallReferrerClient.InstallReferrerResponse.OK &&
+                        code != InstallReferrerClient.InstallReferrerResponse.FEATURE_NOT_SUPPORTED
+                    ) {
+                        runCatching { client.endConnection() }
+                        return
+                    }
                     val raw = if (code == InstallReferrerClient.InstallReferrerResponse.OK) {
                         runCatching { client.installReferrer.installReferrer }.getOrNull().orEmpty()
                     } else ""
@@ -209,8 +217,21 @@ object OwnerHooks {
         }.toString()
         synchronized(this) {
             val q = prefs.getStringSet(KEY_QUEUE, emptySet()).orEmpty()
-            prefs.edit().putStringSet(KEY_QUEUE, (q + item).toList().takeLast(50).toSet()).apply()
+            prefs.edit().putStringSet(KEY_QUEUE, trim(q + item)).apply()
         }
+    }
+
+    /**
+     * Keeps the queue at 50 items: drops the oldest usage batches first and never a purchase
+     * (a set has no order, so sort by the time each item was queued).
+     */
+    private fun trim(items: Set<String>): Set<String> {
+        if (items.size <= 50) return items
+        fun first(raw: String) = runCatching { Json.parseToJsonElement(raw).jsonObject["first"]?.jsonPrimitive?.long }.getOrNull() ?: 0L
+        fun isPurchase(raw: String) = raw.contains("/v1/public/purchases")
+        val (purchases, rest) = items.partition(::isPurchase)
+        val room = (50 - purchases.size).coerceAtLeast(0)
+        return (purchases + rest.sortedBy(::first).takeLast(room)).toSet()
     }
 
     /** Sends what is due. 2xx done; 400/422 dropped; anything else (409, 429, 5xx, no answer) waits and retries. */

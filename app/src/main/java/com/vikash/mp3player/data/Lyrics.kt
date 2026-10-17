@@ -94,10 +94,10 @@ object LyricsRepository {
     @Volatile private var indexAt = 0L
 
     /**
-     * Android 13+ lets a music app read songs but not the .lrc files beside them, so there the user
+     * Android 11+ (scoped storage) lets a music app read songs but not the .lrc files beside them, so there the user
      * picks a lyrics folder once (usually their Music folder) and Ampli looks inside it by name.
      */
-    val folderNeeded: Boolean get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+    val folderNeeded: Boolean get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
 
     fun lyricsFolder(context: Context): Uri? =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(KEY_TREE, null)?.let(Uri::parse)
@@ -161,13 +161,14 @@ object LyricsRepository {
             val parent = pending.removeFirst()
             runCatching {
                 resolver.query(DocumentsContract.buildChildDocumentsUriUsingTree(tree, parent), cols, null, null, null)?.use { c ->
+                    // Only folders and .lrc files count toward the cap; a big Music folder's songs don't.
                     while (c.moveToNext() && seen < MAX_INDEX) {
-                        seen++
                         val id = c.getString(0) ?: continue
                         val name = c.getString(1) ?: continue
                         if (c.getString(2) == DocumentsContract.Document.MIME_TYPE_DIR) {
-                            if (!name.startsWith(".")) pending.add(id)
+                            if (!name.startsWith(".")) { pending.add(id); seen++ }
                         } else if (name.endsWith(".lrc", ignoreCase = true)) {
+                            seen++
                             out.putIfAbsent(name.lowercase(), DocumentsContract.buildDocumentUriUsingTree(tree, id))
                         }
                     }

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lyric_card_title">Share this line</string>
+    <string name="lyric_card_preview_desc">Lyric card preview</string>
+    <string name="lyric_card_style_rose">Rose</string>
+    <string name="lyric_card_style_vinyl">Vinyl</string>
+    <string name="lyric_card_style_paper">Paper</string>
+    <string name="lyric_card_style_neon">Neon</string>
+    <string name="lyric_card_pro_badge">PRO</string>
+    <string name="lyric_card_pro_toast">This style is in Ampli Pro</string>
+    <string name="lyric_card_whatsapp">WhatsApp</string>
+    <string name="lyric_card_instagram">Instagram</string>
+    <string name="lyric_card_save">Save</string>
+    <string name="lyric_card_saved">Saved to Pictures/Ampli</string>
+    <string name="lyric_card_failed">Couldn\'t make the picture. Try again.</string>
+    <string name="lyric_card_share_chooser">Share lyric card</string>
+    <string name="lyric_card_no_app">No app found to share with</string>
+</resources>

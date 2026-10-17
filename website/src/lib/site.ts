@@ -65,7 +65,7 @@ export const products: Product[] = [
     short: "Car Hub",
     tagline: "The world's first car system that talks in Haryanvi.",
     icon: "carhub",
-    price: "Free · Pro ₹499 once",
+    price: "Free · Pro ₹1,499 once (launch price)",
     accent: "#0891B2",
     accentSoft: "#67E8F9",
     points: ["Human Haryanvi voices, fully offline", "“Hey Ampli” voice control", "SOS, FASTag, speed cameras"],
@@ -102,7 +102,7 @@ export const faqs = [
   },
   {
     q: "What does Car Hub Pro add?",
-    a: "All 25 home-screen themes, live engine data and fault codes from an OBD-II adapter, Bluetooth tyre pressure alerts and CSV export of your car expenses. ₹499 once.",
+    a: "All 25 home-screen themes, live engine data and fault codes from an OBD-II adapter, Bluetooth tyre pressure alerts and CSV export of your car expenses. ₹1,499 once at launch, ₹2,500 after.",
   },
   {
     q: "Is Ampli Naukri free?",

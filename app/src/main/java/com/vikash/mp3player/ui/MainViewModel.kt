@@ -112,6 +112,22 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         _messages.tryEmit(str(R.string.msg_removed_song, song.title))
     }
 
+    /**
+     * Imports several .m3u/.m3u8 files as playlists (the Switching screen). Calls [onDone] on the
+     * main thread with how many playlists were made; files that match no songs are skipped.
+     */
+    fun importM3uPlaylists(uris: List<android.net.Uri>, onDone: (Int) -> Unit) {
+        val app = getApplication<Application>()
+        val songs = _library.value.songs
+        viewModelScope.launch {
+            val found = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                uris.mapNotNull { uri -> com.vikash.mp3player.data.M3u.import(app, uri, songs)?.takeIf { it.second.isNotEmpty() } }
+            }
+            found.forEach { (name, list) -> musicApp.playlists.create(name, list.map { it.id }) }
+            onDone(found.size)
+        }
+    }
+
     fun renamePlaylist(id: String, name: String) = musicApp.playlists.rename(id, name)
 
     fun deletePlaylist(id: String) {
@@ -201,11 +217,21 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         runCatching { app.contentResolver.registerContentObserver(android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, true, it) }
     }
 
+    // Only the newest scan may publish its list, so an older, slower scan can't bring back a deleted song.
+    private var loadJob: kotlinx.coroutines.Job? = null
+
     fun loadLibrary() {
         libraryDirty = false
-        viewModelScope.launch {
+        loadJob?.cancel()
+        loadJob = viewModelScope.launch {
             if (_library.value.songs.isEmpty()) _library.update { it.copy(loading = true) }
-            val songs = runCatching { musicApp.localMusic.loadSongs() }.getOrDefault(emptyList())
+            val songs = try {
+                musicApp.localMusic.loadSongs()
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                emptyList()
+            }
             // Same list as before: keep the old one so the big lists don't re-sort and redraw.
             if (songs != _library.value.songs || _library.value.loading) _library.value = LibraryState(loading = false, songs = songs)
         }

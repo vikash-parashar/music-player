@@ -410,9 +410,9 @@ private fun FadePicker(label: String, seconds: Int, onPick: (Int) -> Unit) {
     }
 }
 
-/** Waveform strip with the selected part highlighted and two draggable handles. */
+/** Waveform strip with the selected part highlighted and two draggable handles. Also used by the Status maker. */
 @Composable
-private fun Waveform(
+internal fun Waveform(
     bars: FloatArray?,
     startFraction: Float,
     endFraction: Float,

@@ -2,7 +2,8 @@ package com.vikash.mp3player.ui
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -46,10 +47,19 @@ import kotlinx.coroutines.launch
 
 /**
  * Lyrics for the current song, shown in place of the artwork. Synced lyrics (LRC) highlight
- * the line being sung and scroll along; tap a line to jump there.
+ * the line being sung and scroll along; tap a line to jump there, long-press it to share it
+ * as a picture card.
  */
 @Composable
-fun LyricsView(songId: String, positionMs: Long, onSeek: (Long) -> Unit, modifier: Modifier = Modifier) {
+fun LyricsView(
+    songId: String,
+    positionMs: Long,
+    onSeek: (Long) -> Unit,
+    modifier: Modifier = Modifier,
+    pro: Boolean = false,
+    title: String = "",
+    artist: String = "",
+) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var lyrics by remember(songId) { mutableStateOf<Lyrics?>(null) }
@@ -115,7 +125,7 @@ fun LyricsView(songId: String, positionMs: Long, onSeek: (Long) -> Unit, modifie
                 val onRemove: (() -> Unit)? = if (current.fromUser) {
                     fun() { scope.launch { LyricsRepository.remove(context, songId); reload++ } }
                 } else null
-                SyncedLines(current, positionMs, onSeek, onRemove)
+                SyncedLines(current, positionMs, onSeek, onRemove, pro, title, artist)
             }
         }
     }
@@ -140,9 +150,19 @@ fun LyricsView(songId: String, positionMs: Long, onSeek: (Long) -> Unit, modifie
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun SyncedLines(lyrics: Lyrics, positionMs: Long, onSeek: (Long) -> Unit, onRemove: (() -> Unit)?) {
+private fun SyncedLines(
+    lyrics: Lyrics,
+    positionMs: Long,
+    onSeek: (Long) -> Unit,
+    onRemove: (() -> Unit)?,
+    pro: Boolean,
+    title: String,
+    artist: String,
+) {
     val lines = lyrics.lines
+    var cardLine by remember(lyrics) { mutableStateOf<String?>(null) }
     val active = if (!lyrics.synced) -1 else lines.indexOfLast { (it.timeMs ?: Long.MAX_VALUE) <= positionMs }
     val listState = rememberLazyListState()
     LaunchedEffect(active) {
@@ -167,12 +187,21 @@ private fun SyncedLines(lyrics: Lyrics, positionMs: Long, onSeek: (Long) -> Unit
                     else -> MaterialTheme.colorScheme.onSurface
                 },
                 modifier = Modifier.fillMaxWidth()
-                    .clickable(enabled = line.timeMs != null) { line.timeMs?.let(onSeek) }
+                    .combinedClickable(
+                        onClick = { line.timeMs?.let(onSeek) },
+                        // Long-press shares the line as a picture card (haptic comes from combinedClickable).
+                        onLongClick = if (line.text.isNotBlank()) {
+                            { cardLine = line.text }
+                        } else null,
+                    )
                     .padding(horizontal = 8.dp, vertical = 6.dp),
             )
         }
         if (onRemove != null) item {
             TextButton(onClick = onRemove, modifier = Modifier.padding(top = 16.dp)) { Text(stringResource(R.string.lyrics_remove)) }
         }
+    }
+    cardLine?.let { text ->
+        LyricCardSheet(line = text, title = title, artist = artist, pro = pro, onDismiss = { cardLine = null })
     }
 }
