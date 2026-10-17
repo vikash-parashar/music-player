@@ -68,8 +68,8 @@ object MoreApps {
 
     fun open(context: Context, app: App) {
         val intents = if (app.live) listOf(
-            Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=${app.packageName}")),
-            Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=${app.packageName}")),
+            Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=${app.packageName}&referrer=$CROSS_PROMO_REFERRER")),
+            Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=${app.packageName}&referrer=$CROSS_PROMO_REFERRER")),
         ) else listOf(Intent(Intent.ACTION_VIEW, Uri.parse(app.site)))
         for (i in intents) {
             try { context.startActivity(i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)); return } catch (_: ActivityNotFoundException) { }
@@ -159,3 +159,6 @@ private fun SectionLabel(text: String) {
         letterSpacing = 1.sp, modifier = Modifier.padding(start = 4.dp, bottom = 8.dp),
     )
 }
+
+/** Owner hook spec v1.3: lets Ampli Owner count installs that came from this card (URL-encoded utm tags). */
+private const val CROSS_PROMO_REFERRER = "utm_source%3Dcrosspromo%26utm_medium%3Dapp%26utm_content%3Dmp3"

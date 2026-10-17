@@ -213,13 +213,24 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
             client.acknowledgePurchase(params) { result ->
                 if (result.responseCode == BillingClient.BillingResponseCode.OK) report("pro", purchase)
             }
+        } else {
+            // Already acknowledged but never reported here: a Play promo code redeemed while the app was
+            // closed (hook spec v1.3, the Car Hub gift), or a purchase made before this build. The server
+            // ignores repeats, so sending one twice is harmless.
+            report("pro", purchase)
         }
     }
 
     /** Tells the Ampli Owner app about a completed purchase (skipped when no server is set). */
     private fun report(kind: String, purchase: Purchase) {
         val sku = purchase.products.firstOrNull() ?: return
+        // Every launch re-checks purchases, so remember which tokens were already queued.
+        val sent = prefs.getStringSet(KEY_REPORTED, emptySet()).orEmpty()
+        if (purchase.purchaseToken in sent) return
         com.vikash.mp3player.data.OwnerHooks.purchase(kind, sku, purchase.purchaseToken)
+        if (com.vikash.mp3player.data.OwnerHooks.enabled) {
+            prefs.edit().putStringSet(KEY_REPORTED, (sent + purchase.purchaseToken).toList().takeLast(50).toSet()).apply()
+        }
     }
 
     private fun Purchase.ownsRemoveAds() =
@@ -241,6 +252,7 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
 
     companion object {
         private const val KEY_ADS_REMOVED = "ads_removed"
+        private const val KEY_REPORTED = "reported_tokens"
         val TIP_IDS = listOf(BuildConfig.TIP_SMALL_ID, BuildConfig.TIP_LARGE_ID, BuildConfig.TIP_XL_ID)
     }
 }
