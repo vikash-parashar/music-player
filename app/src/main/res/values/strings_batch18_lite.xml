@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Lite mode for phones with about 3 GB of RAM or less (Settings, under Theme). -->
+    <string name="lite_mode_title">Lite mode for older phones</string>
+    <string name="lite_mode_desc">Pauses the dance buddy, visualiser and spinning CDs so Ampli runs smoothly on phones with less memory.</string>
+    <string name="lite_visualizer_note">Lite mode is on, so the visualiser shows simple bars.</string>
+</resources>

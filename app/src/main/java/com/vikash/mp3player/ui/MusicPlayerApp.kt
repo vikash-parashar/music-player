@@ -32,8 +32,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -85,11 +87,13 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     val paymentPending by vm.billing.pending.collectAsStateWithLifecycle()
     var showVisualizer by rememberSaveable { mutableStateOf(false) }
     val discAnim by app.prefs.discAnimation.collectAsStateWithLifecycle()
+    val liteMode = LocalLiteMode.current
     // The song starts at once; the CD change animation only plays on top.
     var discSong by remember { mutableStateOf<Song?>(null) }
     val playWithDisc: (List<Song>, Int, String) -> Unit = { songs, i, src ->
         vm.player.play(songs, i, src)
-        if (discAnim) discSong = songs.getOrNull(i)
+        // Lite mode skips it without changing the user's own setting.
+        if (discAnim && !liteMode) discSong = songs.getOrNull(i)
     }
     val videos by vm.videos.collectAsStateWithLifecycle()
     val favorites by vm.prefs.favorites.collectAsStateWithLifecycle()
@@ -195,7 +199,8 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
         )
     }
 
-    val discAngle = rememberDiscSpin(vm.player)
+    // Lite mode: the CDs stand still, so no frame loop runs while music plays.
+    val discAngle: State<Float> = if (liteMode) remember { mutableFloatStateOf(0f) } else rememberDiscSpin(vm.player)
     CompositionLocalProvider(LocalIsPlaying provides player.isPlaying, LocalDiscAngle provides discAngle) {
     Box(Modifier.fillMaxSize()) {
         Scaffold(
@@ -298,8 +303,8 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
 
         AnimatedVisibility(
             visible = showPlayer && player.current != null,
-            enter = slideInVertically { it },
-            exit = slideOutVertically { it },
+            enter = screenEnter(),
+            exit = screenExit(),
         ) {
             NowPlayingScreen(
                 player, vm.player, favorites, onToggleFavorite = vm::toggleFavorite, seekStyle = seekStyle,
@@ -326,16 +331,16 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
 
         AnimatedVisibility(
             visible = showStats,
-            enter = slideInVertically { it },
-            exit = slideOutVertically { it },
+            enter = screenEnter(),
+            exit = screenExit(),
         ) {
             StatsScreen(stats, onClear = vm::clearStats, onClose = { showStats = false })
         }
 
         AnimatedVisibility(
             visible = showTransfer,
-            enter = slideInVertically { it },
-            exit = slideOutVertically { it },
+            enter = screenEnter(),
+            exit = screenExit(),
         ) {
             // New songs show up in the Library as soon as the screen closes.
             WifiTransferScreen(onClose = { showTransfer = false; vm.loadLibrary() })
@@ -343,8 +348,8 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
 
         AnimatedVisibility(
             visible = showRingtone && ringtoneSong != null,
-            enter = slideInVertically { it },
-            exit = slideOutVertically { it },
+            enter = screenEnter(),
+            exit = screenExit(),
         ) {
             ringtoneSong?.let { song ->
                 key(song.id) { RingtoneEditorScreen(song, onClose = { showRingtone = false }) }
@@ -353,8 +358,8 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
 
         AnimatedVisibility(
             visible = showStatus && statusSong != null,
-            enter = slideInVertically { it },
-            exit = slideOutVertically { it },
+            enter = screenEnter(),
+            exit = screenExit(),
         ) {
             statusSong?.let { song ->
                 key(song.id) {
@@ -365,20 +370,20 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
 
         AnimatedVisibility(
             visible = showDuplicates,
-            enter = slideInVertically { it },
-            exit = slideOutVertically { it },
+            enter = screenEnter(),
+            exit = screenExit(),
         ) {
             DuplicatesScreen(library.songs, onDelete = { if (it.isNotEmpty()) deleteSongs = it }, onClose = { showDuplicates = false })
         }
 
-        AnimatedVisibility(visible = showCarMode, enter = fadeIn(), exit = fadeOut()) {
+        AnimatedVisibility(visible = showCarMode, enter = screenFadeIn(), exit = screenFadeOut()) {
             CarModeScreen(player, vm.player, library.songs, onPlay = vm.player::play, onClose = { showCarMode = false })
         }
 
         AnimatedVisibility(
             visible = showPro,
-            enter = slideInVertically { it },
-            exit = slideOutVertically { it },
+            enter = screenEnter(),
+            exit = screenExit(),
         ) {
             ProScreen(
                 isPro = adsRemoved,
@@ -413,8 +418,8 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
 
         AnimatedVisibility(
             visible = showHelp,
-            enter = slideInVertically { it },
-            exit = slideOutVertically { it },
+            enter = screenEnter(),
+            exit = screenExit(),
         ) {
             HelpScreen(isPro = adsRemoved, onClose = { showHelp = false })
         }
@@ -484,7 +489,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
             }
         }
 
-        AnimatedVisibility(visible = showVisualizer, enter = fadeIn(), exit = fadeOut()) {
+        AnimatedVisibility(visible = showVisualizer, enter = screenFadeIn(), exit = screenFadeOut()) {
             VisualizerScreen(
                 title = player.current?.title.orEmpty(),
                 artist = player.current?.artist.orEmpty(),

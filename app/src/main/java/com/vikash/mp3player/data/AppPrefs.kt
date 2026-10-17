@@ -1,5 +1,6 @@
 package com.vikash.mp3player.data
 
+import android.app.ActivityManager
 import android.content.Context
 import androidx.annotation.StringRes
 import com.vikash.mp3player.R
@@ -110,6 +111,19 @@ class AppPrefs(context: Context) {
         prefs.edit().putBoolean(KEY_WALLPAPER, on).apply()
     }
 
+    /**
+     * Lite mode for phones with about 3 GB of RAM or less: the dance buddy, visualiser, spinning
+     * discs and other looping animations rest, and transitions are shorter. The first value is
+     * guessed from the phone's memory; after that the user's own choice in Settings is kept.
+     */
+    private val _liteMode = MutableStateFlow(readLiteMode(context))
+    val liteMode: StateFlow<Boolean> = _liteMode.asStateFlow()
+
+    fun setLiteMode(on: Boolean) {
+        _liteMode.value = on
+        prefs.edit().putBoolean(KEY_LITE, on).apply()
+    }
+
     /** True once the first-run welcome screens were finished. */
     val welcomeDone: Boolean get() = prefs.getBoolean(KEY_WELCOME, false)
 
@@ -130,6 +144,14 @@ class AppPrefs(context: Context) {
 
     fun setSwitchScreenDone() {
         prefs.edit().putBoolean(KEY_SWITCH, true).apply()
+    }
+
+    /** Checks the phone's memory only on the first run and saves the result. */
+    private fun readLiteMode(context: Context): Boolean {
+        if (prefs.contains(KEY_LITE)) return prefs.getBoolean(KEY_LITE, false)
+        val detected = isLowMemoryPhone(context)
+        prefs.edit().putBoolean(KEY_LITE, detected).apply()
+        return detected
     }
 
     private fun readSort() = runCatching { SongSort.valueOf(prefs.getString(KEY_SORT, null) ?: "") }.getOrDefault(SongSort.Title)
@@ -156,5 +178,18 @@ class AppPrefs(context: Context) {
         const val KEY_AMOLED = "amoled_black"
         const val KEY_DISC_ANIM = "disc_animation"
         const val KEY_WALLPAPER = "wallpaper_colors"
+        const val KEY_LITE = "lite_mode"
     }
 }
+
+/** About 3.2 GB: phones sold as "3 GB" report a little less than 3 GiB of total memory. */
+private const val LITE_RAM_BYTES = 3_200_000_000L
+
+/** True on Android Go phones and on phones with roughly 3 GB of RAM or less. */
+fun isLowMemoryPhone(context: Context): Boolean = runCatching {
+    val am = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+    if (am.isLowRamDevice) return@runCatching true
+    val info = ActivityManager.MemoryInfo()
+    am.getMemoryInfo(info)
+    info.totalMem in 1..LITE_RAM_BYTES
+}.getOrDefault(false)

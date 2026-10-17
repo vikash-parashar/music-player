@@ -29,8 +29,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -42,6 +44,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.res.stringResource
@@ -73,16 +76,30 @@ fun VisualizerScreen(
     }
     val levels by VisualizerTap.levels.collectAsState()
     var style by rememberSaveable { mutableIntStateOf(0) }
-    val spin = rememberInfiniteTransition(label = "spin")
-    val angle by spin.animateFloat(0f, 360f, infiniteRepeatable(tween(24_000), RepeatMode.Restart), label = "angle")
+    // Lite mode: plain bars on a flat background, no turning ring, gradients or cross-fades.
+    val lite = LocalLiteMode.current
+    val angleState: State<Float> = if (lite) remember { mutableFloatStateOf(0f) } else
+        rememberInfiniteTransition(label = "spin").animateFloat(0f, 360f, infiniteRepeatable(tween(24_000), RepeatMode.Restart), label = "angle")
+    val angle by angleState
 
     Box(
         Modifier
             .fillMaxSize()
-            .background(Brush.verticalGradient(listOf(Color.Black, Ampli.Night, Color(0xFF2A0F1C))))
+            .background(if (lite) SolidColor(Color.Black) else Brush.verticalGradient(listOf(Color.Black, Ampli.Night, Color(0xFF2A0F1C))))
             .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClick = onTogglePlay),
     ) {
-        Crossfade(targetState = style, label = "style") { s ->
+        if (lite) {
+            Canvas(Modifier.fillMaxSize()) {
+                val n = levels.size
+                val gap = size.width / n
+                val barW = gap * 0.62f
+                val bottom = size.height * 0.62f
+                levels.forEachIndexed { i, v ->
+                    val h = (v * size.height * 0.4f).coerceAtLeast(3f)
+                    drawRect(Ampli.Rose, Offset(i * gap + (gap - barW) / 2f, bottom - h), Size(barW, h))
+                }
+            }
+        } else Crossfade(targetState = style, label = "style") { s ->
             Canvas(Modifier.fillMaxSize()) {
                 val colors = listOf(Ampli.Rose, Color(0xFFFB7185), Ampli.Blush)
                 if (s == 0) {
@@ -134,7 +151,11 @@ fun VisualizerScreen(
                 )
             }
             Box(Modifier.weight(1f))
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = androidx.compose.foundation.layout.Arrangement.Center) {
+            if (lite) Text(
+                stringResource(R.string.lite_visualizer_note),
+                color = Color.White.copy(alpha = 0.7f), fontSize = 13.sp, textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth(),
+            ) else Row(Modifier.fillMaxWidth(), horizontalArrangement = androidx.compose.foundation.layout.Arrangement.Center) {
                 listOf(R.string.visualizer_bars, R.string.visualizer_ring).forEachIndexed { i, label ->
                     FilterChip(
                         selected = style == i,

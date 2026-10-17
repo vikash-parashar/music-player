@@ -107,6 +107,7 @@ fun SettingsScreen(
         if (BuildConfig.DEBUG) TestProCard(adsRemoved, onTestPro)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) LanguageCard()
         AppearanceCard(themeMode, onThemeMode)
+        LiteModeCard()
         ProLookCard(proUnlocked, onRemoveAds)
         SeekStyleCard(seekStyle, isPro = adsRemoved, onPick = onSeekStyle, onGetPro = onRemoveAds)
         SleepTimerCard()
