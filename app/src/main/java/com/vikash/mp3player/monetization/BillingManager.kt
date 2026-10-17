@@ -132,6 +132,11 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
         if (client.isReady) refreshPurchases() else start()
     }
 
+    /** Re-checks purchases when the app comes back (a UPI payment may have cleared, failed or been cancelled meanwhile). */
+    fun refresh() {
+        if (client.isReady) refreshPurchases()
+    }
+
     override fun onPurchasesUpdated(result: BillingResult, purchases: MutableList<Purchase>?) {
         if (result.responseCode == BillingClient.BillingResponseCode.OK) {
             purchases?.forEach(::handlePurchase)
@@ -183,6 +188,8 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
             if (result.responseCode != BillingClient.BillingResponseCode.OK) return@queryPurchasesAsync
             val owned = purchases.any { it.ownsRemoveAds() }
             setAdsRemoved(owned)
+            // Play drops a cancelled or failed UPI payment from this list, so "Payment pending" clears here.
+            _pending.value = purchases.any { it.purchaseState == Purchase.PurchaseState.PENDING }
             purchases.forEach(::handlePurchase)
         }
     }

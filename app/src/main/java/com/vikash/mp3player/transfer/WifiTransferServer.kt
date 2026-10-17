@@ -39,7 +39,8 @@ class WifiTransferServer(private val context: Context) {
 
     private val token = UUID.randomUUID().toString().replace("-", "").take(10)
     // A few uploads at once is plenty; extra connections wait their turn.
-    private val pool = Executors.newFixedThreadPool(4)
+    // Made fresh on each start and shut down on stop, so no threads stay behind after the screen closes.
+    private var pool: java.util.concurrent.ExecutorService? = null
     private var server: ServerSocket? = null
     @Volatile private var lastActivity = 0L
     private val active = java.util.concurrent.atomic.AtomicInteger(0)
@@ -58,13 +59,14 @@ class WifiTransferServer(private val context: Context) {
         val socket = ServerSocket().apply { reuseAddress = true }
         runCatching { socket.bind(InetSocketAddress(PORT)) }.onFailure { socket.bind(InetSocketAddress(0)) }
         server = socket
+        val workers = Executors.newFixedThreadPool(4).also { pool = it }
         lastActivity = android.os.SystemClock.elapsedRealtime()
         thread(name = "ampli-transfer", isDaemon = true) {
             while (!socket.isClosed) {
                 val client = runCatching { socket.accept() }.getOrNull() ?: break
                 lastActivity = android.os.SystemClock.elapsedRealtime()
                 runCatching {
-                    pool.execute {
+                    workers.execute {
                         active.incrementAndGet()
                         try { client.use { runCatching { handle(it) } } } finally {
                             active.decrementAndGet()
@@ -80,6 +82,9 @@ class WifiTransferServer(private val context: Context) {
     fun stop() {
         runCatching { server?.close() }
         server = null
+        // Lets an upload that is already running finish, then the threads end.
+        pool?.shutdown()
+        pool = null
     }
 
     // ------------------------------------------------------------------ HTTP

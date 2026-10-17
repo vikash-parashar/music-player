@@ -76,5 +76,6 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         AppUpdates.refresh()
+        (application as MusicApp).billing.refresh()
     }
 }
