@@ -6,4 +6,5 @@
     <string name="disc_status_ready">Ready</string>
     <string name="disc_status_opening">Opening</string>
     <string name="disc_status_reading">Reading disc</string>
+    <string name="disc_status_paused">Paused</string>
 </resources>

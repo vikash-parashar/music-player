@@ -3,6 +3,9 @@ package com.vikash.mp3player.ui
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -146,14 +149,16 @@ private val SilverLo = Color(0xFFA9AEB9)
 private fun DrawScope.roundRect(color: Color, x: Float, y: Float, w: Float, h: Float, r: Float) =
     drawRoundRect(color, Offset(x, y), Size(w, h), CornerRadius(r))
 
-private fun DrawScope.drawPlayer(t: Float, art: Painter?, logo: Painter, text: TextMeasurer, title: String, status: DiscStatus) {
+private fun DrawScope.drawPlayer(
+    t: Float, art: Painter?, logo: Painter, text: TextMeasurer, title: String, status: DiscStatus, live: LiveState? = null,
+) {
     val w = size.width
     val h = size.height
-    val rb = min(w * 0.42f, h * 0.25f)
+    val rb = live?.rb?.invoke(w, h) ?: min(w * 0.42f, h * 0.25f)
     val rise = easeOut(seg(t, 0f, 0.12f))
     val shake = if (t > 0.70f && t < 0.74f) sin((t - 0.70f) * 400f) * (1f - seg(t, 0.70f, 0.74f)) * rb * 0.012f else 0f
     val cx = w / 2f
-    val cy = h * 0.43f + (1f - rise) * h * 0.25f + shake
+    val cy = (live?.cyFraction ?: 0.43f) * h + (1f - rise) * h * 0.25f + shake
     val c = Offset(cx, cy)
     val a = rise
 
@@ -189,7 +194,7 @@ private fun DrawScope.drawPlayer(t: Float, art: Painter?, logo: Painter, text: T
     // Disc spin: speeds up over the last quarter.
     val s = seg(t, 0.74f, 1f)
     val spinSeconds = DURATION_MS / 1000f * 0.26f
-    val spin = 400f * spinSeconds * s * s * s / 3f
+    val spin = live?.angle ?: (400f * spinSeconds * s * s * s / 3f)
 
     drawCircle(Color(0xFF9AA0AB).copy(alpha = a), radius = rb * 0.13f, center = c)
     drawCircle(Color(0xFFE5E7EB).copy(alpha = a), radius = rb * 0.085f, center = c)
@@ -224,11 +229,14 @@ private fun DrawScope.drawPlayer(t: Float, art: Painter?, logo: Painter, text: T
     drawLid(c, rb, lidDeg, a, text)
     if (t < 0.52f) drawDisc()
 
-    drawFrontDisplay(cx, cy, rb, t, a, title, status, text)
+    drawFrontDisplay(cx, cy, rb, t, a, title, status, text, live)
 }
 
 /** Dark glass strip under the player: status, song title, live bars and a thin progress line. */
-private fun DrawScope.drawFrontDisplay(cx: Float, cy: Float, rb: Float, t: Float, a: Float, title: String, status: DiscStatus, text: TextMeasurer) {
+private fun DrawScope.drawFrontDisplay(
+    cx: Float, cy: Float, rb: Float, t: Float, a: Float, title: String, status: DiscStatus, text: TextMeasurer, live: LiveState?,
+) {
+    val phase = live?.phase ?: (t * DURATION_MS / 1000f)
     val pw = rb * 1.56f
     val ph = rb * 0.40f
     val px = cx - pw / 2f
@@ -242,16 +250,16 @@ private fun DrawScope.drawFrontDisplay(cx: Float, cy: Float, rb: Float, t: Float
     )
     drawRoundRect(Color.White.copy(alpha = 0.10f * a), Offset(px, py), Size(pw, ph), pill, style = Stroke(1f))
 
-    val playing = t >= 0.72f
+    val playing = live?.playing ?: (t >= 0.72f)
     // Badge: rose circle with a play mark that pulses, or a spinner while the disc loads.
     val bc = Offset(px + ph / 2f, py + ph / 2f)
     val br = ph * 0.32f
-    val pulse = if (playing) 1f + 0.06f * sin(t * 60f) else 1f
+    val pulse = if (playing) 1f + 0.06f * sin(phase * 11f) else 1f
     drawCircle(
         Brush.linearGradient(listOf(Color(0xFFF43F5E), Ampli.RoseDeep), bc - Offset(br, br), bc + Offset(br, br)),
         radius = br * pulse, center = bc, alpha = a,
     )
-    if (playing || t < 0.12f) {
+    if (playing || t < 0.12f || live != null) {
         drawPath(
             Path().apply {
                 moveTo(bc.x - br * 0.28f, bc.y - br * 0.4f); lineTo(bc.x + br * 0.42f, bc.y); lineTo(bc.x - br * 0.28f, bc.y + br * 0.4f); close()
@@ -259,7 +267,7 @@ private fun DrawScope.drawFrontDisplay(cx: Float, cy: Float, rb: Float, t: Float
             Color.White.copy(alpha = a),
         )
     } else {
-        val start = (t * 40f * 180f / PI.toFloat()) % 360f
+        val start = (phase * 7.4f * 180f / PI.toFloat()) % 360f
         drawArc(
             Color.White.copy(alpha = a), startAngle = start, sweepAngle = 240f, useCenter = false,
             topLeft = bc - Offset(br * 0.48f, br * 0.48f), size = Size(br * 0.96f, br * 0.96f),
@@ -270,6 +278,7 @@ private fun DrawScope.drawFrontDisplay(cx: Float, cy: Float, rb: Float, t: Float
     val tx = px + ph
     val maxW = (pw - ph - rb * 0.30f).toInt().coerceAtLeast(1)
     val label = when {
+        live != null -> if (live.playing) status.playing else status.paused
         t < 0.12f -> status.ready
         t < 0.56f -> status.opening
         t < 0.72f -> status.reading
@@ -290,7 +299,7 @@ private fun DrawScope.drawFrontDisplay(cx: Float, cy: Float, rb: Float, t: Float
     drawText(titleLayout, topLeft = Offset(tx, textTop + statusLayout.size.height))
     // Live bars on the right.
     for (k in 0 until 4) {
-        val v = if (playing) 0.35f + 0.65f * kotlin.math.abs(sin(t * (38f + k * 9f) + k)) else 0.18f
+        val v = if (playing) 0.35f + 0.65f * kotlin.math.abs(sin(phase * (7f + k * 1.7f) + k)) else 0.18f
         val bh = ph * 0.42f * v
         val bx = px + pw - rb * 0.26f + k * rb * 0.05f
         drawRoundRect(
@@ -301,6 +310,7 @@ private fun DrawScope.drawFrontDisplay(cx: Float, cy: Float, rb: Float, t: Float
     // Thin progress line: fills while the disc is read, then shows the song starting.
     val lineW = pw - ph
     val fill = when {
+        live != null -> live.progress.coerceIn(0f, 1f)
         t < 0.56f -> 0f
         t < 0.72f -> seg(t, 0.56f, 0.72f)
         else -> 0.02f + 0.03f * seg(t, 0.72f, 1f)
@@ -316,7 +326,47 @@ private fun DrawScope.drawFrontDisplay(cx: Float, cy: Float, rb: Float, t: Float
 }
 
 /** Localised labels for the front display. */
-private class DiscStatus(val ready: String, val opening: String, val reading: String, val playing: String)
+private class DiscStatus(val ready: String, val opening: String, val reading: String, val playing: String, val paused: String = playing)
+
+/** What the resting player shows on Now Playing. */
+private class LiveState(
+    val angle: Float,
+    val playing: Boolean,
+    val phase: Float,
+    val progress: Float,
+    val cyFraction: Float,
+    val rb: (Float, Float) -> Float,
+)
+
+/**
+ * Now Playing as the same CD player, lid closed: the song's CD turns under the smoked lid and
+ * the glass display shows Now playing or Paused, the title, live bars and the song progress.
+ */
+@Composable
+fun CdPlayerView(artworkUri: android.net.Uri?, title: String, isPlaying: Boolean, progress: Float, modifier: Modifier = Modifier) {
+    val angle = LocalDiscAngle.current
+    val art = rememberStickerPainter(artworkUri, 640)
+    val logo = painterResource(R.drawable.ic_launcher_foreground)
+    val text = rememberTextMeasurer()
+    val clock = rememberInfiniteTransition(label = "cdPlayer")
+    val phase by clock.animateFloat(0f, 1000f, infiniteRepeatable(tween(1_000_000, easing = LinearEasing)), label = "phase")
+    val status = DiscStatus(
+        ready = "", opening = "", reading = "",
+        playing = stringResource(R.string.player_now_playing),
+        paused = stringResource(R.string.disc_status_paused),
+    )
+    Canvas(modifier) {
+        val glow = 0.10f + if (isPlaying) 0.18f else 0f
+        drawCircle(
+            Brush.radialGradient(listOf(Ampli.Rose.copy(alpha = glow), Color.Transparent), Offset(size.width / 2f, size.height * 0.44f), size.minDimension * 0.6f),
+            radius = size.minDimension * 0.6f, center = Offset(size.width / 2f, size.height * 0.44f),
+        )
+        drawPlayer(
+            1f, art, logo, text, title, status,
+            LiveState(angle.value, isPlaying, phase, progress, 0.44f) { w, h -> min(w * 0.40f, h * 0.40f) },
+        )
+    }
+}
 
 /** The lid hinges at the top: squashing it around the hinge gives the swing; past 90 degrees we see its underside. */
 private fun DrawScope.drawLid(c: Offset, rb: Float, deg: Float, a: Float, text: TextMeasurer) {

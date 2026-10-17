@@ -6,4 +6,5 @@
     <string name="disc_status_ready">প্রস্তুত</string>
     <string name="disc_status_opening">খুলছে</string>
     <string name="disc_status_reading">সিডি পড়ছে</string>
+    <string name="disc_status_paused">থামানো</string>
 </resources>

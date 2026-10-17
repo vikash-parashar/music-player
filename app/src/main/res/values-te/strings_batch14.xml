@@ -6,4 +6,5 @@
     <string name="disc_status_ready">సిద్ధం</string>
     <string name="disc_status_opening">తెరుస్తోంది</string>
     <string name="disc_status_reading">సీడీ చదువుతోంది</string>
+    <string name="disc_status_paused">ఆపబడింది</string>
 </resources>

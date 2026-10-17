@@ -6,4 +6,5 @@
     <string name="disc_status_ready">तयार</string>
     <string name="disc_status_opening">उघडत आहे</string>
     <string name="disc_status_reading">सीडी वाचत आहे</string>
+    <string name="disc_status_paused">थांबवले</string>
 </resources>

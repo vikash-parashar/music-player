@@ -180,8 +180,14 @@ fun NowPlayingScreen(
                     )
                 } else {
                     Spacer(Modifier.weight(0.2f))
-                    // The poster as a CD sticker that turns with the song.
-                    SpinningCd(current.artworkUri, 300.dp, Modifier.align(Alignment.CenterHorizontally))
+                    // The same CD player as the song-change scene, lid closed, the CD turning with the song.
+                    CdPlayerView(
+                        artworkUri = current.artworkUri,
+                        title = current.title,
+                        isPlaying = state.isPlaying,
+                        progress = position.toFloat() / state.durationMs.coerceAtLeast(1),
+                        modifier = Modifier.fillMaxWidth().height(340.dp),
+                    )
                     Spacer(Modifier.weight(0.2f))
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
