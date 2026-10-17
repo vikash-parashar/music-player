@@ -40,8 +40,8 @@ class WifiTransferServer(private val context: Context) {
     private val token = UUID.randomUUID().toString().replace("-", "").take(10)
     // A few uploads at once is plenty; extra connections wait their turn.
     // Made fresh on each start and shut down on stop, so no threads stay behind after the screen closes.
-    private var pool: java.util.concurrent.ExecutorService? = null
-    private var server: ServerSocket? = null
+    @Volatile private var pool: java.util.concurrent.ExecutorService? = null
+    @Volatile private var server: ServerSocket? = null
     @Volatile private var lastActivity = 0L
     private val active = java.util.concurrent.atomic.AtomicInteger(0)
 
