@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="status_action">స్టేటస్ వీడియో తయారు చేయండి</string>
+    <string name="status_chip">స్టేటస్</string>
+    <string name="status_title">స్టేటస్ తయారు చేయండి · %1$s</string>
+    <string name="status_close">మూసివేయండి</string>
+    <string name="status_preview_desc">స్టేటస్ వీడియో ప్రివ్యూ</string>
+    <string name="status_start">ప్రారంభం %1$s</string>
+    <string name="status_length">30 సెకన్లలో %1$d సె</string>
+    <string name="status_end">ముగింపు %1$s</string>
+    <string name="status_preview">ఎంచుకున్న భాగాన్ని ప్లే చేయండి</string>
+    <string name="status_previewing">ప్లే అవుతోంది…</string>
+    <string name="status_quality">క్వాలిటీ</string>
+    <string name="status_q_720">720p</string>
+    <string name="status_q_1080_pro">1080p · Pro</string>
+    <string name="status_q_hd_ad">HD · ప్రకటన చూడండి</string>
+    <string name="status_hd_unlocked">తదుపరి వీడియోకు HD అన్‌లాక్ అయింది</string>
+    <string name="status_ad_unavailable">ప్రస్తుతం ప్రకటన లేదు. తర్వాత మళ్లీ ప్రయత్నించండి.</string>
+    <string name="status_rights">షేర్ చేసే హక్కు ఉన్న సంగీతాన్ని మాత్రమే షేర్ చేయండి.</string>
+    <string name="status_make">వీడియో తయారు చేయండి</string>
+    <string name="status_making">మీ వీడియో తయారవుతోంది… %1$d%%</string>
+    <string name="status_cancel">రద్దు చేయండి</string>
+    <string name="status_ready">మీ స్టేటస్ వీడియో సిద్ధంగా ఉంది</string>
+    <string name="status_share_whatsapp">WhatsApp</string>
+    <string name="status_share_instagram">Instagram</string>
+    <string name="status_share_more">మరిన్ని</string>
+    <string name="status_share_title">స్టేటస్ వీడియోను షేర్ చేయండి</string>
+    <string name="status_no_app">వీడియోను షేర్ చేయడానికి యాప్ ఏదీ లేదు.</string>
+    <string name="status_error">వీడియో తయారు కాలేదు. పాటలో వేరే భాగాన్ని ప్రయత్నించండి.</string>
+    <string name="status_needs_local">ఫోన్‌లో ఉన్న పాటల నుండి మాత్రమే స్టేటస్ వీడియోలు తయారు చేయగలరు.</string>
+</resources>

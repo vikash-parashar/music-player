@@ -123,6 +123,9 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
         )
     }
     var showRingtone by remember { mutableStateOf(false) }
+    // Status video maker: like the ringtone maker, the song stays set while the panel slides away.
+    var statusSong by remember { mutableStateOf<Song?>(null) }
+    var showStatus by remember { mutableStateOf(false) }
     var showStats by rememberSaveable { mutableStateOf(false) }
     var showTransfer by rememberSaveable { mutableStateOf(false) }
     var showCarMode by rememberSaveable { mutableStateOf(false) }
@@ -234,6 +237,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                         favorites = favorites,
                         onToggleFavorite = { vm.toggleFavorite(it.id, it.title) },
                         onSetRingtone = { ringtoneSong = it; showRingtone = true },
+                        onMakeStatus = { statusSong = it; showStatus = true },
                         onEditTags = { tagSong = it },
                         onDelete = { if (it.isNotEmpty()) deleteSongs = it },
                         onMove = { if (it.isNotEmpty()) moveSongs = it },
@@ -307,6 +311,11 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                 onGetPro = openPro,
                 onClose = { showPlayer = false },
                 onVisualizer = { if (proUnlocked) showVisualizer = true else openPro() },
+                onMakeStatus = {
+                    val song = library.songs.firstOrNull { it.id == player.current?.mediaId }
+                    if (song != null) { statusSong = song; showStatus = true }
+                    else Toast.makeText(context, context.getString(R.string.status_needs_local), Toast.LENGTH_SHORT).show()
+                },
             )
         }
 
@@ -334,6 +343,18 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
         ) {
             ringtoneSong?.let { song ->
                 key(song.id) { RingtoneEditorScreen(song, onClose = { showRingtone = false }) }
+            }
+        }
+
+        AnimatedVisibility(
+            visible = showStatus && statusSong != null,
+            enter = slideInVertically { it },
+            exit = slideOutVertically { it },
+        ) {
+            statusSong?.let { song ->
+                key(song.id) {
+                    StatusMakerScreen(song, isPro = proUnlocked, onGetPro = openPro, onClose = { showStatus = false })
+                }
             }
         }
 

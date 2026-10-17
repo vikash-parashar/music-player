@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.GraphicEq
+import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.Cast
 import androidx.compose.material.icons.filled.CastConnected
 import androidx.compose.material.icons.filled.Loop
@@ -82,6 +83,7 @@ fun NowPlayingScreen(
     onGetPro: () -> Unit,
     onClose: () -> Unit,
     onVisualizer: () -> Unit = {},
+    onMakeStatus: () -> Unit = {},
 ) {
     androidx.compose.runtime.LaunchedEffect(Unit) { com.vikash.mp3player.data.OwnerHooks.event("feature_record_player") }
     var showCast by remember { mutableStateOf(false) }
@@ -276,6 +278,13 @@ fun NowPlayingScreen(
                     onClick = onVisualizer,
                     leadingIcon = { Icon(Icons.Default.GraphicEq, null, Modifier.size(18.dp)) },
                     label = { Text(stringResource(R.string.visualizer_title)) },
+                )
+                Spacer(Modifier.width(8.dp))
+                FilterChip(
+                    selected = false,
+                    onClick = onMakeStatus,
+                    leadingIcon = { Icon(Icons.Default.Movie, null, Modifier.size(18.dp)) },
+                    label = { Text(stringResource(R.string.status_chip)) },
                 )
                 Spacer(Modifier.width(8.dp))
                 FilterChip(

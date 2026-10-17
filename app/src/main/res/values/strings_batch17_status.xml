@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="status_action">Make a Status video</string>
+    <string name="status_chip">Status</string>
+    <string name="status_title">Make a Status · %1$s</string>
+    <string name="status_close">Close</string>
+    <string name="status_preview_desc">Status video preview</string>
+    <string name="status_start">Start %1$s</string>
+    <string name="status_length">%1$d s of 30 s</string>
+    <string name="status_end">End %1$s</string>
+    <string name="status_preview">Play the selection</string>
+    <string name="status_previewing">Playing…</string>
+    <string name="status_quality">Quality</string>
+    <string name="status_q_720">720p</string>
+    <string name="status_q_1080_pro">1080p · Pro</string>
+    <string name="status_q_hd_ad">HD · watch ad</string>
+    <string name="status_hd_unlocked">HD unlocked for your next video</string>
+    <string name="status_ad_unavailable">No ad right now. Try again later.</string>
+    <string name="status_rights">Share only music you have the rights to share.</string>
+    <string name="status_make">Make video</string>
+    <string name="status_making">Making your video… %1$d%%</string>
+    <string name="status_cancel">Cancel</string>
+    <string name="status_ready">Your Status video is ready</string>
+    <string name="status_share_whatsapp">WhatsApp</string>
+    <string name="status_share_instagram">Instagram</string>
+    <string name="status_share_more">More</string>
+    <string name="status_share_title">Share Status video</string>
+    <string name="status_no_app">No app found to share the video.</string>
+    <string name="status_error">Couldn\'t make the video. Try another part of the song.</string>
+    <string name="status_needs_local">Status videos can be made only from songs on your phone.</string>
+    <!-- The mark drawn on free Status videos; kept the same in every language, like the app name. -->
+    <string name="status_watermark" translatable="false">Made with Ampli</string>
+</resources>

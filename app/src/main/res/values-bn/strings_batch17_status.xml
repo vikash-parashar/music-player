@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="status_action">স্ট্যাটাস ভিডিও বানান</string>
+    <string name="status_chip">স্ট্যাটাস</string>
+    <string name="status_title">স্ট্যাটাস বানান · %1$s</string>
+    <string name="status_close">বন্ধ করুন</string>
+    <string name="status_preview_desc">স্ট্যাটাস ভিডিওর প্রিভিউ</string>
+    <string name="status_start">শুরু %1$s</string>
+    <string name="status_length">৩০ সেকেন্ডের মধ্যে %1$d সেকেন্ড</string>
+    <string name="status_end">শেষ %1$s</string>
+    <string name="status_preview">বাছাই করা অংশ চালান</string>
+    <string name="status_previewing">চলছে…</string>
+    <string name="status_quality">কোয়ালিটি</string>
+    <string name="status_q_720">720p</string>
+    <string name="status_q_1080_pro">1080p · Pro</string>
+    <string name="status_q_hd_ad">HD · বিজ্ঞাপন দেখুন</string>
+    <string name="status_hd_unlocked">পরের ভিডিওর জন্য HD আনলক হয়েছে</string>
+    <string name="status_ad_unavailable">এখন কোনো বিজ্ঞাপন নেই। পরে আবার চেষ্টা করুন।</string>
+    <string name="status_rights">শুধু সেই গান শেয়ার করুন যা শেয়ার করার অধিকার আপনার আছে।</string>
+    <string name="status_make">ভিডিও বানান</string>
+    <string name="status_making">আপনার ভিডিও তৈরি হচ্ছে… %1$d%%</string>
+    <string name="status_cancel">বাতিল</string>
+    <string name="status_ready">আপনার স্ট্যাটাস ভিডিও তৈরি</string>
+    <string name="status_share_whatsapp">WhatsApp</string>
+    <string name="status_share_instagram">Instagram</string>
+    <string name="status_share_more">আরও</string>
+    <string name="status_share_title">স্ট্যাটাস ভিডিও শেয়ার করুন</string>
+    <string name="status_no_app">ভিডিও শেয়ার করার মতো কোনো অ্যাপ পাওয়া যায়নি।</string>
+    <string name="status_error">ভিডিও বানানো গেল না। গানের অন্য অংশ চেষ্টা করুন।</string>
+    <string name="status_needs_local">শুধু ফোনে থাকা গান থেকেই স্ট্যাটাস ভিডিও বানানো যায়।</string>
+</resources>
