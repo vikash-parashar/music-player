@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="status_action">ஸ்டேட்டஸ் வீடியோ உருவாக்கு</string>
+    <string name="status_chip">ஸ்டேட்டஸ்</string>
+    <string name="status_title">ஸ்டேட்டஸ் உருவாக்கு · %1$s</string>
+    <string name="status_close">மூடு</string>
+    <string name="status_preview_desc">ஸ்டேட்டஸ் வீடியோ முன்னோட்டம்</string>
+    <string name="status_start">தொடக்கம் %1$s</string>
+    <string name="status_length">30 வினாடிகளில் %1$d வினாடி</string>
+    <string name="status_end">முடிவு %1$s</string>
+    <string name="status_preview">தேர்ந்தெடுத்த பகுதியை இயக்கு</string>
+    <string name="status_previewing">இயங்குகிறது…</string>
+    <string name="status_quality">தரம்</string>
+    <string name="status_q_720">720p</string>
+    <string name="status_q_1080_pro">1080p · Pro</string>
+    <string name="status_q_hd_ad">HD · விளம்பரம் பார்</string>
+    <string name="status_hd_unlocked">அடுத்த வீடியோவுக்கு HD திறக்கப்பட்டது</string>
+    <string name="status_ad_unavailable">இப்போது விளம்பரம் இல்லை. பிறகு மீண்டும் முயலவும்.</string>
+    <string name="status_rights">பகிர உரிமை உள்ள இசையை மட்டும் பகிருங்கள்.</string>
+    <string name="status_make">வீடியோ உருவாக்கு</string>
+    <string name="status_making">உங்கள் வீடியோ உருவாகிறது… %1$d%%</string>
+    <string name="status_cancel">ரத்துசெய்</string>
+    <string name="status_ready">உங்கள் ஸ்டேட்டஸ் வீடியோ தயார்</string>
+    <string name="status_share_whatsapp">WhatsApp</string>
+    <string name="status_share_instagram">Instagram</string>
+    <string name="status_share_more">மேலும்</string>
+    <string name="status_share_title">ஸ்டேட்டஸ் வீடியோவைப் பகிர்</string>
+    <string name="status_no_app">வீடியோவைப் பகிர எந்த ஆப்பும் இல்லை.</string>
+    <string name="status_error">வீடியோவை உருவாக்க முடியவில்லை. பாடலின் வேறு பகுதியை முயலவும்.</string>
+    <string name="status_needs_local">ஃபோனில் உள்ள பாடல்களிலிருந்து மட்டுமே ஸ்டேட்டஸ் வீடியோ உருவாக்க முடியும்.</string>
+</resources>

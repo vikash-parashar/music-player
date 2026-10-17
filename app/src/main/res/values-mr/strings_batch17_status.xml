@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="status_action">स्टेटस व्हिडिओ बनवा</string>
+    <string name="status_chip">स्टेटस</string>
+    <string name="status_title">स्टेटस बनवा · %1$s</string>
+    <string name="status_close">बंद करा</string>
+    <string name="status_preview_desc">स्टेटस व्हिडिओ प्रीव्ह्यू</string>
+    <string name="status_start">सुरुवात %1$s</string>
+    <string name="status_length">30 पैकी %1$d सेकंद</string>
+    <string name="status_end">शेवट %1$s</string>
+    <string name="status_preview">निवडलेला भाग वाजवा</string>
+    <string name="status_previewing">वाजत आहे…</string>
+    <string name="status_quality">क्वालिटी</string>
+    <string name="status_q_720">720p</string>
+    <string name="status_q_1080_pro">1080p · Pro</string>
+    <string name="status_q_hd_ad">HD · जाहिरात पाहा</string>
+    <string name="status_hd_unlocked">पुढच्या व्हिडिओसाठी HD अनलॉक झाले</string>
+    <string name="status_ad_unavailable">आत्ता जाहिरात उपलब्ध नाही. नंतर पुन्हा प्रयत्न करा.</string>
+    <string name="status_rights">फक्त तेच संगीत शेअर करा जे शेअर करण्याचा तुम्हाला हक्क आहे.</string>
+    <string name="status_make">व्हिडिओ बनवा</string>
+    <string name="status_making">तुमचा व्हिडिओ बनत आहे… %1$d%%</string>
+    <string name="status_cancel">रद्द करा</string>
+    <string name="status_ready">तुमचा स्टेटस व्हिडिओ तयार आहे</string>
+    <string name="status_share_whatsapp">WhatsApp</string>
+    <string name="status_share_instagram">Instagram</string>
+    <string name="status_share_more">आणखी</string>
+    <string name="status_share_title">स्टेटस व्हिडिओ शेअर करा</string>
+    <string name="status_no_app">व्हिडिओ शेअर करण्यासाठी कोणतेही ॲप सापडले नाही.</string>
+    <string name="status_error">व्हिडिओ बनवता आला नाही. गाण्याचा दुसरा भाग वापरून पाहा.</string>
+    <string name="status_needs_local">स्टेटस व्हिडिओ फक्त फोनमधील गाण्यांपासूनच बनवता येतात.</string>
+</resources>

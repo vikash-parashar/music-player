@@ -88,6 +88,17 @@
             </intent-filter>
         </activity>
 
+        <!-- Status video maker: shares the made MP4 (cache/status/) with WhatsApp, Instagram and others. -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.statusfiles"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/status_file_paths" />
+        </provider>
+
         <!-- Home-screen widget: now playing with play/pause, previous and next. -->
         <receiver
             android:name=".widget.AmpliWidgetReceiver"

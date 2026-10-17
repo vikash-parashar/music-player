@@ -8,6 +8,7 @@ import androidx.compose.material.icons.automirrored.filled.PlaylistPlay
 import androidx.compose.material.icons.filled.RemoveCircleOutline
 import androidx.compose.material.icons.filled.HeartBroken
 import androidx.compose.material.icons.filled.RingVolume
+import androidx.compose.material.icons.filled.Movie
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -153,6 +154,7 @@ fun LibraryScreen(
     favorites: List<String>,
     onToggleFavorite: (Song) -> Unit,
     onSetRingtone: (Song) -> Unit,
+    onMakeStatus: (Song) -> Unit = {},
     onEditTags: (Song) -> Unit,
     onDelete: (List<Song>) -> Unit,
     onMove: (List<Song>) -> Unit,
@@ -352,6 +354,7 @@ fun LibraryScreen(
                             favorites = favorites,
                             onToggleFavorite = onToggleFavorite,
                             onSetRingtone = onSetRingtone,
+                            onMakeStatus = onMakeStatus,
                             onEditTags = onEditTags,
                             onDelete = onDelete,
                             onMove = onMove,
@@ -388,6 +391,7 @@ fun LibraryScreen(
                         favorites = favorites,
                         onToggleFavorite = onToggleFavorite,
                         onSetRingtone = onSetRingtone,
+                        onMakeStatus = onMakeStatus,
                         onEditTags = onEditTags,
                         onDelete = onDelete,
                         onMove = onMove,
@@ -411,6 +415,7 @@ fun LibraryScreen(
                     favorites = favorites,
                     onToggleFavorite = onToggleFavorite,
                     onSetRingtone = onSetRingtone,
+                    onMakeStatus = onMakeStatus,
                     onEditTags = onEditTags,
                     onDelete = onDelete,
                     onMove = onMove,
@@ -509,6 +514,7 @@ private fun SongList(
     favorites: List<String>,
     onToggleFavorite: (Song) -> Unit,
     onSetRingtone: (Song) -> Unit,
+    onMakeStatus: (Song) -> Unit = {},
     onEditTags: (Song) -> Unit,
     onDelete: (List<Song>) -> Unit,
     onMove: (List<Song>) -> Unit,
@@ -534,6 +540,7 @@ private fun SongList(
     val addFavoriteLabel = stringResource(R.string.favorites_add)
     val removeFavoriteLabel = stringResource(R.string.favorites_remove)
     val setRingtoneLabel = stringResource(R.string.song_set_ringtone)
+    val makeStatusLabel = stringResource(R.string.status_action)
     val editInfoLabel = stringResource(R.string.song_edit_info)
     val deleteLabel = stringResource(R.string.song_delete_from_phone)
     val moveLabel = stringResource(R.string.song_move)
@@ -611,6 +618,7 @@ private fun SongList(
                     if (onRemove != null) add(SongAction(removeFromPlaylistLabel, Icons.Default.RemoveCircleOutline) { onRemove(song) })
                     add(SongAction(if (fav) removeFavoriteLabel else addFavoriteLabel, if (fav) Icons.Default.HeartBroken else Icons.Default.Favorite) { onToggleFavorite(song) })
                     add(SongAction(setRingtoneLabel, Icons.Default.RingVolume) { onSetRingtone(song) })
+                    if (!song.isOnline) add(SongAction(makeStatusLabel, Icons.Default.Movie) { onMakeStatus(song) })
                     add(SongAction(editInfoLabel, Icons.Default.Edit) { onEditTags(song) })
                     if (!song.isOnline) add(SongAction(shareLabel, Icons.Default.Share) { shareSongs(context, listOf(song)) })
                     if (!song.isOnline) add(SongAction(moveLabel, Icons.Default.DriveFileMove) { onMove(listOf(song)) })
