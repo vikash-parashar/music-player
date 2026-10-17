@@ -12,4 +12,6 @@
     <string name="billing_loading">Google Play से कीमत ली जा रही है…</string>
     <string name="transfer_idle_title">ट्रांसफ़र बंद हुआ</string>
     <string name="transfer_idle_desc">10 मिनट तक कुछ नहीं भेजा गया, इसलिए Ampli ने सुनना बंद कर दिया। नया पता पाने के लिए फिर कोशिश करें पर टैप करें।</string>
+    <string name="lyrics_folder_desc">गानों के नाम वाली .lrc फ़ाइलें हैं? फ़ोल्डर एक बार चुनें, Ampli अपने आप ढूँढ लेगा।</string>
+    <string name="lyrics_folder_pick">बोल वाला फ़ोल्डर चुनें</string>
 </resources>

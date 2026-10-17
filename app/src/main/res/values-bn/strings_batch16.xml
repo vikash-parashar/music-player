@@ -12,4 +12,6 @@
     <string name="billing_loading">Google Play থেকে দাম আনা হচ্ছে…</string>
     <string name="transfer_idle_title">ট্রান্সফার বন্ধ হয়েছে</string>
     <string name="transfer_idle_desc">১০ মিনিট কিছু পাঠানো হয়নি, তাই Ampli শোনা বন্ধ করেছে। নতুন ঠিকানা পেতে আবার চেষ্টা করুন চাপুন।</string>
+    <string name="lyrics_folder_desc">গানের নামে .lrc ফাইল আছে? ফোল্ডারটি একবার বেছে নিন, Ampli নিজেই খুঁজে নেবে।</string>
+    <string name="lyrics_folder_pick">লিরিক্স ফোল্ডার বাছুন</string>
 </resources>

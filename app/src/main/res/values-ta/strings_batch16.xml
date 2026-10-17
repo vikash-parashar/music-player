@@ -12,4 +12,6 @@
     <string name="billing_loading">Google Play-இலிருந்து விலையைப் பெறுகிறது…</string>
     <string name="transfer_idle_title">பரிமாற்றம் நின்றது</string>
     <string name="transfer_idle_desc">10 நிமிடங்கள் எதுவும் அனுப்பப்படவில்லை, அதனால் Ampli கேட்பதை நிறுத்தியது. புதிய முகவரிக்கு மீண்டும் முயல் என்பதைத் தட்டவும்.</string>
+    <string name="lyrics_folder_desc">பாடல்களின் பெயரிலேயே .lrc ஃபைல்கள் உள்ளனவா? ஃபோல்டரை ஒருமுறை தேர்வு செய்தால் Ampli தானே கண்டுபிடிக்கும்.</string>
+    <string name="lyrics_folder_pick">வரிகள் ஃபோல்டரைத் தேர்வுசெய்</string>
 </resources>

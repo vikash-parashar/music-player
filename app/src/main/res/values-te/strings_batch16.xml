@@ -12,4 +12,6 @@
     <string name="billing_loading">Google Play నుండి ధర తెస్తోంది…</string>
     <string name="transfer_idle_title">ట్రాన్స్‌ఫర్ ఆగింది</string>
     <string name="transfer_idle_desc">10 నిమిషాలు ఏమీ పంపలేదు, అందుకే Ampli వినడం ఆపింది. కొత్త చిరునామా కోసం మళ్లీ ప్రయత్నించు నొక్కండి.</string>
+    <string name="lyrics_folder_desc">పాటల పేరుతోనే .lrc ఫైల్స్ ఉన్నాయా? ఫోల్డర్‌ను ఒకసారి ఎంచుకోండి, Ampli తానే కనుగొంటుంది.</string>
+    <string name="lyrics_folder_pick">లిరిక్స్ ఫోల్డర్ ఎంచుకోండి</string>
 </resources>

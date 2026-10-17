@@ -12,4 +12,6 @@
     <string name="billing_loading">Getting the price from Google Play…</string>
     <string name="transfer_idle_title">Transfer stopped</string>
     <string name="transfer_idle_desc">Nothing was sent for 10 minutes, so Ampli stopped listening. Tap Try again to get a new address.</string>
+    <string name="lyrics_folder_desc">Have .lrc files with the same name as your songs? Pick the folder once and Ampli finds them by itself.</string>
+    <string name="lyrics_folder_pick">Pick lyrics folder</string>
 </resources>
