@@ -6,10 +6,18 @@ import { faqs } from "@/lib/site";
 import { BlurFade } from "@/components/ui/blur-fade";
 import { SectionHeading } from "@/components/sections/section-heading";
 
+// FAQPage structured data, so Google can show these answers as rich results.
+const faqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faqs.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
+};
+
 export function FAQ() {
   const [open, setOpen] = useState<number | null>(0);
   return (
     <section id="faq" className="scroll-mt-24 border-t border-line py-24">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
       <div className="container max-w-3xl">
         <SectionHeading eyebrow="FAQ" title="Questions, answered" />
         <div className="divide-y divide-line rounded-3xl border border-line bg-raised">

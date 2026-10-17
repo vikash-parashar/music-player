@@ -28,7 +28,11 @@ export const nav = [
   { href: "/#faq", label: "FAQ" },
 ];
 
-export const footerLinks = [...nav, { href: "/privacy/", label: "Privacy" }];
+export const footerLinks = [
+  ...nav,
+  { href: "/privacy/", label: "Privacy (MP3)" },
+  { href: "/privacy/carhub/", label: "Privacy (Car Hub)" },
+];
 
 export type Product = {
   id: string;
@@ -106,6 +110,10 @@ export const faqs = [
   {
     q: "Can I download songs from YouTube with Ampli?",
     a: "No. Ampli respects artists and copyright. The MP3 Player plays music you already own, plus legally free audiobooks and podcasts.",
+  },
+  {
+    q: "What does the MP3 Player send over the internet?",
+    a: "Your songs never leave your phone. The internet is used for audiobooks and podcasts, ads in the free version, Google Play purchases, song recognition (only when you tap it), and Help & feedback (only when you send a message). The app also sends a random app ID with installs, purchases and simple usage counts, which you can turn off. The privacy page has the full list.",
   },
   {
     q: "How can I help Ampli grow?",
