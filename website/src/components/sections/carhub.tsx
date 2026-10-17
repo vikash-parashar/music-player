@@ -169,8 +169,8 @@ const plans: Plan[] = [
   },
   {
     name: "Car Hub Pro",
-    price: "₹499",
-    note: "once · lifetime",
+    price: "₹1,499",
+    note: "launch price, once · ₹2,500 after launch",
     blurb: "For car lovers who want the engine data and every theme.",
     features: ["Everything in Free", "All 25 home-screen themes", "Engine data and fault codes (OBD-II adapter)", "Spoken overheating and battery warnings", "Bluetooth tyre pressure alerts, CSV export of expenses"],
     highlight: true,
