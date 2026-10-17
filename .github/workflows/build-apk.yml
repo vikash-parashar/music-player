@@ -4,6 +4,8 @@ on:
   push:
     # claude/** branches build too, so feature work is compiled and testable before it reaches main.
     branches: [main, "claude/**"]
+    # The website has its own workflow (deploy-site.yml); website-only changes don't need an APK.
+    paths-ignore: ["website/**", ".github/workflows/deploy-site.yml"]
   workflow_dispatch:
 
 permissions:

@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  @apply bg-night font-sans text-ink antialiased;
+}
+
+::selection {
+  @apply bg-rose-600/40 text-white;
+}
+
+:focus-visible {
+  @apply outline outline-2 outline-offset-2 outline-rose-300;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* Privacy policy (generated from PRIVACY.md) */
+.prose-ampli h1 { @apply text-3xl font-bold tracking-tight sm:text-4xl; }
+.prose-ampli h2 { @apply mt-10 text-xl font-semibold; }
+.prose-ampli p, .prose-ampli li { @apply leading-relaxed text-ink-muted; }
+.prose-ampli p { @apply mt-4; }
+.prose-ampli ul { @apply mt-4 list-disc space-y-2 pl-5; }
+.prose-ampli strong { @apply text-ink; }
+.prose-ampli a { @apply text-rose-300 underline underline-offset-2; }
+.prose-ampli table { @apply mt-4 block w-full overflow-x-auto border-collapse text-sm; }
+.prose-ampli th, .prose-ampli td { @apply border border-line p-3 text-left align-top; }
+.prose-ampli th { @apply bg-raised text-ink; }
