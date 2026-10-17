@@ -28,6 +28,11 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Hearing
 import androidx.compose.material.icons.filled.VideoLibrary
+import androidx.compose.material.icons.filled.Equalizer
+import androidx.compose.material.icons.filled.GraphicEq
+import androidx.compose.material.icons.filled.LocalCafe
+import androidx.compose.material.icons.filled.OndemandVideo
+import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -54,6 +59,8 @@ import com.vikash.mp3player.R
 import com.vikash.mp3player.recognize.SongRecognizer
 import com.vikash.mp3player.ui.theme.Ampli
 
+private const val ProTrialHours = com.vikash.mp3player.monetization.ProTrial.HOURS
+
 /**
  * The Ampli Pro plan: what it unlocks, the one-time price and the Buy button. Every "Get Pro"
  * in the app opens this. The price comes from Google Play; until Play answers (or in test
@@ -67,6 +74,11 @@ fun ProScreen(
     onRestore: () -> Unit,
     onTestPro: () -> Unit,
     onClose: () -> Unit,
+    trialAvailable: Boolean = false,
+    trialUntil: Long = 0L,
+    onTrial: () -> Unit = {},
+    tipPrices: Map<String, String> = emptyMap(),
+    onTip: (String) -> Unit = {},
 ) {
     BackHandler(onBack = onClose)
     val price = playPrice ?: stringResource(R.string.pro_display_price)
@@ -130,6 +142,9 @@ fun ProScreen(
                 )
                 Feature(Icons.Default.VideoLibrary, R.string.pro_feature_videos, R.string.pro_feature_videos_desc)
                 Feature(Icons.Default.AutoAwesome, R.string.pro_feature_styles, R.string.pro_feature_styles_desc)
+                Feature(Icons.Default.Equalizer, R.string.pro_feature_sound, R.string.pro_feature_sound_desc)
+                Feature(Icons.Default.Palette, R.string.pro_feature_looks, R.string.pro_feature_looks_desc)
+                Feature(Icons.Default.GraphicEq, R.string.pro_feature_visualizer, R.string.pro_feature_visualizer_desc)
             }
 
             // What stays free
@@ -146,6 +161,35 @@ fun ProScreen(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
+                }
+            }
+            // "Buy the developer a chai": optional tips, they unlock nothing.
+            Surface(
+                Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+                shape = RoundedCornerShape(16.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant,
+            ) {
+                Column(Modifier.padding(16.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.LocalCafe, null, tint = MaterialTheme.colorScheme.primary)
+                        Spacer(Modifier.width(8.dp))
+                        Text(stringResource(R.string.tip_title), style = MaterialTheme.typography.titleSmall)
+                    }
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        stringResource(R.string.tip_desc),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedButton(onClick = { onTip(BuildConfig.TIP_SMALL_ID) }) {
+                            Text(stringResource(R.string.tip_small, tipPrices[BuildConfig.TIP_SMALL_ID] ?: "₹49"))
+                        }
+                        OutlinedButton(onClick = { onTip(BuildConfig.TIP_LARGE_ID) }) {
+                            Text(stringResource(R.string.tip_large, tipPrices[BuildConfig.TIP_LARGE_ID] ?: "₹99"))
+                        }
+                    }
                 }
             }
         }
@@ -169,6 +213,19 @@ fun ProScreen(
                             modifier = Modifier.fillMaxSize(),
                             colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, contentColor = Color.White),
                         ) { Text(stringResource(R.string.pro_buy_for, price), fontSize = 17.sp, fontWeight = FontWeight.SemiBold) }
+                    }
+                    val trialActive = trialUntil > System.currentTimeMillis()
+                    if (trialActive) {
+                        Spacer(Modifier.height(6.dp))
+                        val ends = java.text.DateFormat.getTimeInstance(java.text.DateFormat.SHORT).format(java.util.Date(trialUntil))
+                        Text(stringResource(R.string.trial_active, ends), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+                    } else if (trialAvailable) {
+                        Spacer(Modifier.height(6.dp))
+                        OutlinedButton(onClick = onTrial, modifier = Modifier.fillMaxWidth()) {
+                            Icon(Icons.Default.OndemandVideo, null, Modifier.size(18.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text(stringResource(R.string.trial_button, ProTrialHours))
+                        }
                     }
                     TextButton(onClick = onRestore) { Text(stringResource(R.string.pro_restore)) }
                     if (BuildConfig.DEBUG) {

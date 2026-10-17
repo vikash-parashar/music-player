@@ -30,6 +30,7 @@ import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material.icons.filled.DirectionsCar
+import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.Cast
 import androidx.compose.material.icons.filled.CastConnected
 import androidx.compose.material.icons.filled.Loop
@@ -80,6 +81,7 @@ fun NowPlayingScreen(
     isPro: Boolean,
     onGetPro: () -> Unit,
     onClose: () -> Unit,
+    onVisualizer: () -> Unit = {},
 ) {
     var showCast by remember { mutableStateOf(false) }
     val casting by com.vikash.mp3player.cast.CastState.casting.collectAsState()
@@ -260,6 +262,13 @@ fun NowPlayingScreen(
                     onClick = { showBookmarks = true },
                     leadingIcon = { Icon(Icons.Default.Bookmark, null, Modifier.size(18.dp)) },
                     label = { Text(if (marks.isEmpty()) stringResource(R.string.bookmarks_title) else "${stringResource(R.string.bookmarks_title)} · ${marks.size}") },
+                )
+                Spacer(Modifier.width(8.dp))
+                FilterChip(
+                    selected = false,
+                    onClick = onVisualizer,
+                    leadingIcon = { Icon(Icons.Default.GraphicEq, null, Modifier.size(18.dp)) },
+                    label = { Text(stringResource(R.string.visualizer_title)) },
                 )
                 Spacer(Modifier.width(8.dp))
                 FilterChip(

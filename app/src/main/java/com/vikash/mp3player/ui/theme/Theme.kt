@@ -1,7 +1,11 @@
 package com.vikash.mp3player.ui.theme
 
 import com.vikash.mp3player.data.ThemeMode
+import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
@@ -67,16 +71,40 @@ private val AmpliTypography = Typography().run {
     )
 }
 
-/** Brand colors everywhere (no wallpaper colors) so the app always looks like Ampli. Follows the phone unless the user picks Day or Night in Settings. */
+/**
+ * Brand colors by default so the app looks like Ampli. Follows the phone unless the user picks Day
+ * or Night in Settings. Pro adds pure black (AMOLED) and wallpaper colors (Android 12+).
+ */
 @Composable
-fun Mp3PlayerTheme(mode: ThemeMode = ThemeMode.System, content: @Composable () -> Unit) {
+fun Mp3PlayerTheme(
+    mode: ThemeMode = ThemeMode.System,
+    amoledBlack: Boolean = false,
+    wallpaperColors: Boolean = false,
+    content: @Composable () -> Unit,
+) {
     val dark = when (mode) {
         ThemeMode.System -> isSystemInDarkTheme()
         ThemeMode.Light -> false
         ThemeMode.Dark -> true
     }
+    val context = LocalContext.current
+    var scheme = when {
+        wallpaperColors && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ->
+            if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+        dark -> DarkColors
+        else -> LightColors
+    }
+    if (dark && amoledBlack) {
+        scheme = scheme.copy(
+            background = Color.Black,
+            surface = Color.Black,
+            surfaceVariant = Color(0xFF111111),
+            surfaceContainer = Color(0xFF0B0B0B),
+            surfaceContainerHigh = Color(0xFF161616),
+        )
+    }
     MaterialTheme(
-        colorScheme = if (dark) DarkColors else LightColors,
+        colorScheme = scheme,
         typography = AmpliTypography,
         content = content,
     )

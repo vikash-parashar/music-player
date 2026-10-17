@@ -1,6 +1,11 @@
 package com.vikash.mp3player.ui
 
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material.icons.filled.FileOpen
+import androidx.compose.material.icons.filled.SaveAlt
+import com.vikash.mp3player.data.M3u
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.horizontalScroll
@@ -172,6 +177,30 @@ fun LibraryScreen(
     var deleting by remember { mutableStateOf<UserPlaylist?>(null) }
     val onAddToPlaylist: (List<Song>) -> Unit = { addingSongs = it }
 
+    // M3U playlist files: export one of the user's playlists, or import one from another player.
+    val m3uContext = LocalContext.current
+    var exportingSongs by remember { mutableStateOf<List<Song>>(emptyList()) }
+    val exportLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("audio/x-mpegurl")) { uri ->
+        if (uri != null) {
+            val ok = M3u.export(m3uContext, uri, exportingSongs)
+            android.widget.Toast.makeText(
+                m3uContext,
+                m3uContext.getString(if (ok) R.string.m3u_exported else R.string.m3u_failed),
+                android.widget.Toast.LENGTH_SHORT,
+            ).show()
+        }
+    }
+    val importLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) {
+            val result = M3u.import(m3uContext, uri, state.songs)
+            if (result == null || result.second.isEmpty()) {
+                android.widget.Toast.makeText(m3uContext, m3uContext.getString(R.string.m3u_nothing_found), android.widget.Toast.LENGTH_LONG).show()
+            } else {
+                playlistActions.create(result.first, result.second)
+            }
+        }
+    }
+
     val filtered = remember(state.songs, filter, sort) {
         val matching = if (filter.isBlank()) state.songs else state.songs.filter {
             it.title.contains(filter, true) || it.artist.contains(filter, true) ||
@@ -250,6 +279,12 @@ fun LibraryScreen(
                     item {
                         PlaylistRow(stringResource(R.string.playlist_new), stringResource(R.string.library_new_playlist_subtitle), Icons.Default.Add, onClick = { creatingPlaylist = true })
                     }
+                    item {
+                        PlaylistRow(
+                            stringResource(R.string.m3u_import), stringResource(R.string.m3u_import_subtitle), Icons.Default.FileOpen,
+                            onClick = { importLauncher.launch(arrayOf("audio/x-mpegurl", "audio/mpegurl", "application/vnd.apple.mpegurl", "audio/*", "text/*", "application/octet-stream")) },
+                        )
+                    }
                     items(playlists, key = { it.id }) { p ->
                         PlaylistRow(
                             p.name,
@@ -271,6 +306,10 @@ fun LibraryScreen(
                         playlist.songIds.mapNotNull { byId[it] }
                     }
                     val headerActions: @Composable () -> Unit = {
+                        if (songs.isNotEmpty()) IconButton(onClick = {
+                            exportingSongs = songs
+                            exportLauncher.launch("${playlist.name}.m3u")
+                        }) { Icon(Icons.Default.SaveAlt, stringResource(R.string.m3u_export)) }
                         IconButton(onClick = { renaming = playlist }) { Icon(Icons.Default.Edit, stringResource(R.string.playlist_rename)) }
                         IconButton(onClick = { deleting = playlist }) { Icon(Icons.Default.Delete, stringResource(R.string.playlist_delete)) }
                     }
