@@ -1,8 +1,8 @@
 # Ampli MP3 Player — Privacy Policy
 
-_Last updated: 14 October 2026_
+_Last updated: 17 October 2026_
 
-Ampli MP3 Player ("Ampli", "the app") is made by Ampli Tech, India (developer: Vikash Parashar).
+Ampli MP3 Player ("Ampli", "the app") is made by Ampli Studio, India (developer: Vikash Parashar).
 This policy explains what the app does with your information. In short: **Ampli has no accounts,
 does not sell data, and your music never leaves your phone unless you choose to share or send it.**
 
@@ -50,5 +50,5 @@ Network requests use HTTPS. Feedback data on our server is stored with access li
 If this policy changes, the new version will be posted at this address with a new date.
 
 ## 9. Contact
-Use **Settings > Help & feedback > Contact support** in the app, or the developer email shown on
-Ampli's Google Play page.
+Use **Settings > Help & feedback > Contact support** in the app, or email **support@ampliapps.in**.
+Website: https://ampliapps.in
