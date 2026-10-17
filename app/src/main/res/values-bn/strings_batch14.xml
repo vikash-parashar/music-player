@@ -7,4 +7,5 @@
     <string name="disc_status_opening">খুলছে</string>
     <string name="disc_status_reading">সিডি পড়ছে</string>
     <string name="disc_status_paused">থামানো</string>
+    <string name="disc_swipe_back">ফিরে যেতে বাঁয়ে বা ডানে সোয়াইপ করুন</string>
 </resources>

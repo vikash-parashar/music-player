@@ -424,7 +424,18 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
             val shown = remember { mutableStateOf<Song?>(null) }
             discSong?.let { shown.value = it }
             shown.value?.let { song ->
-                key(song.id) { DiscChangeOverlay(song, onDone = { discSong = null }) }
+                // Follows the player, so the disc changes when the next song starts.
+                val now = player.current
+                key(song.id) {
+                    DiscChangeOverlay(
+                        title = now?.title ?: song.title,
+                        artist = now?.artist ?: song.artist,
+                        artworkUri = now?.artworkUri ?: song.artworkUri,
+                        isPlaying = player.isPlaying,
+                        progress = { vm.player.positionMs().toFloat() / player.durationMs.coerceAtLeast(1) },
+                        onDone = { discSong = null },
+                    )
+                }
             }
         }
 

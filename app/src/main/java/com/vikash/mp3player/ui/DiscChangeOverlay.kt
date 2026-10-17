@@ -8,6 +8,15 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.animation.core.spring
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
+import kotlinx.coroutines.launch
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -55,7 +64,6 @@ import androidx.compose.ui.unit.sp
 import com.vikash.mp3player.R
 import com.vikash.mp3player.data.Song
 import com.vikash.mp3player.ui.theme.Ampli
-import kotlinx.coroutines.delay
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.min
@@ -65,41 +73,94 @@ import kotlin.math.sin
 private const val DURATION_MS = 5400
 
 /**
- * A classic portable CD player, about 5 seconds: OPEN is pressed, the lid swings up, the song's
- * CD drops onto the spindle, the lid snaps shut, the glass display below shows the song and
- * the disc spins up under the smoked lid. The song is already playing; this only plays on top.
- * Tap anywhere or press Back to skip.
+ * A classic portable CD player: OPEN is pressed, the lid swings up, the song's CD drops onto the
+ * spindle, the lid snaps shut, the glass display below shows the song and the disc spins up. The
+ * song is already playing; this plays on top and then stays as the playing view, the CD turning
+ * with the music, until the user swipes left or right (or presses Back). A tap skips the intro.
  */
 @Composable
-fun DiscChangeOverlay(song: Song, onDone: () -> Unit) {
+fun DiscChangeOverlay(
+    title: String,
+    artist: String,
+    artworkUri: android.net.Uri?,
+    isPlaying: Boolean,
+    progress: () -> Float,
+    onDone: () -> Unit,
+) {
     val done by rememberUpdatedState(onDone)
-    val progress = remember { Animatable(0f) }
-    LaunchedEffect(Unit) {
-        progress.animateTo(1f, tween(DURATION_MS, easing = LinearEasing))
-        delay(300)
-        done()
-    }
+    val intro = remember { Animatable(0f) }
+    LaunchedEffect(Unit) { intro.animateTo(1f, tween(DURATION_MS, easing = LinearEasing)) }
     BackHandler { done() }
 
-    val art = rememberStickerPainter(song.artworkUri, 640)
+    val liveAngle = LocalDiscAngle.current
+    // Where the intro left the disc, so the live spin carries on without a jump.
+    val handoff = remember { mutableFloatStateOf(Float.NaN) }
+    val clock = rememberInfiniteTransition(label = "discRest")
+    val phase by clock.animateFloat(0f, 1000f, infiniteRepeatable(tween(1_000_000, easing = LinearEasing)), label = "phase")
+
+    val art = rememberStickerPainter(artworkUri, 640)
     val logo = painterResource(R.drawable.ic_launcher_foreground)
     val text = rememberTextMeasurer()
+    val scope = rememberCoroutineScope()
+    val swipe = remember { Animatable(0f) }
+    val density = LocalDensity.current
+    val threshold = with(density) { 96.dp.toPx() }
+
+    val status = DiscStatus(
+        ready = stringResource(R.string.disc_status_ready),
+        opening = stringResource(R.string.disc_status_opening),
+        reading = stringResource(R.string.disc_status_reading),
+        playing = stringResource(R.string.player_now_playing),
+        paused = stringResource(R.string.disc_status_paused),
+    )
+    val fg = MaterialTheme.colorScheme.onBackground
 
     Box(
         Modifier
             .fillMaxSize()
-            .background(Brush.radialGradient(listOf(Color(0xFF241A22), Color(0xFF08070B))))
-            .clickable(remember { MutableInteractionSource() }, indication = null) { done() },
+            .graphicsLayer {
+                translationX = swipe.value
+                alpha = 1f - (kotlin.math.abs(swipe.value) / (size.width.coerceAtLeast(1f))).coerceIn(0f, 1f)
+            }
+            .background(MaterialTheme.colorScheme.background)
+            .pointerInput(Unit) {
+                detectHorizontalDragGestures(
+                    onDragEnd = {
+                        scope.launch {
+                            if (kotlin.math.abs(swipe.value) > threshold) {
+                                swipe.animateTo(if (swipe.value > 0) size.width.toFloat() else -size.width.toFloat(), tween(220))
+                                done()
+                            } else {
+                                swipe.animateTo(0f, spring())
+                            }
+                        }
+                    },
+                    onDragCancel = { scope.launch { swipe.animateTo(0f, spring()) } },
+                ) { change, dx ->
+                    change.consume()
+                    scope.launch { swipe.snapTo(swipe.value + dx) }
+                }
+            }
+            .clickable(remember { MutableInteractionSource() }, indication = null) {
+                if (intro.value < 1f) scope.launch { intro.snapTo(1f) }
+            },
     ) {
-        val status = DiscStatus(
-            ready = stringResource(R.string.disc_status_ready),
-            opening = stringResource(R.string.disc_status_opening),
-            reading = stringResource(R.string.disc_status_reading),
-            playing = stringResource(R.string.player_now_playing),
-        )
-        Canvas(Modifier.fillMaxSize()) { drawPlayer(progress.value, art, logo, text, song.title, status) }
+        Canvas(Modifier.fillMaxSize()) {
+            val t = intro.value
+            if (t < 1f) {
+                drawPlayer(t, art, logo, text, title, status)
+            } else {
+                if (handoff.floatValue.isNaN()) handoff.floatValue = introSpinEnd() - liveAngle.value
+                drawPlayer(
+                    1f, art, logo, text, title, status,
+                    LiveState(liveAngle.value + handoff.floatValue, isPlaying, phase, progress(), 0.43f, showDisplay = true) { w, h ->
+                        min(w * 0.42f, h * 0.25f)
+                    },
+                )
+            }
+        }
 
-        val t = progress.value
+        val t = intro.value
         Column(
             Modifier.fillMaxSize().systemBarsPadding().padding(horizontal = 24.dp, vertical = 20.dp),
             verticalArrangement = Arrangement.Bottom,
@@ -107,28 +168,27 @@ fun DiscChangeOverlay(song: Song, onDone: () -> Unit) {
         ) {
             Column(Modifier.alpha(easeOut(seg(t, 0.84f, 0.96f))), horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    stringResource(R.string.player_now_playing).uppercase(),
-                    color = Ampli.Rose, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp,
-                )
-                Text(
-                    song.title, color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.SemiBold,
+                    title, color = fg, fontSize = 20.sp, fontWeight = FontWeight.SemiBold,
                     maxLines = 1, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+                    modifier = Modifier.fillMaxWidth(),
                 )
                 Text(
-                    song.artist, color = Color.White.copy(alpha = 0.6f), fontSize = 14.sp,
+                    artist, color = fg.copy(alpha = 0.6f), fontSize = 14.sp,
                     maxLines = 1, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
             Text(
-                stringResource(R.string.disc_tap_skip),
-                color = Color.White.copy(alpha = 0.35f), fontSize = 12.sp,
+                stringResource(if (t < 1f) R.string.disc_tap_skip else R.string.disc_swipe_back),
+                color = fg.copy(alpha = 0.4f), fontSize = 12.sp,
                 modifier = Modifier.padding(top = 12.dp),
             )
         }
     }
 }
+
+/** Angle the intro leaves the disc at (it spins up over the last quarter). */
+private fun introSpinEnd(): Float = 400f * (DURATION_MS / 1000f * 0.26f) / 3f
 
 /** 0..1 progress of [t] inside the window [a]..[b]. */
 private fun seg(t: Float, a: Float, b: Float) = ((t - a) / (b - a)).coerceIn(0f, 1f)
@@ -161,12 +221,6 @@ private fun DrawScope.drawPlayer(
     val cy = (live?.cyFraction ?: 0.43f) * h + (1f - rise) * h * 0.25f + shake
     val c = Offset(cx, cy)
     val a = rise
-
-    // Floor shadow.
-    drawOval(
-        Brush.radialGradient(listOf(Color.Black.copy(alpha = 0.6f * a), Color.Transparent), Offset(cx, cy + rb * 0.28f), rb * 1.35f),
-        topLeft = Offset(cx - rb * 1.3f, cy + rb * 0.28f - rb * 1.25f), size = Size(rb * 2.6f, rb * 2.5f),
-    )
 
     // Body: brushed silver with a darker edge.
     drawCircle(
@@ -230,7 +284,7 @@ private fun DrawScope.drawPlayer(
     if (t < 0.52f) drawDisc()
 
     // Now Playing shows the player alone; its own controls sit below it.
-    if (live == null) drawFrontDisplay(cx, cy, rb, t, a, title, status, text, null)
+    if (live == null || live.showDisplay) drawFrontDisplay(cx, cy, rb, t, a, title, status, text, live)
 }
 
 /** Dark glass strip under the player: status, song title, live bars and a thin progress line. */
@@ -336,6 +390,7 @@ private class LiveState(
     val phase: Float,
     val progress: Float,
     val cyFraction: Float,
+    val showDisplay: Boolean = false,
     val rb: (Float, Float) -> Float,
 )
 
@@ -357,11 +412,6 @@ fun CdPlayerView(artworkUri: android.net.Uri?, title: String, isPlaying: Boolean
         paused = stringResource(R.string.disc_status_paused),
     )
     Canvas(modifier) {
-        val glow = 0.10f + if (isPlaying) 0.18f else 0f
-        drawCircle(
-            Brush.radialGradient(listOf(Ampli.Rose.copy(alpha = glow), Color.Transparent), Offset(size.width / 2f, size.height * 0.48f), size.minDimension * 0.6f),
-            radius = size.minDimension * 0.6f, center = Offset(size.width / 2f, size.height * 0.48f),
-        )
         drawPlayer(
             1f, art, logo, text, title, status,
             LiveState(angle.value, isPlaying, phase, progress, 0.48f) { w, h -> min(w * 0.42f, h * 0.44f) },

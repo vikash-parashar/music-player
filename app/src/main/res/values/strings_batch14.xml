@@ -7,4 +7,5 @@
     <string name="disc_status_opening">Opening</string>
     <string name="disc_status_reading">Reading disc</string>
     <string name="disc_status_paused">Paused</string>
+    <string name="disc_swipe_back">Swipe left or right to go back</string>
 </resources>
