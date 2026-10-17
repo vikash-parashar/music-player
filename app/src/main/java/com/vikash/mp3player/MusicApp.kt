@@ -52,5 +52,9 @@ class MusicApp : Application(), SingletonImageLoader.Factory {
 
     // Lite mode: covers appear at once instead of fading in (read when the loader is first made).
     override fun newImageLoader(context: PlatformContext): ImageLoader =
-        ImageLoader.Builder(context).crossfade(!prefs.liteMode.value).build()
+        ImageLoader.Builder(context)
+            .crossfade(!prefs.liteMode.value)
+            // Real album art first; covers found with "Find album art" only fill the gaps.
+            .components { add(com.vikash.mp3player.data.SavedAlbumArtInterceptor(this@MusicApp)) }
+            .build()
 }

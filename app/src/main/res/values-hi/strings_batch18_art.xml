@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="album_art_find">एल्बम कवर खोजें</string>
+    <string name="album_art_consent_title">एल्बम कवर खोजें</string>
+    <string name="album_art_consent_text">कवर खोजने के लिए एल्बम और कलाकार के नाम MusicBrainz और Cover Art Archive को भेजे जाते हैं। इसके अलावा कुछ भी नहीं भेजा जाता।</string>
+    <string name="album_art_continue">जारी रखें</string>
+    <string name="album_art_found">एल्बम कवर मिल गया</string>
+    <string name="album_art_not_found">इस एल्बम का कवर नहीं मिला</string>
+    <string name="album_art_offline">MusicBrainz से कनेक्ट नहीं हो सका। इंटरनेट जाँचें और बाद में फिर कोशिश करें।</string>
+    <string name="album_art_already">इस एल्बम का कवर पहले से है</string>
+    <string name="album_art_settings_title">छूटे एल्बम कवर खोजें</string>
+    <string name="album_art_settings_desc">जिन एल्बम का कवर नहीं है, उनके कवर खोजता है, एक सेकंड में एक एल्बम। कवर Ampli के अंदर सेव होते हैं; आपकी गानों की फ़ाइलें कभी नहीं बदली जातीं।</string>
+    <string name="album_art_settings_button">छूटे एल्बम कवर खोजें</string>
+    <string name="album_art_scanning">देख रहे हैं किन एल्बम का कवर नहीं है…</string>
+    <string name="album_art_progress">एल्बम %1$d / %2$d · %3$d मिले</string>
+    <string name="album_art_done">%2$d में से %1$d एल्बम के कवर मिले</string>
+    <string name="album_art_none_missing">हर एल्बम का कवर पहले से है</string>
+</resources>

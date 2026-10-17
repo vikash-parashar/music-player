@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="album_art_find">ஆல்பம் அட்டையைத் தேடு</string>
+    <string name="album_art_consent_title">ஆல்பம் அட்டையைத் தேடு</string>
+    <string name="album_art_consent_text">அட்டைகளைக் கண்டுபிடிக்க ஆல்பம் மற்றும் கலைஞர் பெயர்கள் MusicBrainz மற்றும் Cover Art Archive-க்கு அனுப்பப்படும். வேறு எதுவும் அனுப்பப்படாது.</string>
+    <string name="album_art_continue">தொடரவும்</string>
+    <string name="album_art_found">ஆல்பம் அட்டை கிடைத்தது</string>
+    <string name="album_art_not_found">இந்த ஆல்பத்துக்கு அட்டை கிடைக்கவில்லை</string>
+    <string name="album_art_offline">MusicBrainz-ஐ அணுக முடியவில்லை. இணையத்தைச் சரிபார்த்து பிறகு மீண்டும் முயலவும்.</string>
+    <string name="album_art_already">இந்த ஆல்பத்துக்கு ஏற்கனவே அட்டை உள்ளது</string>
+    <string name="album_art_settings_title">இல்லாத ஆல்பம் அட்டைகளைத் தேடு</string>
+    <string name="album_art_settings_desc">அட்டை இல்லாத ஆல்பங்களுக்கு அட்டைகளைத் தேடும், வினாடிக்கு ஒரு ஆல்பம். அட்டைகள் Ampli-க்குள் சேமிக்கப்படும்; உங்கள் இசைக் கோப்புகள் ஒருபோதும் மாற்றப்படாது.</string>
+    <string name="album_art_settings_button">இல்லாத ஆல்பம் அட்டைகளைத் தேடு</string>
+    <string name="album_art_scanning">எந்த ஆல்பங்களுக்கு அட்டை இல்லை எனச் சரிபார்க்கிறது…</string>
+    <string name="album_art_progress">ஆல்பம் %1$d / %2$d · %3$d கிடைத்தன</string>
+    <string name="album_art_done">%2$d ஆல்பங்களில் %1$d-க்கு அட்டைகள் கிடைத்தன</string>
+    <string name="album_art_none_missing">எல்லா ஆல்பங்களுக்கும் ஏற்கனவே அட்டை உள்ளது</string>
+</resources>

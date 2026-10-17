@@ -296,6 +296,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                         tipPrices = tipPrices,
                         tipsReceived = tipsReceived,
                         onTip = onTip,
+                        songs = library.songs,
                     )
                 }
             }
