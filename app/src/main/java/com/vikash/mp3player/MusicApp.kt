@@ -28,6 +28,12 @@ class MusicApp : Application(), SingletonImageLoader.Factory {
     val spoken by lazy { com.vikash.mp3player.data.SpokenRepository() }
     val bookmarks by lazy { com.vikash.mp3player.data.BookmarkStore(this) }
     val podcastFollows by lazy { com.vikash.mp3player.data.PodcastFollows(this) }
+    val engagement by lazy { com.vikash.mp3player.data.Engagement(this) }
+
+    override fun onCreate() {
+        super.onCreate()
+        com.vikash.mp3player.data.CrashLog.install(this)
+    }
 
     override fun newImageLoader(context: PlatformContext): ImageLoader =
         ImageLoader.Builder(context).crossfade(true).build()

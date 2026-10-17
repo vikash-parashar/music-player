@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="welcome_skip">এড়িয়ে যান</string>
+    <string name="welcome_next">পরবর্তী</string>
+    <string name="welcome_allow">মিউজিক অ্যাক্সেস দিন</string>
+    <string name="welcome_1_title">আপনার মিউজিক।\nকোনো মাসিক ফি নেই।</string>
+    <string name="welcome_1_body">অ্যাকাউন্ট বা সাবস্ক্রিপশন ছাড়াই ফোনের সব গান চালান। ভালো লাগলে Pro একবার কিনুন।</string>
+    <string name="welcome_2_title">আপনার শোনার ধরনের জন্য</string>
+    <string name="welcome_2_eq">10-ব্যান্ড ইকুয়ালাইজার ও বেস বুস্ট</string>
+    <string name="welcome_2_ringtone">রিংটোন মেকার</string>
+    <string name="welcome_2_car">বড় বোতামের কার মোড</string>
+    <string name="welcome_2_share">বন্ধুদের সাথে গান শেয়ার করুন</string>
+    <string name="welcome_3_title">আপনার মিউজিক খুঁজুন</string>
+    <string name="welcome_3_body">আপনার গান, অ্যালবাম ও ফোল্ডার দেখাতে Ampli-র এই ফোনের অডিও ফাইলে অ্যাক্সেস দরকার।</string>
+    <string name="welcome_3_private">আপনার মিউজিক কখনো ফোনের বাইরে যায় না।</string>
+    <string name="crash_title">Ampli হঠাৎ বন্ধ হয়ে গেছে</string>
+    <string name="crash_body">গতবার Ampli বন্ধ হয়ে গিয়েছিল। ঠিক করার জন্য ত্রুটির রিপোর্ট ইমেলে পাঠাবেন? এতে শুধু প্রযুক্তিগত তথ্য থাকে, কোনো গান বা ব্যক্তিগত ফাইল নয়।</string>
+    <string name="crash_send">রিপোর্ট পাঠান</string>
+    <string name="crash_skip">এখন নয়</string>
+    <string name="update_ready">আপডেট ডাউনলোড হয়েছে</string>
+    <string name="update_restart">রিস্টার্ট</string>
+</resources>

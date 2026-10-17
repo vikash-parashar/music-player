@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="welcome_skip">वगळा</string>
+    <string name="welcome_next">पुढे</string>
+    <string name="welcome_allow">म्युझिक ॲक्सेस द्या</string>
+    <string name="welcome_1_title">तुमचे म्युझिक.\nमासिक फी नाही.</string>
+    <string name="welcome_1_body">अकाउंट किंवा सबस्क्रिप्शनशिवाय फोनमधील प्रत्येक गाणे वाजवा. आवडले तर Pro एकदाच घ्या.</string>
+    <string name="welcome_2_title">तुमच्या ऐकण्याच्या पद्धतीसाठी</string>
+    <string name="welcome_2_eq">10-बँड इक्वलायझर आणि बेस बूस्ट</string>
+    <string name="welcome_2_ringtone">रिंगटोन मेकर</string>
+    <string name="welcome_2_car">मोठ्या बटणांचा कार मोड</string>
+    <string name="welcome_2_share">मित्रांसोबत गाणी शेअर करा</string>
+    <string name="welcome_3_title">तुमचे म्युझिक शोधा</string>
+    <string name="welcome_3_body">तुमची गाणी, अल्बम आणि फोल्डर दाखवण्यासाठी Ampli ला या फोनमधील ऑडिओ फाइल्सचा ॲक्सेस हवा आहे.</string>
+    <string name="welcome_3_private">तुमचे म्युझिक कधीही फोनबाहेर जात नाही.</string>
+    <string name="crash_title">Ampli अचानक बंद झाले</string>
+    <string name="crash_body">मागच्या वेळी Ampli बंद पडले. आम्ही दुरुस्त करू शकू म्हणून त्रुटी अहवाल ईमेलने पाठवायचा? त्यात फक्त तांत्रिक माहिती असते, गाणी किंवा वैयक्तिक फाइल्स नाहीत.</string>
+    <string name="crash_send">अहवाल पाठवा</string>
+    <string name="crash_skip">आत्ता नाही</string>
+    <string name="update_ready">अपडेट डाउनलोड झाले</string>
+    <string name="update_restart">रीस्टार्ट करा</string>
+</resources>
