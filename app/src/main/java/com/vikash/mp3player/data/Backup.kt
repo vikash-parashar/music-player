@@ -68,8 +68,19 @@ object Backup {
     /** Returns the restored listening history, favorites and playlists, with ids matched to this phone's songs. */
     suspend fun restore(context: Context, source: Uri, songs: List<Song>): Restored =
         withContext(Dispatchers.IO) {
-            val text = context.contentResolver.openInputStream(source)?.use { it.readBytes().decodeToString() }
-                ?: error(context.getString(R.string.backup_open_failed))
+            // Backups are small text; a huge file is not an Ampli backup, so stop reading at 20 MB.
+            val text = context.contentResolver.openInputStream(source)?.use { input ->
+                val limit = 20 * 1024 * 1024
+                val bytes = java.io.ByteArrayOutputStream()
+                val chunk = ByteArray(64 * 1024)
+                while (bytes.size() <= limit) {
+                    val n = input.read(chunk)
+                    if (n < 0) break
+                    bytes.write(chunk, 0, n)
+                }
+                if (bytes.size() > limit) error(context.getString(R.string.backup_not_ampli))
+                bytes.toString("UTF-8")
+            } ?: error(context.getString(R.string.backup_open_failed))
             val file = runCatching { json.decodeFromString<BackupFile>(text) }.getOrNull()
                 ?.takeIf { it.app == "Ampli" } ?: error(context.getString(R.string.backup_not_ampli))
 

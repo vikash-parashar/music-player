@@ -68,7 +68,12 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
         if (client.isReady) return
         client.startConnection(object : BillingClientStateListener {
             override fun onBillingSetupFinished(result: BillingResult) {
-                if (result.responseCode != BillingClient.BillingResponseCode.OK) return
+                if (result.responseCode != BillingClient.BillingResponseCode.OK) {
+                    // No Play services, or Play refused: answer a waiting tap instead of leaving "Loading…".
+                    settleWaiting(forPro = true)
+                    settleWaiting(forPro = false)
+                    return
+                }
                 queryProduct()
                 refreshPurchases()
             }
@@ -103,6 +108,11 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
         waitingFor = id
         waitingActivity = WeakReference(activity)
         waitingSince = SystemClock.elapsedRealtime()
+        // If Play never answers within 15 s, say so rather than leaving the tap hanging.
+        val since = waitingSince
+        timeout.postDelayed({
+            if (waitingFor == id && waitingSince == since) settleWaiting(forPro = id == BuildConfig.REMOVE_ADS_PRODUCT_ID, timedOut = true)
+        }, 15_000)
         if (client.isReady) queryProduct() else start()
         return Buy.LOADING
     }
@@ -116,12 +126,14 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
         client.launchBillingFlow(activity, params)
     }
 
+    private val timeout = android.os.Handler(android.os.Looper.getMainLooper())
+
     /**
-     * Called when Play answers a product query (or fails to): opens the sheet for a tap that was
-     * waiting on it, or, when Play has no such product or could not answer, says so instead of
-     * leaving the tap without any reply.
+     * Called when Play answers a product query (or fails to, or takes over 15 s): opens the sheet
+     * for a tap that was waiting on it, or says the product is unavailable instead of leaving the
+     * tap without any reply.
      */
-    private fun settleWaiting(forPro: Boolean) {
+    private fun settleWaiting(forPro: Boolean, timedOut: Boolean = false) {
         val id = waitingFor ?: return
         if ((id == BuildConfig.REMOVE_ADS_PRODUCT_ID) != forPro) return
         val details = if (forPro) productDetails else tipDetails[id]
@@ -129,9 +141,10 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
         waitingFor = null
         waitingActivity = null
         if (activity == null || activity.isFinishing || activity.isDestroyed) return
-        if (SystemClock.elapsedRealtime() - waitingSince > 15_000) return
+        // Too late to pop a payment sheet up out of nowhere; the message still goes out.
+        val late = timedOut || SystemClock.elapsedRealtime() - waitingSince > 15_000
         activity.runOnUiThread {
-            if (details != null) {
+            if (details != null && !late) {
                 launch(activity, details)
             } else {
                 val msg = when {

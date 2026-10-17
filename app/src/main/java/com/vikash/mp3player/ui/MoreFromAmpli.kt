@@ -19,6 +19,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -102,7 +105,8 @@ fun SupportDeveloperCard(tipPrices: Map<String, String>, tipsReceived: Int, onTi
                     color = Color.White.copy(alpha = 0.9f), fontSize = 13.sp, lineHeight = 18.sp,
                     modifier = Modifier.padding(top = 6.dp, bottom = 12.dp, end = 8.dp),
                 )
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                // Same height for all three pills, even when one label wraps to two lines.
+                Row(Modifier.height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     TipPill(stringResource(R.string.tip_pill_small, tipPrices[BuildConfig.TIP_SMALL_ID] ?: "…"), false, Modifier.weight(1f)) { onTip(BuildConfig.TIP_SMALL_ID) }
                     TipPill(stringResource(R.string.tip_pill_large, tipPrices[BuildConfig.TIP_LARGE_ID] ?: "…"), false, Modifier.weight(1f)) { onTip(BuildConfig.TIP_LARGE_ID) }
                     TipPill(stringResource(R.string.tip_pill_xl, tipPrices[BuildConfig.TIP_XL_ID] ?: "…"), true, Modifier.weight(1f)) { onTip(BuildConfig.TIP_XL_ID) }
@@ -115,7 +119,7 @@ fun SupportDeveloperCard(tipPrices: Map<String, String>, tipsReceived: Int, onTi
 @Composable
 private fun TipPill(label: String, strong: Boolean, modifier: Modifier, onClick: () -> Unit) {
     Box(
-        modifier.clip(RoundedCornerShape(20.dp)).background(if (strong) Color.White else Color.White.copy(alpha = 0.18f))
+        modifier.fillMaxHeight().clip(RoundedCornerShape(20.dp)).background(if (strong) Color.White else Color.White.copy(alpha = 0.18f))
             .clickable(onClick = onClick).padding(vertical = 10.dp, horizontal = 6.dp),
         contentAlignment = Alignment.Center,
     ) {
