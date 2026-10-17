@@ -40,6 +40,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.vikash.mp3player.R
@@ -81,6 +82,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     val trialUntil by com.vikash.mp3player.monetization.ProTrial.until.collectAsStateWithLifecycle()
     val tipPrices by vm.billing.tipPrices.collectAsStateWithLifecycle()
     val tipsReceived by vm.billing.tipsReceived.collectAsStateWithLifecycle()
+    val paymentPending by vm.billing.pending.collectAsStateWithLifecycle()
     var showVisualizer by rememberSaveable { mutableStateOf(false) }
     val discAnim by app.prefs.discAnimation.collectAsStateWithLifecycle()
     // The song starts at once; the CD change animation only plays on top.
@@ -129,6 +131,18 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     var showPro by rememberSaveable { mutableStateOf(false) }
     var showHelp by rememberSaveable { mutableStateOf(false) }
     val openPro: () -> Unit = { showPro = true }
+    LaunchedEffect(paymentPending) {
+        if (paymentPending) Toast.makeText(context, context.getString(R.string.billing_pending), Toast.LENGTH_LONG).show()
+    }
+    val onTip: (String) -> Unit = { id ->
+        val activity = context as? android.app.Activity
+        when (if (activity == null) null else vm.billing.purchaseTip(activity, id)) {
+            com.vikash.mp3player.monetization.BillingManager.Buy.OPENED -> Unit
+            com.vikash.mp3player.monetization.BillingManager.Buy.LOADING ->
+                Toast.makeText(context, context.getString(R.string.billing_loading), Toast.LENGTH_SHORT).show()
+            else -> Toast.makeText(context, context.getString(R.string.tip_unavailable), Toast.LENGTH_SHORT).show()
+        }
+    }
     val snackbar = remember { SnackbarHostState() }
 
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
@@ -153,10 +167,12 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
             if (result == SnackbarResult.ActionPerformed) AppUpdates.complete()
         }
     }
-    // Re-scan when returning to the app: picks up finished downloads and newly copied files.
+    // Re-scan when returning to the app if MediaStore changed (finished downloads, newly copied files).
     LifecycleResumeEffect(Unit) {
+        val had = hasPermission
         hasPermission = context.hasAudioPermission()
-        if (hasPermission) vm.loadLibrary()
+        // Full scan when permission was just granted; otherwise only if MediaStore changed.
+        if (hasPermission) { if (had) vm.loadLibraryIfChanged() else vm.loadLibrary() }
         onPauseOrDispose { }
     }
     LaunchedEffect(Unit) { vm.messages.collect { snackbar.showSnackbar(it) } }
@@ -179,6 +195,12 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
             snackbarHost = { SnackbarHost(snackbar) },
             bottomBar = {
                 Column {
+                    // Banner sits above the mini player with clear space, never touching playback buttons
+                    // or the nav bar (AdMob's accidental-click guidance).
+                    if (!adsRemoved && adsReady) {
+                        androidx.compose.material3.HorizontalDivider(color = androidx.compose.material3.MaterialTheme.colorScheme.outlineVariant)
+                        BannerAd(Modifier.padding(top = 8.dp, bottom = 10.dp))
+                    }
                     MiniPlayer(
                         player,
                         onOpen = { showPlayer = true },
@@ -186,7 +208,6 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                         onNext = vm.player::next,
                         onPrevious = vm.player::previous,
                     )
-                    if (!adsRemoved && adsReady) BannerAd()
                     CompactNavBar(
                         tabs = listOf(
                             NavTab(stringResource(R.string.nav_library), Icons.Default.LibraryMusic),
@@ -258,6 +279,9 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                         onLibraryChanged = vm::loadLibrary,
                         onOpenHelp = { showHelp = true },
                         proUnlocked = proUnlocked,
+                        tipPrices = tipPrices,
+                        tipsReceived = tipsReceived,
+                        onTip = onTip,
                     )
                 }
             }
@@ -357,12 +381,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                     )
                 },
                 tipPrices = tipPrices,
-                onTip = { id ->
-                    val activity = context as? android.app.Activity
-                    if (activity == null || !vm.billing.purchaseTip(activity, id)) {
-                        Toast.makeText(context, context.getString(R.string.tip_unavailable), Toast.LENGTH_SHORT).show()
-                    }
-                },
+                onTip = onTip,
             )
         }
 
@@ -431,8 +450,8 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                         title = now?.title ?: song.title,
                         artist = now?.artist ?: song.artist,
                         artworkUri = now?.artworkUri ?: song.artworkUri,
-                        isPlaying = player.isPlaying,
-                        progress = { vm.player.positionMs().toFloat() / player.durationMs.coerceAtLeast(1) },
+                        state = player,
+                        player = vm.player,
                         onDone = { discSong = null },
                     )
                 }
@@ -477,6 +496,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
         ) {
             WelcomeScreen(onAllow = {
                 vm.prefs.setWelcomeDone()
+                com.vikash.mp3player.data.OwnerHooks.onboardingDone(context)
                 welcomeDone = true
                 permissionLauncher.launch(launchPermissions)
             })

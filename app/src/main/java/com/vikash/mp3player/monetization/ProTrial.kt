@@ -23,23 +23,28 @@ object ProTrial {
     /** When the trial ends (epoch ms), 0 if never started. */
     val until: StateFlow<Long> = _until.asStateFlow()
 
+    private const val LENGTH_MS = HOURS * 60L * 60L * 1000L
+
     fun init(context: Context) {
-        _until.value = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getLong(KEY_UNTIL, 0L)
+        val end = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getLong(KEY_UNTIL, 0L)
+        // More than 24 h left means the clock was set back: end the trial instead of stretching it.
+        _until.value = if (end - System.currentTimeMillis() > LENGTH_MS) 0L else end
     }
 
-    fun isActive(now: Long = System.currentTimeMillis()) = now < _until.value
+    fun isActive(now: Long = System.currentTimeMillis()) = now < _until.value && _until.value - now <= LENGTH_MS
 
     fun grant(context: Context, now: Long = System.currentTimeMillis()) {
-        val end = now + HOURS * 60L * 60L * 1000L
+        val end = now + LENGTH_MS
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putLong(KEY_UNTIL, end).apply()
         _until.value = end
+        com.vikash.mp3player.data.OwnerHooks.event("pro_trial")
     }
 
     /** True while a trial runs; flips back to false the moment it ends. */
     @OptIn(ExperimentalCoroutinesApi::class)
     val active: Flow<Boolean> = _until.transformLatest { end ->
         val left = end - System.currentTimeMillis()
-        if (left > 0) {
+        if (left in 1..LENGTH_MS) {
             emit(true)
             delay(left)
         }

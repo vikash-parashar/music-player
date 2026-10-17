@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="buddy_girl">Girl</string>
+    <string name="buddy_boy">Boy</string>
+    <string name="buddy_off">Off</string>
+    <string name="carhub_promo_line">Your car\'s screen, talking in Haryanvi</string>
+    <string name="more_apps_label">More from Ampli</string>
+    <string name="more_apps_get">Get</string>
+    <string name="more_apps_coming_soon">Coming soon</string>
+    <string name="more_apps_carhub">The car that talks Haryanvi</string>
+    <string name="more_apps_naukri">Free sarkari job alerts</string>
+    <string name="support_dev_label">Help the developer grow</string>
+    <string name="support_dev_desc">Ampli is made by one developer in India, with no monthly fees. A small tip pays for new features. It unlocks nothing, it just helps.</string>
+    <string name="support_dev_thanks">Thank you for the chai! Your support keeps Ampli growing.</string>
+    <string name="tip_pill_small">Chai %1$s</string>
+    <string name="tip_pill_large">Samosa %1$s</string>
+    <string name="tip_pill_xl">Thali %1$s</string>
+    <string name="privacy_choices_title">Privacy choices</string>
+    <string name="privacy_choices_desc">Change how ads use your data.</string>
+    <string name="privacy_choices_open">Open privacy choices</string>
+    <string name="billing_pending">Payment pending. Your purchase unlocks as soon as Google confirms it.</string>
+    <string name="usage_counts_title">Share usage statistics</string>
+    <string name="usage_counts_desc">Send simple counts of which features you use, with a random app ID. No name, email or songs.</string>
+</resources>

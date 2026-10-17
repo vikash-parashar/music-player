@@ -23,6 +23,8 @@ import java.net.ServerSocket
 import java.net.Socket
 import java.net.URLDecoder
 import java.util.UUID
+import java.util.concurrent.Executors
+import android.os.StatFs
 import kotlin.concurrent.thread
 
 /**
@@ -35,8 +37,16 @@ import kotlin.concurrent.thread
  */
 class WifiTransferServer(private val context: Context) {
 
-    private val token = UUID.randomUUID().toString().take(6)
+    private val token = UUID.randomUUID().toString().replace("-", "").take(10)
+    // A few uploads at once is plenty; extra connections wait their turn.
+    // Made fresh on each start and shut down on stop, so no threads stay behind after the screen closes.
+    private var pool: java.util.concurrent.ExecutorService? = null
     private var server: ServerSocket? = null
+    @Volatile private var lastActivity = 0L
+    private val active = java.util.concurrent.atomic.AtomicInteger(0)
+
+    /** Milliseconds since the last request, or 0 while a request (an upload) is running. */
+    fun idleMillis(): Long = if (active.get() > 0) 0L else android.os.SystemClock.elapsedRealtime() - lastActivity
 
     private val _received = MutableStateFlow<List<String>>(emptyList())
     /** File names received so far, newest first. */
@@ -49,10 +59,21 @@ class WifiTransferServer(private val context: Context) {
         val socket = ServerSocket().apply { reuseAddress = true }
         runCatching { socket.bind(InetSocketAddress(PORT)) }.onFailure { socket.bind(InetSocketAddress(0)) }
         server = socket
+        val workers = Executors.newFixedThreadPool(4).also { pool = it }
+        lastActivity = android.os.SystemClock.elapsedRealtime()
         thread(name = "ampli-transfer", isDaemon = true) {
             while (!socket.isClosed) {
                 val client = runCatching { socket.accept() }.getOrNull() ?: break
-                thread(isDaemon = true) { client.use { runCatching { handle(it) } } }
+                lastActivity = android.os.SystemClock.elapsedRealtime()
+                runCatching {
+                    workers.execute {
+                        active.incrementAndGet()
+                        try { client.use { runCatching { handle(it) } } } finally {
+                            active.decrementAndGet()
+                            lastActivity = android.os.SystemClock.elapsedRealtime()
+                        }
+                    }
+                }.onFailure { runCatching { client.close() } }
             }
         }
         return "http://$ip:${socket.localPort}/$token"
@@ -61,6 +82,9 @@ class WifiTransferServer(private val context: Context) {
     fun stop() {
         runCatching { server?.close() }
         server = null
+        // Lets an upload that is already running finish, then the threads end.
+        pool?.shutdown()
+        pool = null
     }
 
     // ------------------------------------------------------------------ HTTP
@@ -93,6 +117,10 @@ class WifiTransferServer(private val context: Context) {
                 val length = headers["content-length"]?.toLongOrNull()
                 when {
                     name == null || length == null -> respond(out, 400, "application/json", """{"ok":false,"error":"Missing file"}""")
+                    length > MAX_FILE_BYTES ->
+                        respond(out, 413, "application/json", """{"ok":false,"error":"File is too big (500 MB max)"}""")
+                    length + SPARE_BYTES > freeBytes() ->
+                        respond(out, 507, "application/json", """{"ok":false,"error":"Not enough free space on the phone"}""")
                     name.substringAfterLast('.', "").lowercase() !in AUDIO_EXTENSIONS ->
                         respond(out, 415, "application/json", """{"ok":false,"error":"Only music files can be sent"}""")
                     else -> {
@@ -120,13 +148,17 @@ class WifiTransferServer(private val context: Context) {
 
     private fun respond(out: OutputStream, code: Int, type: String, body: String) {
         val bytes = body.toByteArray()
-        val status = when (code) { 200 -> "OK"; 400 -> "Bad Request"; 404 -> "Not Found"; 415 -> "Unsupported Media Type"; else -> "Error" }
+        val status = when (code) { 200 -> "OK"; 400 -> "Bad Request"; 404 -> "Not Found"; 413 -> "Payload Too Large"; 507 -> "Insufficient Storage"; 415 -> "Unsupported Media Type"; else -> "Error" }
         out.write("HTTP/1.1 $code $status\r\nContent-Type: $type\r\nContent-Length: ${bytes.size}\r\nConnection: close\r\n\r\n".toByteArray())
         out.write(bytes)
         out.flush()
     }
 
     // ------------------------------------------------------------------ saving
+
+    private fun freeBytes(): Long = runCatching {
+        StatFs(Environment.getExternalStorageDirectory().path).availableBytes
+    }.getOrDefault(Long.MAX_VALUE)
 
     /** Streams [length] bytes into Music/Ampli. Returns false (and cleans up) on any failure. */
     private fun save(name: String, input: InputStream, length: Long): Boolean {
@@ -187,6 +219,9 @@ class WifiTransferServer(private val context: Context) {
 
     private companion object {
         const val PORT = 8080
+        const val MAX_FILE_BYTES = 500L * 1024 * 1024
+        /** Room left over so a transfer never fills the phone completely. */
+        const val SPARE_BYTES = 200L * 1024 * 1024
         val AUDIO_EXTENSIONS = setOf("mp3", "m4a", "aac", "flac", "ogg", "opus", "wav", "wma", "amr", "mid", "midi")
     }
 }

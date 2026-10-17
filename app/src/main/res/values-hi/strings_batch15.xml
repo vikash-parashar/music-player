@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="buddy_girl">लड़की</string>
+    <string name="buddy_boy">लड़का</string>
+    <string name="buddy_off">बंद</string>
+    <string name="carhub_promo_line">आपकी कार की स्क्रीन, हरियाणवी में बात करती</string>
+    <string name="more_apps_label">Ampli के और ऐप</string>
+    <string name="more_apps_get">पाएं</string>
+    <string name="more_apps_coming_soon">जल्द आ रहा है</string>
+    <string name="more_apps_carhub">हरियाणवी बोलने वाली कार</string>
+    <string name="more_apps_naukri">फ़्री सरकारी नौकरी अलर्ट</string>
+    <string name="support_dev_label">डेवलपर की मदद करें</string>
+    <string name="support_dev_desc">Ampli भारत के एक डेवलपर ने बनाया है, बिना किसी मासिक फ़ीस के। छोटी सी टिप से नए फ़ीचर बनते हैं। इससे कुछ अनलॉक नहीं होता, बस मदद होती है।</string>
+    <string name="support_dev_thanks">चाय के लिए धन्यवाद! आपके साथ से Ampli आगे बढ़ता है।</string>
+    <string name="tip_pill_small">चाय %1$s</string>
+    <string name="tip_pill_large">समोसा %1$s</string>
+    <string name="tip_pill_xl">थाली %1$s</string>
+    <string name="privacy_choices_title">निजता विकल्प</string>
+    <string name="privacy_choices_desc">बदलें कि विज्ञापन आपके डेटा का कैसे इस्तेमाल करें।</string>
+    <string name="privacy_choices_open">निजता विकल्प खोलें</string>
+    <string name="billing_pending">भुगतान बाकी है। Google की पुष्टि होते ही आपकी खरीद चालू हो जाएगी।</string>
+    <string name="usage_counts_title">इस्तेमाल के आंकड़े शेयर करें</string>
+    <string name="usage_counts_desc">कौन से फ़ीचर इस्तेमाल हुए, इसकी सामान्य गिनती एक रैंडम ऐप ID के साथ भेजें। नाम, ईमेल या गाने नहीं।</string>
+</resources>

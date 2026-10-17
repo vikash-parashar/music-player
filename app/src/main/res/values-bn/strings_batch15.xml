@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="buddy_girl">মেয়ে</string>
+    <string name="buddy_boy">ছেলে</string>
+    <string name="buddy_off">বন্ধ</string>
+    <string name="carhub_promo_line">আপনার গাড়ির স্ক্রিন, হরিয়ানভিতে কথা বলে</string>
+    <string name="more_apps_label">Ampli-র আরও অ্যাপ</string>
+    <string name="more_apps_get">পান</string>
+    <string name="more_apps_coming_soon">শীঘ্রই আসছে</string>
+    <string name="more_apps_carhub">যে গাড়ি হরিয়ানভি বলে</string>
+    <string name="more_apps_naukri">ফ্রি সরকারি চাকরির অ্যালার্ট</string>
+    <string name="support_dev_label">ডেভেলপারকে সাহায্য করুন</string>
+    <string name="support_dev_desc">Ampli ভারতের একজন ডেভেলপার বানিয়েছেন, কোনো মাসিক ফি ছাড়া। ছোট্ট একটি টিপে নতুন ফিচার তৈরি হয়। এতে কিছু আনলক হয় না, শুধু সাহায্য হয়।</string>
+    <string name="support_dev_thanks">চায়ের জন্য ধন্যবাদ! আপনার সাহায্যে Ampli এগিয়ে চলে।</string>
+    <string name="tip_pill_small">চা %1$s</string>
+    <string name="tip_pill_large">সিঙাড়া %1$s</string>
+    <string name="tip_pill_xl">থালি %1$s</string>
+    <string name="privacy_choices_title">গোপনীয়তার পছন্দ</string>
+    <string name="privacy_choices_desc">বিজ্ঞাপন আপনার ডেটা কীভাবে ব্যবহার করবে তা বদলান।</string>
+    <string name="privacy_choices_open">গোপনীয়তার পছন্দ খুলুন</string>
+    <string name="billing_pending">পেমেন্ট বাকি। Google নিশ্চিত করলেই আপনার কেনাকাটা চালু হবে।</string>
+    <string name="usage_counts_title">ব্যবহারের হিসাব পাঠান</string>
+    <string name="usage_counts_desc">কোন ফিচার ব্যবহার করেন তার সাধারণ হিসাব একটি র‍্যান্ডম অ্যাপ ID সহ পাঠান। নাম, ইমেল বা গান নয়।</string>
+</resources>

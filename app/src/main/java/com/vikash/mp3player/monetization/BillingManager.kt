@@ -1,5 +1,7 @@
 package com.vikash.mp3player.monetization
 
+import android.os.SystemClock
+import java.lang.ref.WeakReference
 import android.app.Activity
 import android.content.Context
 import com.android.billingclient.api.AcknowledgePurchaseParams
@@ -46,6 +48,10 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
     val tipPrices: StateFlow<Map<String, String>> = _tipPrices.asStateFlow()
     private var tipDetails: Map<String, ProductDetails> = emptyMap()
 
+    /** True while a payment waits for the bank (common with UPI); the UI says "Payment pending". */
+    private val _pending = MutableStateFlow(false)
+    val pending: StateFlow<Boolean> = _pending.asStateFlow()
+
     /** Goes up by one each time a tip goes through, so the UI can say thank you. */
     private val _tipsReceived = MutableStateFlow(0)
     val tipsReceived: StateFlow<Int> = _tipsReceived.asStateFlow()
@@ -53,6 +59,8 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
     private val client = BillingClient.newBuilder(context)
         .setListener(this)
         .enablePendingPurchases(PendingPurchasesParams.newBuilder().enableOneTimeProducts().build())
+        // Billing 8: reconnects by itself when Play's service drops, so a tap never hits a dead client.
+        .enableAutoServiceReconnection()
         .build()
 
     fun start() {
@@ -70,33 +78,63 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
         })
     }
 
-    /** Opens Google Play's payment sheet. Returns false when Play has no product to sell yet. */
-    fun purchaseRemoveAds(activity: Activity): Boolean {
-        val details = productDetails ?: run { start(); return false }
-        val params = BillingFlowParams.newBuilder()
-            .setProductDetailsParamsList(
-                listOf(BillingFlowParams.ProductDetailsParams.newBuilder().setProductDetails(details).build())
-            )
-            .build()
-        client.launchBillingFlow(activity, params)
-        return true
+    /** What a buy tap did: opened Play's sheet, is waiting for Play's price, or Play has no such product. */
+    enum class Buy { OPENED, LOADING, UNAVAILABLE }
+
+    // A tap that came before Play answered: the sheet opens as soon as the price arrives (within 15 s).
+    private var waitingFor: String? = null
+    private var waitingActivity: WeakReference<Activity>? = null
+    private var waitingSince = 0L
+    private var proQueried = false
+    private var tipsQueried = false
+
+    /** Opens Google Play's payment sheet for Ampli Pro. */
+    fun purchaseRemoveAds(activity: Activity): Buy =
+        buy(activity, BuildConfig.REMOVE_ADS_PRODUCT_ID, productDetails, proQueried)
+
+    /** Opens Play's payment sheet for a "buy the developer a chai" tip. */
+    fun purchaseTip(activity: Activity, productId: String): Buy =
+        buy(activity, productId, tipDetails[productId], tipsQueried)
+
+    private fun buy(activity: Activity, id: String, details: ProductDetails?, queried: Boolean): Buy {
+        if (details != null) { launch(activity, details); return Buy.OPENED }
+        if (queried && client.isReady) return Buy.UNAVAILABLE
+        waitingFor = id
+        waitingActivity = WeakReference(activity)
+        waitingSince = SystemClock.elapsedRealtime()
+        if (client.isReady) queryProduct() else start()
+        return Buy.LOADING
     }
 
-    /** Opens Play's payment sheet for a "buy the developer a chai" tip. False when Play has no such product yet. */
-    fun purchaseTip(activity: Activity, productId: String): Boolean {
-        val details = tipDetails[productId] ?: run { start(); return false }
+    private fun launch(activity: Activity, details: ProductDetails) {
         val params = BillingFlowParams.newBuilder()
             .setProductDetailsParamsList(
                 listOf(BillingFlowParams.ProductDetailsParams.newBuilder().setProductDetails(details).build())
             )
             .build()
         client.launchBillingFlow(activity, params)
-        return true
+    }
+
+    /** Called when Play's product answer arrives: opens the sheet for a tap that was waiting on it. */
+    private fun launchWaiting() {
+        val id = waitingFor ?: return
+        val details = if (id == BuildConfig.REMOVE_ADS_PRODUCT_ID) productDetails else tipDetails[id]
+        val activity = waitingActivity?.get()
+        if (details == null || activity == null) return
+        waitingFor = null
+        waitingActivity = null
+        if (SystemClock.elapsedRealtime() - waitingSince > 15_000 || activity.isFinishing || activity.isDestroyed) return
+        activity.runOnUiThread { launch(activity, details) }
     }
 
     /** "Restore purchase": asks Play again which products this Google account owns. */
     fun restore() {
         if (client.isReady) refreshPurchases() else start()
+    }
+
+    /** Re-checks purchases when the app comes back (a UPI payment may have cleared, failed or been cancelled meanwhile). */
+    fun refresh() {
+        if (client.isReady) refreshPurchases()
     }
 
     override fun onPurchasesUpdated(result: BillingResult, purchases: MutableList<Purchase>?) {
@@ -118,10 +156,13 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
                 )
             )
             .build()
-        client.queryProductDetailsAsync(params) { result, list ->
+        client.queryProductDetailsAsync(params) { result, found ->
             if (result.responseCode != BillingClient.BillingResponseCode.OK) return@queryProductDetailsAsync
+            val list = found.productDetailsList
             productDetails = list.firstOrNull()
+            proQueried = true
             _price.value = productDetails?.oneTimePurchaseOfferDetails?.formattedPrice
+            launchWaiting()
         }
         val tipParams = QueryProductDetailsParams.newBuilder()
             .setProductList(
@@ -130,9 +171,12 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
                 }
             )
             .build()
-        client.queryProductDetailsAsync(tipParams) { result, list ->
+        client.queryProductDetailsAsync(tipParams) { result, found ->
             if (result.responseCode != BillingClient.BillingResponseCode.OK) return@queryProductDetailsAsync
+            val list = found.productDetailsList
             tipDetails = list.associateBy { it.productId }
+            tipsQueried = true
+            launchWaiting()
             _tipPrices.value = list.mapNotNull { d -> d.oneTimePurchaseOfferDetails?.formattedPrice?.let { d.productId to it } }.toMap()
         }
     }
@@ -144,16 +188,27 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
             if (result.responseCode != BillingClient.BillingResponseCode.OK) return@queryPurchasesAsync
             val owned = purchases.any { it.ownsRemoveAds() }
             setAdsRemoved(owned)
+            // Play drops a cancelled or failed UPI payment from this list, so "Payment pending" clears here.
+            _pending.value = purchases.any { it.purchaseState == Purchase.PurchaseState.PENDING }
             purchases.forEach(::handlePurchase)
         }
     }
 
     private fun handlePurchase(purchase: Purchase) {
+        // UPI and cash payments can wait for the bank; nothing unlocks until Play says PURCHASED.
+        if (purchase.purchaseState == Purchase.PurchaseState.PENDING) {
+            _pending.value = true
+            return
+        }
+        if (purchase.purchaseState == Purchase.PurchaseState.PURCHASED) _pending.value = false
         if (purchase.isTip()) {
             // Tips are consumable, so the same tip can be bought again later.
             val params = ConsumeParams.newBuilder().setPurchaseToken(purchase.purchaseToken).build()
             client.consumeAsync(params) { result, _ ->
-                if (result.responseCode == BillingClient.BillingResponseCode.OK) _tipsReceived.value += 1
+                if (result.responseCode == BillingClient.BillingResponseCode.OK) {
+                    _tipsReceived.value += 1
+                    report("tip", purchase)
+                }
             }
             return
         }
@@ -162,7 +217,26 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
         // Purchases not acknowledged within 3 days are refunded automatically by Play.
         if (!purchase.isAcknowledged) {
             val params = AcknowledgePurchaseParams.newBuilder().setPurchaseToken(purchase.purchaseToken).build()
-            client.acknowledgePurchase(params) { }
+            client.acknowledgePurchase(params) { result ->
+                if (result.responseCode == BillingClient.BillingResponseCode.OK) report("pro", purchase)
+            }
+        } else {
+            // Already acknowledged but never reported here: a Play promo code redeemed while the app was
+            // closed (hook spec v1.3, the Car Hub gift), or a purchase made before this build. The server
+            // ignores repeats, so sending one twice is harmless.
+            report("pro", purchase)
+        }
+    }
+
+    /** Tells the Ampli Owner app about a completed purchase (skipped when no server is set). */
+    private fun report(kind: String, purchase: Purchase) {
+        val sku = purchase.products.firstOrNull() ?: return
+        // Every launch re-checks purchases, so remember which tokens were already queued.
+        val sent = prefs.getStringSet(KEY_REPORTED, emptySet()).orEmpty()
+        if (purchase.purchaseToken in sent) return
+        com.vikash.mp3player.data.OwnerHooks.purchase(kind, sku, purchase.purchaseToken)
+        if (com.vikash.mp3player.data.OwnerHooks.enabled) {
+            prefs.edit().putStringSet(KEY_REPORTED, (sent + purchase.purchaseToken).toList().takeLast(50).toSet()).apply()
         }
     }
 
@@ -185,6 +259,7 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
 
     companion object {
         private const val KEY_ADS_REMOVED = "ads_removed"
-        val TIP_IDS = listOf(BuildConfig.TIP_SMALL_ID, BuildConfig.TIP_LARGE_ID)
+        private const val KEY_REPORTED = "reported_tokens"
+        val TIP_IDS = listOf(BuildConfig.TIP_SMALL_ID, BuildConfig.TIP_LARGE_ID, BuildConfig.TIP_XL_ID)
     }
 }

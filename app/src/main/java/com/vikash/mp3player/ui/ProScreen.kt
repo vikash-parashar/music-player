@@ -80,6 +80,7 @@ fun ProScreen(
     tipPrices: Map<String, String> = emptyMap(),
     onTip: (String) -> Unit = {},
 ) {
+    androidx.compose.runtime.LaunchedEffect(Unit) { com.vikash.mp3player.data.OwnerHooks.event("pro_feature_opened") }
     BackHandler(onBack = onClose)
     val price = playPrice ?: stringResource(R.string.pro_display_price)
 

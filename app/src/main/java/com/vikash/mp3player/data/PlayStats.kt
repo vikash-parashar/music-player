@@ -56,6 +56,7 @@ class PlayStats(context: Context) {
     fun record(id: String, title: String, artist: String, heardMs: Long, durationMs: Long) {
         if (id.isEmpty() || heardMs < 1000) return
         val counts = heardMs >= COUNT_AFTER_MS || (durationMs > 0 && heardMs >= durationMs * 9 / 10)
+        if (counts) OwnerHooks.songPlayed()
         val now = System.currentTimeMillis()
         val old = _data.value
         val prev = old.songs[id] ?: SongStat()

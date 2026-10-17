@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="welcome_privacy_title">तुमची प्रायव्हसी</string>
+    <string name="welcome_privacy_body">तुमची गाणी कधीही फोनबाहेर जात नाहीत. Ampli फक्त एक रँडम ॲप ID, खरेदी, ॲप व्हर्जन, फोन मॉडेल, देश, ॲप कुठून मिळाले आणि तुम्ही स्वतः पाठवलेला रिपोर्ट एवढेच पाठवते. याचा वापर सपोर्ट, खरेदी तपासणी, फसवणूक थांबवणे आणि Ampli सुधारण्यासाठी होतो. काहीही विकले जात नाही.</string>
+    <string name="welcome_privacy_contact">प्रश्न किंवा डेटा हटवण्यासाठी: support@ampliapps.in</string>
+    <string name="about_title">ॲपबद्दल</string>
+    <string name="about_version">व्हर्जन %1$s</string>
+    <string name="about_install_id">तुमचा ॲप ID</string>
+    <string name="about_install_id_desc">डेटा पाहण्यासाठी किंवा हटवण्यासाठी support@ampliapps.in वर लिहिताना हा ID सांगा.</string>
+    <string name="about_copy">कॉपी</string>
+    <string name="about_copied">ॲप ID कॉपी झाला</string>
+    <string name="billing_loading">Google Play वरून किंमत आणत आहे…</string>
+    <string name="transfer_idle_title">ट्रान्सफर थांबले</string>
+    <string name="transfer_idle_desc">10 मिनिटे काहीही पाठवले नाही, म्हणून Ampli ने ऐकणे थांबवले. नवीन पत्ता मिळवण्यासाठी पुन्हा प्रयत्न करा वर टॅप करा.</string>
+    <string name="lyrics_folder_desc">गाण्यांच्या नावाच्या .lrc फाइल आहेत? फोल्डर एकदा निवडा, Ampli आपोआप शोधेल.</string>
+    <string name="lyrics_folder_pick">बोलांचे फोल्डर निवडा</string>
+</resources>

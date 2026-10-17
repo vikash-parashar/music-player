@@ -10,6 +10,22 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Repeat
+import androidx.compose.material.icons.filled.RepeatOne
+import androidx.compose.material.icons.filled.Shuffle
+import androidx.compose.material.icons.filled.SkipNext
+import androidx.compose.material.icons.filled.SkipPrevious
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.ui.draw.clip
+import androidx.media3.common.Player
+import com.vikash.mp3player.playback.PlayerConnection
+import com.vikash.mp3player.playback.PlayerUiState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -86,17 +102,20 @@ private const val INTRO_MS = 2600
  * The record player that opens when a song is tapped. The deck rises in, the record drops onto
  * the platter and the arm swings onto it. The song is already playing. The view then stays open,
  * the record turning with the music and following the playing song, until the user swipes left
- * or right (or presses Back). A tap skips the intro.
+ * or right (or presses Back). A tap skips the intro. The song name sits on a tinted strip under the
+ * player, with shuffle, previous, play/pause, next and repeat below it.
  */
 @Composable
 fun DiscChangeOverlay(
     title: String,
     artist: String,
     artworkUri: android.net.Uri?,
-    isPlaying: Boolean,
-    progress: () -> Float,
+    state: PlayerUiState,
+    player: PlayerConnection,
     onDone: () -> Unit,
 ) {
+    val isPlaying = state.isPlaying
+    val progress = { player.positionMs().toFloat() / state.durationMs.coerceAtLeast(1) }
     val done by rememberUpdatedState(onDone)
     val intro = remember { Animatable(0f) }
     LaunchedEffect(Unit) { intro.animateTo(1f, tween(INTRO_MS, easing = LinearEasing)) }
@@ -106,6 +125,9 @@ fun DiscChangeOverlay(
     val swipe = remember { Animatable(0f) }
     val threshold = with(LocalDensity.current) { 96.dp.toPx() }
     val fg = MaterialTheme.colorScheme.onBackground
+    // Fixed Ampli rose for the song strip, so wallpaper colours don't change it.
+    val dark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val stripInk = if (dark) Color.White else Color(0xFF4C0519)
 
     Box(
         Modifier
@@ -144,30 +166,55 @@ fun DiscChangeOverlay(
         ) {
             RecordPlayerView(
                 artworkUri = artworkUri, title = title, artist = artist,
-                isPlaying = isPlaying, progress = progress, intro = { intro.value },
-                modifier = Modifier.fillMaxWidth().weight(1f),
+                isPlaying = isPlaying, progress = progress, intro = { intro.value }, alignBottom = true,
+                modifier = Modifier.fillMaxWidth().weight(1f).padding(bottom = 12.dp),
             )
-            Spacer(Modifier.height(16.dp))
+            // Song name right under the record player, on a tinted strip.
             Column(
-                Modifier.alpha(easeOut(seg(intro.value, 0.6f, 0.9f))),
+                Modifier
+                    .alpha(easeOut(seg(intro.value, 0.5f, 0.85f)))
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(18.dp))
+                    .background(if (dark) Color(0xFFBE123C) else Color(0xFFFFE4E6))
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
-                    title, color = fg, fontSize = 20.sp, fontWeight = FontWeight.SemiBold,
+                    title, color = stripInk, fontSize = 18.sp, fontWeight = FontWeight.SemiBold,
                     maxLines = 1, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth(),
                 )
                 Text(
-                    artist, color = fg.copy(alpha = 0.6f), fontSize = 14.sp,
+                    artist, color = stripInk.copy(alpha = 0.75f), fontSize = 14.sp,
                     maxLines = 1, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
-            Text(
-                stringResource(if (intro.value < 1f) R.string.disc_tap_skip else R.string.disc_swipe_back),
-                color = fg.copy(alpha = 0.4f), fontSize = 12.sp,
-                modifier = Modifier.padding(top = 12.dp),
-            )
+            Row(
+                Modifier.fillMaxWidth().padding(top = 16.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                val active = MaterialTheme.colorScheme.primary
+                val inactive = MaterialTheme.colorScheme.onSurfaceVariant
+                IconButton(onClick = player::toggleShuffle) {
+                    Icon(Icons.Default.Shuffle, stringResource(R.string.player_shuffle), tint = if (state.shuffle) active else inactive)
+                }
+                IconButton(onClick = { player.previous() }) {
+                    Icon(Icons.Default.SkipPrevious, stringResource(R.string.common_previous), Modifier.size(36.dp), tint = fg)
+                }
+                GradientPlayButton(isPlaying, 68.dp, player::togglePlay)
+                IconButton(onClick = { player.next() }) {
+                    Icon(Icons.Default.SkipNext, stringResource(R.string.common_next), Modifier.size(36.dp), tint = fg)
+                }
+                IconButton(onClick = player::cycleRepeat) {
+                    Icon(
+                        if (state.repeatMode == Player.REPEAT_MODE_ONE) Icons.Default.RepeatOne else Icons.Default.Repeat,
+                        stringResource(R.string.player_repeat),
+                        tint = if (state.repeatMode == Player.REPEAT_MODE_OFF) inactive else active,
+                    )
+                }
+            }
         }
     }
 }
@@ -187,6 +234,7 @@ fun RecordPlayerView(
     progress: () -> Float,
     modifier: Modifier = Modifier,
     intro: () -> Float = { 1f },
+    alignBottom: Boolean = false,
 ) {
     val spin = LocalDiscAngle.current
     val art = rememberStickerPainter(artworkUri, 640)
@@ -199,7 +247,7 @@ fun RecordPlayerView(
         val w = min(size.width * 0.92f, size.height / DECK_RATIO)
         val rise = easeOut(seg(t, 0f, 0.25f))
         val x0 = (size.width - w) / 2f
-        val y0 = (size.height - w * DECK_RATIO) / 2f + (1f - rise) * w * 0.12f
+        val y0 = (if (alignBottom) size.height - w * DECK_RATIO else (size.height - w * DECK_RATIO) / 2f) + (1f - rise) * w * 0.12f
         drawDeck(
             x0, y0, w, colors, spin.value, arm.value, title, artist, art, logo, text,
             playing = isPlaying, drop = seg(t, 0.2f, 0.55f), alpha = rise,

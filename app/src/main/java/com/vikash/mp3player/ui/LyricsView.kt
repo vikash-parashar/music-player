@@ -75,6 +75,10 @@ fun LyricsView(songId: String, positionMs: Long, onSeek: (Long) -> Unit, modifie
     val pick = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri != null) scope.launch { saveText(LyricsRepository.readText(context, uri)) }
     }
+    val pickFolder = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { tree ->
+        if (tree != null) { LyricsRepository.setLyricsFolder(context, tree); reload++ }
+    }
+    val folderMissing = remember(reload) { LyricsRepository.folderNeeded && LyricsRepository.lyricsFolder(context) == null }
 
     Box(modifier, contentAlignment = Alignment.Center) {
         val current = lyrics
@@ -94,6 +98,16 @@ fun LyricsView(songId: String, positionMs: Long, onSeek: (Long) -> Unit, modifie
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Button(onClick = { pick.launch(arrayOf("*/*")) }) { Text(stringResource(R.string.lyrics_choose_file)) }
                     OutlinedButton(onClick = { pasting = true }) { Text(stringResource(R.string.lyrics_paste)) }
+                }
+                if (folderMissing) {
+                    // Android 13+ can't read .lrc files beside songs without this one-time pick.
+                    Text(
+                        stringResource(R.string.lyrics_folder_desc),
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    TextButton(onClick = { pickFolder.launch(null) }) { Text(stringResource(R.string.lyrics_folder_pick)) }
                 }
                 message?.let { Text(it, color = MaterialTheme.colorScheme.error) }
             }

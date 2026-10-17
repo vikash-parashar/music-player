@@ -11,6 +11,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.vikash.mp3player.monetization.Ads
+import com.vikash.mp3player.monetization.BillingManager
 import com.vikash.mp3player.play.AppUpdates
 import com.vikash.mp3player.play.PlayReview
 import com.vikash.mp3player.ui.MainViewModel
@@ -58,8 +59,10 @@ class MainActivity : ComponentActivity() {
             // Pro looks fall back to the brand theme if Pro (or the trial) ends.
             Mp3PlayerTheme(themeMode, amoledBlack = pro && amoled, wallpaperColors = pro && wallpaper) {
                 MusicPlayerApp(vm, onRemoveAds = {
-                    if (!billing.purchaseRemoveAds(this)) {
-                        Toast.makeText(
+                    when (billing.purchaseRemoveAds(this)) {
+                        BillingManager.Buy.OPENED -> Unit
+                        BillingManager.Buy.LOADING -> Toast.makeText(this, R.string.billing_loading, Toast.LENGTH_SHORT).show()
+                        BillingManager.Buy.UNAVAILABLE -> Toast.makeText(
                             this,
                             getString(if (BuildConfig.DEBUG) R.string.pro_purchase_test_build else R.string.pro_purchase_failed),
                             Toast.LENGTH_LONG,
@@ -73,5 +76,6 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         AppUpdates.refresh()
+        (application as MusicApp).billing.refresh()
     }
 }

@@ -55,6 +55,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -92,12 +93,17 @@ fun SettingsScreen(
     onLibraryChanged: () -> Unit,
     onOpenHelp: () -> Unit,
     proUnlocked: Boolean = adsRemoved,
+    tipPrices: Map<String, String> = emptyMap(),
+    tipsReceived: Int = 0,
+    onTip: (String) -> Unit = {},
 ) {
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         ProCard(adsRemoved, price, onRemoveAds)
+        SupportDeveloperCard(tipPrices, tipsReceived, onTip)
+        MoreFromAmpliCard()
         if (BuildConfig.DEBUG) TestProCard(adsRemoved, onTestPro)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) LanguageCard()
         AppearanceCard(themeMode, onThemeMode)
@@ -119,6 +125,9 @@ fun SettingsScreen(
         BackupCard(onBackup, onRestore)
         InviteCard()
         HelpCard(onOpenHelp)
+        PrivacyChoicesCard()
+        UsageCountsCard()
+        AboutCard()
     }
 }
 
@@ -429,6 +438,73 @@ private fun HelpCard(onOpen: () -> Unit) {
             Text(stringResource(R.string.help_card_desc), color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(10.dp))
             Button(onClick = onOpen) { Text(stringResource(R.string.help_open)) }
+        }
+    }
+}
+
+/** Lets people stop the feature-use counts sent to Ampli (only when the Ampli server is set up). */
+@Composable
+private fun UsageCountsCard() {
+    if (!com.vikash.mp3player.data.OwnerHooks.enabled) return
+    val context = LocalContext.current
+    var on by remember { mutableStateOf(com.vikash.mp3player.data.OwnerHooks.usageOn(context)) }
+    Card(Modifier.fillMaxWidth()) {
+        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text(stringResource(R.string.usage_counts_title), style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.usage_counts_desc), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            Spacer(Modifier.width(12.dp))
+            Switch(checked = on, onCheckedChange = { on = it; com.vikash.mp3player.data.OwnerHooks.setUsageOn(context, it) })
+        }
+    }
+}
+
+/** Version and the random app ID, so people can ask support to show or delete their data. */
+@Composable
+private fun AboutCard() {
+    val context = LocalContext.current
+    val id = remember { com.vikash.mp3player.data.OwnerHooks.installId(context) }
+    val copied = stringResource(R.string.about_copied)
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(16.dp)) {
+            Text(stringResource(R.string.about_title), style = MaterialTheme.typography.titleMedium)
+            Text(
+                stringResource(R.string.about_version, "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})"),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(12.dp))
+            Text(stringResource(R.string.about_install_id), style = MaterialTheme.typography.labelLarge)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    id, modifier = Modifier.weight(1f), fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+                TextButton(onClick = {
+                    val cm = context.getSystemService(android.content.ClipboardManager::class.java)
+                    cm?.setPrimaryClip(android.content.ClipData.newPlainText("Ampli app ID", id))
+                    android.widget.Toast.makeText(context, copied, android.widget.Toast.LENGTH_SHORT).show()
+                }) { Text(stringResource(R.string.about_copy)) }
+            }
+            Text(stringResource(R.string.about_install_id_desc), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+        }
+    }
+}
+
+/** Shown only where the law requires it: lets people change their ad consent later. */
+@Composable
+private fun PrivacyChoicesCard() {
+    val required by com.vikash.mp3player.monetization.Ads.privacyOptionsRequired.collectAsState()
+    if (!required) return
+    val activity = LocalContext.current as? android.app.Activity ?: return
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(16.dp)) {
+            Text(stringResource(R.string.privacy_choices_title), style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.privacy_choices_desc), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Spacer(Modifier.height(10.dp))
+            OutlinedButton(onClick = { com.vikash.mp3player.monetization.Ads.showPrivacyOptions(activity) }) {
+                Text(stringResource(R.string.privacy_choices_open))
+            }
         }
     }
 }

@@ -72,7 +72,7 @@ import com.vikash.mp3player.ui.theme.Ampli
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 
-private const val PAGES = 3
+private const val PAGES = 4
 
 /**
  * First-run welcome: three swipeable pages (what Ampli is, what it can do, why it needs music
@@ -140,6 +140,7 @@ fun WelcomeScreen(onAllow: () -> Unit) {
                     when (page) {
                         0 -> IntroPage()
                         1 -> FeaturesPage()
+                        2 -> PrivacyPage()
                         else -> PermissionPage()
                     }
                 }
@@ -215,6 +216,28 @@ private fun FeaturesPage() {
         FeatureRow(Icons.Default.NotificationsActive, stringResource(R.string.welcome_2_ringtone))
         FeatureRow(Icons.Default.DirectionsCar, stringResource(R.string.welcome_2_car))
         FeatureRow(Icons.Default.Share, stringResource(R.string.welcome_2_share))
+    }
+}
+
+/** What Ampli sends and why (Owner hook spec v1.1 §6), shown once before the permission ask. */
+@Composable
+private fun PrivacyPage() {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Box(
+            Modifier.size(112.dp).clip(CircleShape).background(Ampli.Rose.copy(alpha = 0.18f)),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(Icons.Default.Shield, null, tint = Ampli.Blush, modifier = Modifier.size(56.dp))
+        }
+        Spacer(Modifier.height(32.dp))
+        Title(stringResource(R.string.welcome_privacy_title))
+        Spacer(Modifier.height(14.dp))
+        Body(stringResource(R.string.welcome_privacy_body))
+        Spacer(Modifier.height(20.dp))
+        Text(
+            stringResource(R.string.welcome_privacy_contact), color = Color.White.copy(alpha = 0.6f),
+            fontSize = 13.sp, textAlign = TextAlign.Center,
+        )
     }
 }
 

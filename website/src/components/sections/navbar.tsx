@@ -29,12 +29,12 @@ export function Navbar() {
             {site.name}
           </Link>
 
-          <ul className="hidden items-center gap-1 md:flex">
+          <ul className="hidden items-center gap-0.5 lg:flex">
             {nav.map((n) => (
               <li key={n.href}>
                 <Link
                   href={n.href}
-                  className="relative rounded-full px-4 py-2 text-sm text-ink-muted transition-colors hover:bg-white/5 hover:text-ink"
+                  className="relative rounded-full px-3.5 py-2 text-sm text-ink-muted transition-colors hover:bg-white/5 hover:text-ink"
                 >
                   {n.label}
                 </Link>
@@ -44,17 +44,17 @@ export function Navbar() {
 
           <div className="flex items-center gap-2">
             <a
-              href={site.playUrl}
-              className="hidden rounded-full bg-brand px-4 py-2 text-sm font-semibold text-white transition-transform duration-200 hover:scale-105 sm:inline-flex"
+              href="/#support"
+              className="hidden rounded-full bg-brand px-4 py-2 text-sm font-semibold text-white transition-transform duration-200 hover:scale-105 lg:inline-flex"
             >
-              Get the app
+              Support Ampli
             </a>
             <button
               type="button"
               aria-label={open ? "Close menu" : "Open menu"}
               aria-expanded={open}
               onClick={() => setOpen((v) => !v)}
-              className="grid size-10 place-items-center rounded-full text-ink hover:bg-white/5 md:hidden"
+              className="grid size-10 place-items-center rounded-full text-ink hover:bg-white/5 lg:hidden"
             >
               {open ? <X size={20} /> : <Menu size={20} />}
             </button>
@@ -68,9 +68,9 @@ export function Navbar() {
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.25, ease: "easeOut" }}
-              className="container overflow-hidden md:hidden"
+              className="container overflow-hidden lg:hidden"
             >
-              {[...nav, { href: site.playUrl, label: "Get the app" }].map((n, i) => (
+              {[...nav, { href: "/privacy/", label: "Privacy" }].map((n, i) => (
                 <m.li key={n.href} initial={{ x: -8, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.04 * i }}>
                   <Link href={n.href} onClick={() => setOpen(false)} className="block border-b border-line py-3.5 text-ink-muted hover:text-ink">
                     {n.label}

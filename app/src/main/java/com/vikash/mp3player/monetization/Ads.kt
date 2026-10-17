@@ -40,6 +40,7 @@ object Ads {
             ConsentRequestParameters.Builder().build(),
             {
                 UserMessagingPlatform.loadAndShowConsentFormIfRequired(activity) {
+                    refreshPrivacy(activity)
                     if (consent.canRequestAds()) init(activity)
                 }
             },
@@ -69,6 +70,26 @@ object Ads {
                 override fun onAdFailedToLoad(error: LoadAdError) = onUnavailable()
             },
         )
+    }
+
+    private val _privacyRequired = MutableStateFlow(false)
+    /** True where the law requires a way to change ad consent later (EU/UK, some US states). */
+    val privacyOptionsRequired: StateFlow<Boolean> = _privacyRequired.asStateFlow()
+
+    /** Same as [privacyOptionsRequired], read from UMP's saved answer so it also works before any screen opens. */
+    fun privacyRequired(context: android.content.Context): Boolean = _privacyRequired.value || runCatching {
+        UserMessagingPlatform.getConsentInformation(context).privacyOptionsRequirementStatus ==
+            com.google.android.ump.ConsentInformation.PrivacyOptionsRequirementStatus.REQUIRED
+    }.getOrDefault(false)
+
+    private fun refreshPrivacy(activity: Activity) {
+        _privacyRequired.value = UserMessagingPlatform.getConsentInformation(activity).privacyOptionsRequirementStatus ==
+            com.google.android.ump.ConsentInformation.PrivacyOptionsRequirementStatus.REQUIRED
+    }
+
+    /** Settings > Privacy choices: Google's form to change ad consent. */
+    fun showPrivacyOptions(activity: Activity) {
+        UserMessagingPlatform.showPrivacyOptionsForm(activity) { refreshPrivacy(activity) }
     }
 
     private fun init(activity: Activity) {

@@ -4,6 +4,7 @@ import android.content.ContentUris
 import android.content.Context
 import android.net.Uri
 import android.os.Build
+import android.provider.DocumentsContract
 import android.provider.MediaStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -17,8 +18,9 @@ data class Lyrics(val lines: List<LyricLine>, val fromUser: Boolean) {
 }
 
 /**
- * Lyrics come only from the user: a .lrc or text file they pick or paste, or lyrics already
- * embedded in their MP3. Ampli never downloads lyrics (song lyrics are copyrighted).
+ * Lyrics come only from the user: a .lrc or text file they pick or paste, a .lrc with the same
+ * name as the song (next to it, or in a lyrics folder they chose), or lyrics already embedded in
+ * their MP3. Ampli never downloads lyrics (song lyrics are copyrighted).
  */
 object LyricsRepository {
 
@@ -31,6 +33,7 @@ object LyricsRepository {
             parse(f.readText()).takeIf { it.isNotEmpty() }?.let { return@withContext Lyrics(it, fromUser = true) }
         }
         val uri = localUri(songId) ?: return@withContext null
+        sidecar(context, uri)?.let { parse(it) }?.takeIf { it.isNotEmpty() }?.let { return@withContext Lyrics(it, fromUser = false) }
         val embedded = runCatching {
             context.contentResolver.openInputStream(uri)?.use { Id3Editor.readLyrics(it.buffered()) }
         }.getOrNull() ?: return@withContext null
@@ -80,6 +83,102 @@ object LyricsRepository {
         }
         return if (timed.isNotEmpty()) timed.sortedBy { it.timeMs } else plain
     }
+
+    // ------------------------------------------------------------------ .lrc next to the song
+
+    private const val PREFS = "lyrics"
+    private const val KEY_TREE = "folder_tree"
+    private const val MAX_INDEX = 5000
+
+    /** Lowercase "song name.lrc" -> document uri, for the chosen lyrics folder. Built once, on first use. */
+    @Volatile private var index: Map<String, Uri>? = null
+    @Volatile private var indexAt = 0L
+
+    /**
+     * Android 13+ lets a music app read songs but not the .lrc files beside them, so there the user
+     * picks a lyrics folder once (usually their Music folder) and Ampli looks inside it by name.
+     */
+    val folderNeeded: Boolean get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+
+    fun lyricsFolder(context: Context): Uri? =
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(KEY_TREE, null)?.let(Uri::parse)
+            ?.takeIf { tree -> context.contentResolver.persistedUriPermissions.any { it.uri == tree && it.isReadPermission } }
+
+    fun setLyricsFolder(context: Context, tree: Uri) {
+        val resolver = context.contentResolver
+        runCatching { resolver.takePersistableUriPermission(tree, android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION) }
+        // Only one folder is kept; let go of the old one.
+        lyricsFolder(context)?.takeIf { it != tree }?.let { old ->
+            runCatching { resolver.releasePersistableUriPermission(old, android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION) }
+        }
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putString(KEY_TREE, tree.toString()).apply()
+        index = null
+        indexAt = 0L
+    }
+
+    /** The text of "<song file name>.lrc", from beside the song (Android 12 and older) or from the lyrics folder. */
+    private fun sidecar(context: Context, song: Uri): String? {
+        val (path, displayName) = runCatching {
+            context.contentResolver.query(song, arrayOf(MediaStore.Audio.Media.DATA, MediaStore.Audio.Media.DISPLAY_NAME), null, null, null)?.use { c ->
+                if (c.moveToFirst()) c.getString(0) to c.getString(1) else null
+            }
+        }.getOrNull() ?: (null to null)
+        val name = displayName ?: path?.substringAfterLast('/') ?: return null
+        val base = name.substringBeforeLast('.', name)
+
+        if (path != null) {
+            val dir = File(path).parentFile
+            for (ext in listOf(".lrc", ".LRC")) {
+                val f = File(dir, base + ext)
+                val text = runCatching { f.takeIf { it.canRead() && it.length() in 1 until 512 * 1024 }?.readBytes()?.let(::decode) }.getOrNull()
+                if (text != null) return text
+            }
+        }
+        val tree = lyricsFolder(context) ?: return null
+        val key = "${base.lowercase()}.lrc"
+        var found = index?.get(key)
+        // Not found: the user may have added files since; look again, at most once a minute.
+        if (found == null && System.currentTimeMillis() - indexAt > 60_000) {
+            index = buildIndex(context, tree)
+            indexAt = System.currentTimeMillis()
+            found = index?.get(key)
+        }
+        val doc = found ?: return null
+        return runCatching {
+            context.contentResolver.openInputStream(doc)?.use { input ->
+                input.readBytes().takeIf { it.size < 512 * 1024 }?.let(::decode)
+            }
+        }.getOrNull()
+    }
+
+    /** Walks the lyrics folder (and its subfolders) once, keeping the .lrc files by name. */
+    private fun buildIndex(context: Context, tree: Uri): Map<String, Uri> {
+        val out = HashMap<String, Uri>()
+        val resolver = context.contentResolver
+        val pending = ArrayDeque<String>().apply { add(DocumentsContract.getTreeDocumentId(tree)) }
+        var seen = 0
+        val cols = arrayOf(DocumentsContract.Document.COLUMN_DOCUMENT_ID, DocumentsContract.Document.COLUMN_DISPLAY_NAME, DocumentsContract.Document.COLUMN_MIME_TYPE)
+        while (pending.isNotEmpty() && seen < MAX_INDEX) {
+            val parent = pending.removeFirst()
+            runCatching {
+                resolver.query(DocumentsContract.buildChildDocumentsUriUsingTree(tree, parent), cols, null, null, null)?.use { c ->
+                    while (c.moveToNext() && seen < MAX_INDEX) {
+                        seen++
+                        val id = c.getString(0) ?: continue
+                        val name = c.getString(1) ?: continue
+                        if (c.getString(2) == DocumentsContract.Document.MIME_TYPE_DIR) {
+                            if (!name.startsWith(".")) pending.add(id)
+                        } else if (name.endsWith(".lrc", ignoreCase = true)) {
+                            out.putIfAbsent(name.lowercase(), DocumentsContract.buildDocumentUriUsingTree(tree, id))
+                        }
+                    }
+                }
+            }
+        }
+        return out
+    }
+
+    private fun decode(bytes: ByteArray) = bytes.decodeToString().removePrefix("\uFEFF")
 
     private fun userFile(context: Context, songId: String) =
         File(File(context.filesDir, "lyrics"), songId.replace(Regex("[^A-Za-z0-9._-]"), "_") + ".lrc")
