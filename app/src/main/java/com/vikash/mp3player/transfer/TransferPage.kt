@@ -52,6 +52,8 @@ internal fun page(token: String): String = """
   ['dragleave','drop'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove('over'); }));
   drop.addEventListener('drop', e => add(e.dataTransfer.files));
 
+  const AUDIO = [${WifiTransferServer.AUDIO_EXTENSIONS.joinToString(",") { "'$it'" }}];
+  const MAX_BYTES = ${WifiTransferServer.MAX_FILE_BYTES};
   function add(files) {
     for (const f of files) {
       const li = document.createElement('li');
@@ -68,6 +70,10 @@ internal fun page(token: String): String = """
     busy = true;
     const { f, li } = queue.shift();
     const st = li.querySelector('.st'), bar = li.querySelector('.bar > div');
+    // Check before sending: the phone refuses these without reading them, which browsers report as a lost connection.
+    const ext = (f.name.split('.').pop() || '').toLowerCase();
+    const bad = !AUDIO.includes(ext) ? 'Only music files can be sent' : f.size > MAX_BYTES ? 'File is too big (500 MB max)' : null;
+    if (bad) { st.textContent = bad; st.className = 'st err'; busy = false; next(); return; }
     const xhr = new XMLHttpRequest();
     xhr.open('PUT', '/$token/upload?name=' + encodeURIComponent(f.name));
     xhr.upload.onprogress = e => { if (e.lengthComputable) { const p = Math.round(e.loaded * 100 / e.total); bar.style.width = p + '%'; st.textContent = p + '%'; } };

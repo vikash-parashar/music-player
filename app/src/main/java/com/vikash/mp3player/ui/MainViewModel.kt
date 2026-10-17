@@ -201,11 +201,21 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         runCatching { app.contentResolver.registerContentObserver(android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, true, it) }
     }
 
+    // Only the newest scan may publish its list, so an older, slower scan can't bring back a deleted song.
+    private var loadJob: kotlinx.coroutines.Job? = null
+
     fun loadLibrary() {
         libraryDirty = false
-        viewModelScope.launch {
+        loadJob?.cancel()
+        loadJob = viewModelScope.launch {
             if (_library.value.songs.isEmpty()) _library.update { it.copy(loading = true) }
-            val songs = runCatching { musicApp.localMusic.loadSongs() }.getOrDefault(emptyList())
+            val songs = try {
+                musicApp.localMusic.loadSongs()
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                emptyList()
+            }
             // Same list as before: keep the old one so the big lists don't re-sort and redraw.
             if (songs != _library.value.songs || _library.value.loading) _library.value = LibraryState(loading = false, songs = songs)
         }
