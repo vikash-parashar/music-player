@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="song_share">शेयर करें</string>
+    <string name="library_share_selected">चुने गए गाने शेयर करें</string>
+    <string name="share_chooser_title">गाना शेयर करें</string>
+    <string name="share_no_files">ऑनलाइन गाने फ़ाइल के रूप में शेयर नहीं हो सकते</string>
+    <string name="share_no_app">शेयर करने के लिए कोई ऐप नहीं मिला</string>
+</resources>

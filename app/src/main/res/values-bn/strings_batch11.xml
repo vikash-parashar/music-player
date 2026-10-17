@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="song_share">শেয়ার</string>
+    <string name="library_share_selected">বাছাই করা গান শেয়ার করুন</string>
+    <string name="share_chooser_title">গান শেয়ার করুন</string>
+    <string name="share_no_files">অনলাইন গান ফাইল হিসেবে শেয়ার করা যায় না</string>
+    <string name="share_no_app">শেয়ার করার কোনো অ্যাপ নেই</string>
+</resources>
