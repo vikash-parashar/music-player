@@ -4,19 +4,19 @@ import { BlurFade } from "@/components/ui/blur-fade";
 import { SectionHeading } from "@/components/sections/section-heading";
 
 const stats = [
-  { value: 0, prefix: "₹", suffix: "", label: "monthly fee, ever" },
-  { value: 199, prefix: "₹", suffix: "", label: "once for Ampli Pro" },
-  { value: 6, prefix: "", suffix: "", label: "Indian languages" },
-  { value: 100, prefix: "", suffix: "%", label: "offline playback" },
+  { value: 0, prefix: "₹", suffix: "", label: "monthly fee, in any app" },
+  { value: 3, prefix: "", suffix: "", label: "apps for everyday India" },
+  { value: 263, prefix: "", suffix: "", label: "Haryanvi lines in Car Hub" },
+  { value: 100, prefix: "", suffix: "%", label: "offline music and voice" },
 ];
 
-const words = ["संगीत", "இசை", "సంగీతం", "সঙ্গীত", "संगीत", "Music", "Bollywood", "Punjabi", "Devotional", "Ghazal", "Indie", "Lo‑fi", "Haryanvi", "Classical"];
+const words = ["राम राम", "संगीत", "सरकारी नौकरी", "இசை", "సంగీతం", "সঙ্গীত", "Haryanvi", "Bollywood", "Punjabi", "SSC", "Railway", "FASTag", "Hey Ampli", "Devotional"];
 
 export function SocialProof() {
   return (
     <section className="border-y border-line bg-night-900/60 py-24">
       <div className="container">
-        <SectionHeading eyebrow="Built for India" title="Made for the way India listens" sub="No subscriptions, no data packs burned on streaming. Just your songs, in your language." />
+        <SectionHeading eyebrow="Built for India" title="Made for the way India lives" sub="No subscriptions, no English-only screens. Apps that speak your language and respect your money." />
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           {stats.map((s, i) => (
             <BlurFade key={s.label} delay={i * 0.06}>

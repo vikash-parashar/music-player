@@ -21,13 +21,27 @@ export function PhoneMockup() {
           </div>
           <div className="px-5 pb-6 pt-5">
             <p className="text-center text-[11px] uppercase tracking-[0.18em] text-ink-faint">Now playing</p>
-            <m.div
-              animate={reduce ? undefined : { scale: [1, 1.02, 1] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-              className="mx-auto mt-4 aspect-square w-full overflow-hidden rounded-3xl bg-brand"
-            >
-              <img src="/img/ampli-mp3-icon-384.webp" alt="" width={384} height={384} className="size-full object-cover" />
-            </m.div>
+            {/* The app's record player: a black record with the song poster as its label. */}
+            <div className="relative mx-auto mt-4 aspect-square w-full rounded-3xl bg-[#1C1820] p-3">
+              <m.div
+                animate={reduce ? undefined : { rotate: 360 }}
+                transition={{ duration: 2.4, repeat: Infinity, ease: "linear" }}
+                className="relative size-full rounded-full bg-[repeating-radial-gradient(circle,#121014_0_2px,#1a171d_2px_4px)] shadow-[inset_0_0_0_1px_rgba(225,29,72,.5)]"
+              >
+                <img
+                  src="/img/ampli-mp3-icon-384.webp"
+                  alt=""
+                  width={384}
+                  height={384}
+                  className="absolute left-1/2 top-1/2 size-[38%] -translate-x-1/2 -translate-y-1/2 rounded-full object-cover"
+                />
+                <span className="absolute left-1/2 top-1/2 size-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#E4E1E6]" />
+              </m.div>
+              <div className="pointer-events-none absolute inset-3 rounded-full bg-[conic-gradient(from_20deg,transparent_0deg,rgba(255,255,255,.12)_25deg,transparent_55deg,transparent_180deg,rgba(255,255,255,.08)_205deg,transparent_235deg)]" />
+              <span className="absolute bottom-6 right-5 h-1.5 w-[44%] origin-right -rotate-[28deg] rounded-full bg-[#D6D1DA]">
+                <span className="absolute -left-1 -top-1 h-3.5 w-5 rounded bg-rose-600" />
+              </span>
+            </div>
             <div className="mt-5 flex items-center justify-between">
               <div>
                 <p className="font-semibold">Tum Hi Ho</p>

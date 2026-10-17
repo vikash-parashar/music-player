@@ -431,8 +431,8 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                         title = now?.title ?: song.title,
                         artist = now?.artist ?: song.artist,
                         artworkUri = now?.artworkUri ?: song.artworkUri,
-                        isPlaying = player.isPlaying,
-                        progress = { vm.player.positionMs().toFloat() / player.durationMs.coerceAtLeast(1) },
+                        state = player,
+                        player = vm.player,
                         onDone = { discSong = null },
                     )
                 }
