@@ -65,7 +65,7 @@ object OwnerHooks {
 
     val enabled: Boolean get() = base.isNotEmpty()
 
-    private fun prefs(context: Context): SharedPreferences {
+    private fun store(context: Context): SharedPreferences {
         if (!::prefs.isInitialized) {
             app = context.applicationContext
             prefs = app.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
@@ -83,7 +83,7 @@ object OwnerHooks {
 
     /** The random install id (UUID v4, lowercase). Help & feedback and Settings > About use the same one. */
     fun installId(context: Context): String {
-        val p = prefs(context)
+        val p = store(context)
         return p.getString(KEY_INSTALL, null) ?: UUID.randomUUID().toString().also { p.edit().putString(KEY_INSTALL, it).apply() }
     }
 
@@ -92,14 +92,14 @@ object OwnerHooks {
      * already finished (or the user is upgrading from a build that had none).
      */
     fun init(context: Context, onboarded: Boolean) {
-        val p = prefs(context)
+        val p = store(context)
         if (onboarded && !p.getBoolean(KEY_ONBOARDED, false)) p.edit().putBoolean(KEY_ONBOARDED, true).apply()
         if (enabled && p.getBoolean(KEY_ONBOARDED, false)) start()
     }
 
     /** The first-run screens (with the privacy page) were just finished: sending may begin. */
     fun onboardingDone(context: Context) {
-        prefs(context).edit().putBoolean(KEY_ONBOARDED, true).apply()
+        store(context).edit().putBoolean(KEY_ONBOARDED, true).apply()
         if (enabled) start()
     }
 
@@ -114,10 +114,10 @@ object OwnerHooks {
      * purchases and stop fraud). Off by default where the ads consent form is required (EU/UK etc.).
      */
     fun usageOn(context: Context): Boolean =
-        prefs(context).getBoolean(KEY_USAGE, !com.vikash.mp3player.monetization.Ads.privacyRequired(context))
+        store(context).getBoolean(KEY_USAGE, !com.vikash.mp3player.monetization.Ads.privacyRequired(context))
 
     fun setUsageOn(context: Context, on: Boolean) {
-        prefs(context).edit().putBoolean(KEY_USAGE, on).apply()
+        store(context).edit().putBoolean(KEY_USAGE, on).apply()
         if (!on) prefs.edit().remove(KEY_EVENTS).apply()
     }
 
