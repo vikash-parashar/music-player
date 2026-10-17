@@ -2,8 +2,10 @@ package com.vikash.mp3player.ui
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -19,7 +21,6 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -28,8 +29,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -39,37 +38,37 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.rotate
-import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil3.compose.AsyncImagePainter
-import coil3.compose.rememberAsyncImagePainter
-import coil3.request.ImageRequest
 import com.vikash.mp3player.R
 import com.vikash.mp3player.data.Song
 import com.vikash.mp3player.ui.theme.Ampli
 import kotlinx.coroutines.delay
 import kotlin.math.PI
-import kotlin.math.acos
-import kotlin.math.atan2
 import kotlin.math.cos
-import kotlin.math.hypot
 import kotlin.math.min
+import kotlin.math.pow
 import kotlin.math.sin
 
-private const val DURATION_MS = 5200
+private const val DURATION_MS = 5400
 
 /**
- * Classic CD change, about 5 seconds: the song's cover turns into a disc, a robot arm picks it up,
- * drops it on the player, the tonearm lowers and the disc spins up. The song is already playing;
- * this only plays on top. Tap anywhere or press Back to skip.
+ * A classic portable CD player, about 5 seconds: OPEN is pressed, the lid swings up, the song's
+ * CD drops onto the spindle, the lid snaps shut, the glass display below shows the song and
+ * the disc spins up under the smoked lid. The song is already playing; this only plays on top.
+ * Tap anywhere or press Back to skip.
  */
 @Composable
 fun DiscChangeOverlay(song: Song, onDone: () -> Unit) {
@@ -77,35 +76,36 @@ fun DiscChangeOverlay(song: Song, onDone: () -> Unit) {
     val progress = remember { Animatable(0f) }
     LaunchedEffect(Unit) {
         progress.animateTo(1f, tween(DURATION_MS, easing = LinearEasing))
-        delay(250)
+        delay(300)
         done()
     }
     BackHandler { done() }
 
-    val context = LocalContext.current
-    val art = rememberAsyncImagePainter(
-        remember(song.artworkUri) { ImageRequest.Builder(context).data(song.artworkUri).size(256).build() },
-    )
-    val artState by art.state.collectAsState()
-    val artPainter: Painter? = art.takeIf { song.artworkUri != null && artState is AsyncImagePainter.State.Success }
+    val art = rememberStickerPainter(song.artworkUri, 640)
     val logo = painterResource(R.drawable.ic_launcher_foreground)
+    val text = rememberTextMeasurer()
 
     Box(
         Modifier
             .fillMaxSize()
-            .background(Brush.verticalGradient(listOf(Color.Black, Ampli.Night, Color(0xFF2A0F1C))))
+            .background(Brush.radialGradient(listOf(Color(0xFF241A22), Color(0xFF08070B))))
             .clickable(remember { MutableInteractionSource() }, indication = null) { done() },
     ) {
-        Canvas(Modifier.fillMaxSize()) { drawScene(progress.value, artPainter, logo) }
+        val status = DiscStatus(
+            ready = stringResource(R.string.disc_status_ready),
+            opening = stringResource(R.string.disc_status_opening),
+            reading = stringResource(R.string.disc_status_reading),
+            playing = stringResource(R.string.player_now_playing),
+        )
+        Canvas(Modifier.fillMaxSize()) { drawPlayer(progress.value, art, logo, text, song.title, status) }
 
         val t = progress.value
-        val textAlpha = ease(seg(t, 0.80f, 0.92f))
         Column(
-            Modifier.fillMaxSize().systemBarsPadding().padding(horizontal = 24.dp, vertical = 28.dp),
+            Modifier.fillMaxSize().systemBarsPadding().padding(horizontal = 24.dp, vertical = 20.dp),
             verticalArrangement = Arrangement.Bottom,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Column(Modifier.alpha(textAlpha), horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(Modifier.alpha(easeOut(seg(t, 0.84f, 0.96f))), horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
                     stringResource(R.string.player_now_playing).uppercase(),
                     color = Ampli.Rose, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp,
@@ -132,225 +132,269 @@ fun DiscChangeOverlay(song: Song, onDone: () -> Unit) {
 
 /** 0..1 progress of [t] inside the window [a]..[b]. */
 private fun seg(t: Float, a: Float, b: Float) = ((t - a) / (b - a)).coerceIn(0f, 1f)
-private fun ease(x: Float) = FastOutSlowInEasing.transform(x)
+private fun easeOut(x: Float) = 1f - (1f - x).pow(3)
+private fun easeIn(x: Float) = x * x * x
+private fun easeInOut(x: Float) = if (x < 0.5f) 4f * x * x * x else 1f - (-2f * x + 2f).pow(3) / 2f
+private fun easeOutBack(x: Float): Float {
+    val c1 = 1.5f
+    val c3 = c1 + 1f
+    return 1f + c3 * (x - 1f).pow(3) + c1 * (x - 1f).pow(2)
+}
 private fun lerp(a: Float, b: Float, f: Float) = a + (b - a) * f
-private fun lerp(a: Offset, b: Offset, f: Float) = Offset(lerp(a.x, b.x, f), lerp(a.y, b.y, f))
 
-private val Steel = Color(0xFFB8BCC8)
-private val SteelDark = Color(0xFF6B7080)
+private val SilverHi = Color(0xFFF4F5F8)
+private val Silver = Color(0xFFCDD1DA)
+private val SilverLo = Color(0xFFA9AEB9)
 
-private fun DrawScope.drawScene(t: Float, art: Painter?, logo: Painter) {
+private fun DrawScope.roundRect(color: Color, x: Float, y: Float, w: Float, h: Float, r: Float) =
+    drawRoundRect(color, Offset(x, y), Size(w, h), CornerRadius(r))
+
+private fun DrawScope.drawPlayer(
+    t: Float, art: Painter?, logo: Painter, text: TextMeasurer, title: String, status: DiscStatus, live: LiveState? = null,
+) {
     val w = size.width
     val h = size.height
-    val r = min(w * 0.19f, h * 0.13f)
-    val p1 = Offset(w * 0.28f, h * 0.36f) // pick-up spot
-    val p2 = Offset(w * 0.58f, h * 0.62f) // platter
-    val start = Offset(w * 0.5f, h * 0.95f)
-    val base = Offset(w * 0.86f, h * 0.10f)
-    val rest = Offset(w * 0.70f, h * 0.26f)
-    val reach = hypot(base.x - p2.x, base.y - p2.y)
-    val l1 = reach * 0.56f
-    val l2 = reach * 0.56f
+    val rb = live?.rb?.invoke(w, h) ?: min(w * 0.42f, h * 0.25f)
+    val rise = easeOut(seg(t, 0f, 0.12f))
+    val shake = if (t > 0.70f && t < 0.74f) sin((t - 0.70f) * 400f) * (1f - seg(t, 0.70f, 0.74f)) * rb * 0.012f else 0f
+    val cx = w / 2f
+    val cy = (live?.cyFraction ?: 0.43f) * h + (1f - rise) * h * 0.25f + shake
+    val c = Offset(cx, cy)
+    val a = rise
 
-    // Timeline.
-    val deckIn = ease(seg(t, 0f, 0.14f))
-    val appear = ease(seg(t, 0f, 0.16f))
-    val morph = ease(seg(t, 0.10f, 0.22f))
-    val armIn = ease(seg(t, 0.12f, 0.30f))
-    val grip = ease(seg(t, 0.30f, 0.36f))
-    val carry = ease(seg(t, 0.38f, 0.62f))
-    val release = ease(seg(t, 0.62f, 0.67f))
-    val armOut = ease(seg(t, 0.67f, 0.82f))
-    val tone = ease(seg(t, 0.70f, 0.80f))
-    val spinT = seg(t, 0.76f, 1f)
-    val spin = 900f * spinT * spinT
+    // Floor shadow.
+    drawOval(
+        Brush.radialGradient(listOf(Color.Black.copy(alpha = 0.6f * a), Color.Transparent), Offset(cx, cy + rb * 0.28f), rb * 1.35f),
+        topLeft = Offset(cx - rb * 1.3f, cy + rb * 0.28f - rb * 1.25f), size = Size(rb * 2.6f, rb * 2.5f),
+    )
 
-    // CD player deck slides up.
-    val deckShift = (1f - deckIn) * h * 0.3f
-    translate(top = deckShift) {
-        drawDeck(p2, r, spinning = spinT > 0f, alpha = deckIn)
-    }
-
-    // Disc position and lift.
-    val discPos = when {
-        t < 0.38f -> lerp(start, p1, appear)
-        else -> lerp(p1, p2, carry)
-    }
-    val lift = if (t in 0.38f..0.62f) sin(PI.toFloat() * carry) else 0f
-    val discScale = lerp(0.6f, 1f, appear) * (1f + 0.10f * lift)
-    val dr = r * discScale
-
-    // Shadow under the disc grows and shifts while it is carried.
+    // Body: brushed silver with a darker edge.
     drawCircle(
-        Color.Black.copy(alpha = 0.35f * appear),
-        radius = dr * (1f + 0.06f * lift),
-        center = discPos + Offset(r * (0.08f + 0.22f * lift), r * (0.10f + 0.30f * lift)),
+        Brush.verticalGradient(listOf(Color(0xFF8F95A1), Color(0xFF5B606B)), cy - rb, cy + rb),
+        radius = rb, center = Offset(cx, cy + rb * 0.04f), alpha = a,
     )
-    // The cover square rounds into a disc.
-    if (morph < 1f) drawCover(discPos, dr, morph, art, logo, alpha = appear * (1f - morph))
-    if (morph > 0f) drawDisc(discPos, dr, spin, art, logo, alpha = morph)
-
-    // Tonearm lowers onto the disc.
-    drawTonearm(p2, r, tone, alpha = deckIn, shift = deckShift)
-
-    // Robot arm: rest -> pick-up -> carry -> platter -> rest.
-    val target = when {
-        t < 0.30f -> lerp(rest, p1, armIn)
-        t < 0.38f -> p1
-        t < 0.67f -> discPos
-        else -> lerp(p2, rest, armOut)
-    }
-    val fingerR = when {
-        t < 0.30f -> 1.3f * r
-        t < 0.62f -> lerp(1.3f * r, 1.02f * r, grip) * (1f + 0.10f * lift)
-        else -> lerp(1.02f * r, 1.3f * r, release)
-    }
-    val armAlpha = ease(seg(t, 0.04f, 0.14f)) * (1f - ease(seg(t, 0.86f, 0.96f)))
-    drawRobotArm(base, target, l1, l2, r, fingerR, armAlpha)
-}
-
-private fun DrawScope.drawDeck(c: Offset, r: Float, spinning: Boolean, alpha: Float) {
-    val deckCenter = c + Offset(r * 0.35f, r * 0.05f)
-    val dw = r * 3.1f
-    val dh = r * 2.8f
-    val tl = deckCenter - Offset(dw / 2f, dh / 2f)
-    drawRoundRect(
-        Brush.verticalGradient(listOf(Color(0xFF2C2733), Color(0xFF16131B)), startY = tl.y, endY = tl.y + dh),
-        topLeft = tl, size = Size(dw, dh), cornerRadius = CornerRadius(r * 0.22f), alpha = alpha,
-    )
-    drawRoundRect(
-        Color.White.copy(alpha = 0.08f), topLeft = tl, size = Size(dw, dh),
-        cornerRadius = CornerRadius(r * 0.22f), style = Stroke(width = 2f), alpha = alpha,
-    )
-    // Platter.
-    drawCircle(Color(0xFF0B0A0E), radius = r * 1.14f, center = c, alpha = alpha)
-    drawCircle(Color.White.copy(alpha = 0.06f), radius = r * 1.14f, center = c, style = Stroke(3f), alpha = alpha)
-    drawCircle(SteelDark, radius = r * 0.07f, center = c, alpha = alpha)
-    // Power LED.
-    val led = tl + Offset(dw - r * 0.28f, dh - r * 0.28f)
-    val ledColor = if (spinning) Color(0xFF22C55E) else Ampli.Rose
-    drawCircle(ledColor.copy(alpha = 0.35f), radius = r * 0.12f, center = led, alpha = alpha)
-    drawCircle(ledColor, radius = r * 0.055f, center = led, alpha = alpha)
-}
-
-private fun DrawScope.circlePath(c: Offset, radius: Float) =
-    Path().apply { addOval(Rect(c, radius)) }
-
-private fun DrawScope.drawPainterIn(painter: Painter, center: Offset, side: Float, alpha: Float) {
-    translate(center.x - side / 2f, center.y - side / 2f) {
-        with(painter) { draw(Size(side, side), alpha = alpha) }
-    }
-}
-
-private fun DrawScope.drawCover(c: Offset, r: Float, morph: Float, art: Painter?, logo: Painter, alpha: Float) {
-    val side = r * 1.8f
-    val corner = lerp(r * 0.12f, side / 2f, morph)
-    val rect = Rect(c, side / 2f)
-    val path = Path().apply { addRoundRect(RoundRect(rect, CornerRadius(corner))) }
-    clipPath(path) {
-        drawRect(Ampli.Gradient, topLeft = rect.topLeft, size = rect.size, alpha = alpha)
-        if (art != null) drawPainterIn(art, c, side, alpha) else drawPainterIn(logo, c, side, alpha)
-    }
-}
-
-private fun DrawScope.drawDisc(c: Offset, r: Float, spin: Float, art: Painter?, logo: Painter, alpha: Float) {
-    // Iridescent body; the sheen stays still while the label turns, like light on a real CD.
     drawCircle(
-        Brush.sweepGradient(
-            listOf(
-                Color(0xFFD9DCE6), Color(0xFFFBCFE8), Color(0xFFA5F3FC), Color(0xFFE9D5FF),
-                Color(0xFFFDE68A), Color(0xFFD9DCE6), Color(0xFFBAE6FD), Color(0xFFD9DCE6),
-            ),
-            center = c,
-        ),
-        radius = r, center = c, alpha = alpha,
+        Brush.radialGradient(0f to SilverHi, 0.6f to Silver, 1f to SilverLo, center = Offset(cx - rb * 0.3f, cy - rb * 0.4f), radius = rb * 1.3f),
+        radius = rb * 0.985f, center = c, alpha = a,
     )
-    for (i in 1..6) {
+    for (k in 0 until 14) drawCircle(Color.White.copy(alpha = 0.18f * a), radius = rb * (0.9f + k * 0.006f), center = c, style = Stroke(1f))
+
+    // Disc bay, laser sled and spindle.
+    drawCircle(Brush.radialGradient(listOf(Color(0xFF2B2E36), Color(0xFF14161B)), c, rb * 0.86f), radius = rb * 0.86f, center = c, alpha = a)
+    drawCircle(Color.Black.copy(alpha = 0.6f * a), radius = rb * 0.86f, center = c, style = Stroke(rb * 0.02f))
+    rotate(140f, pivot = c) {
+        roundRect(Color(0xFF0C0D10).copy(alpha = a), cx + rb * 0.2f, cy - rb * 0.09f, rb * 0.6f, rb * 0.18f, rb * 0.05f)
+        drawRect(Color(0xFF3A3F4A).copy(alpha = a), Offset(cx + rb * 0.22f, cy - rb * 0.012f), Size(rb * 0.56f, rb * 0.024f))
         drawCircle(
-            Color.Black.copy(alpha = 0.06f), radius = r * (0.56f + i * 0.07f), center = c,
-            style = Stroke(width = 1.2f), alpha = alpha,
+            Brush.radialGradient(listOf(Color(0xFFC4B5FD), Color(0xFF4C1D95), Color(0xFF111111)), Offset(cx + rb * 0.47f, cy - rb * 0.01f), rb * 0.06f),
+            radius = rb * 0.055f, center = Offset(cx + rb * 0.48f, cy), alpha = a,
         )
     }
-    // Spinning label with the cover art.
-    rotate(spin, pivot = c) {
-        clipPath(circlePath(c, r * 0.5f)) {
-            drawCircle(Ampli.Gradient, radius = r * 0.5f, center = c, alpha = alpha)
-            if (art != null) drawPainterIn(art, c, r, alpha) else drawPainterIn(logo, c, r, alpha)
+
+    // Disc spin: speeds up over the last quarter.
+    val s = seg(t, 0.74f, 1f)
+    val spinSeconds = DURATION_MS / 1000f * 0.26f
+    val spin = live?.angle ?: (400f * spinSeconds * s * s * s / 3f)
+
+    drawCircle(Color(0xFF9AA0AB).copy(alpha = a), radius = rb * 0.13f, center = c)
+    drawCircle(Color(0xFFE5E7EB).copy(alpha = a), radius = rb * 0.085f, center = c)
+    for (k in 0 until 3) {
+        val an = k * 2.094f + spin * PI.toFloat() / 180f
+        drawCircle(Color(0xFF6B7280).copy(alpha = a), radius = rb * 0.018f, center = Offset(cx + cos(an) * rb * 0.105f, cy + sin(an) * rb * 0.105f))
+    }
+
+    // Lid opens 0.14-0.30 with a little bounce, closes 0.56-0.70.
+    val open = easeOutBack(seg(t, 0.14f, 0.30f)) * (1f - easeIn(seg(t, 0.56f, 0.70f)))
+    val lidDeg = open * 112f
+    val r = rb * 0.80f
+    // The CD drops in 0.26-0.50 from close to the camera onto the spindle.
+    val drop = easeInOut(seg(t, 0.26f, 0.50f))
+    val settle = if (t > 0.50f && t < 0.56f) 1f - sin(seg(t, 0.50f, 0.56f) * PI.toFloat()) * 0.015f else 1f
+    val hgt = 1f - drop
+    val discY = lerp(cy - h * 0.62f, cy, drop)
+    val scale = lerp(1.45f, 1f, drop) * settle
+    val drawDisc = {
+        if (t >= 0.26f) {
+            if (hgt > 0.001f) {
+                drawCircle(
+                    Color.Black.copy(alpha = 0.55f * (1f - hgt * 0.7f) * a),
+                    radius = r * (1f + hgt * 0.25f),
+                    center = Offset(cx + rb * 0.04f + hgt * rb * 0.25f, cy + rb * 0.06f + hgt * rb * 0.35f),
+                )
+            }
+            drawCd(Offset(cx, discY), r * scale, spin - hgt * 25f, art, logo, a)
         }
-        // A small mark so the spin is easy to see even on plain art.
-        drawLine(
-            Color.White.copy(alpha = 0.55f * alpha),
-            start = c + Offset(0f, -r * 0.62f), end = c + Offset(0f, -r * 0.92f),
-            strokeWidth = r * 0.025f, cap = StrokeCap.Round,
+    }
+    if (t >= 0.52f) drawDisc()
+    drawLid(c, rb, lidDeg, a, text)
+    if (t < 0.52f) drawDisc()
+
+    // Now Playing shows the player alone; its own controls sit below it.
+    if (live == null) drawFrontDisplay(cx, cy, rb, t, a, title, status, text, null)
+}
+
+/** Dark glass strip under the player: status, song title, live bars and a thin progress line. */
+private fun DrawScope.drawFrontDisplay(
+    cx: Float, cy: Float, rb: Float, t: Float, a: Float, title: String, status: DiscStatus, text: TextMeasurer, live: LiveState?,
+) {
+    val phase = live?.phase ?: (t * DURATION_MS / 1000f)
+    val pw = rb * 1.56f
+    val ph = rb * 0.40f
+    val px = cx - pw / 2f
+    val py = cy + rb * 0.80f
+    val pill = CornerRadius(ph / 2f)
+    drawRoundRect(Color.Black.copy(alpha = 0.45f * a), Offset(px, py + rb * 0.04f), Size(pw, ph), pill)
+    drawRoundRect(Color(0xF0120F18).copy(alpha = 0.94f * a), Offset(px, py), Size(pw, ph), pill)
+    drawRoundRect(
+        Brush.verticalGradient(0f to Color.White.copy(alpha = 0.10f), 0.5f to Color.Transparent, startY = py, endY = py + ph),
+        Offset(px, py), Size(pw, ph), pill, alpha = a,
+    )
+    drawRoundRect(Color.White.copy(alpha = 0.10f * a), Offset(px, py), Size(pw, ph), pill, style = Stroke(1f))
+
+    val playing = live?.playing ?: (t >= 0.72f)
+    // Badge: rose circle with a play mark that pulses, or a spinner while the disc loads.
+    val bc = Offset(px + ph / 2f, py + ph / 2f)
+    val br = ph * 0.32f
+    val pulse = if (playing) 1f + 0.06f * sin(phase * 11f) else 1f
+    drawCircle(
+        Brush.linearGradient(listOf(Color(0xFFF43F5E), Ampli.RoseDeep), bc - Offset(br, br), bc + Offset(br, br)),
+        radius = br * pulse, center = bc, alpha = a,
+    )
+    if (playing || t < 0.12f || live != null) {
+        drawPath(
+            Path().apply {
+                moveTo(bc.x - br * 0.28f, bc.y - br * 0.4f); lineTo(bc.x + br * 0.42f, bc.y); lineTo(bc.x - br * 0.28f, bc.y + br * 0.4f); close()
+            },
+            Color.White.copy(alpha = a),
+        )
+    } else {
+        val start = (phase * 7.4f * 180f / PI.toFloat()) % 360f
+        drawArc(
+            Color.White.copy(alpha = a), startAngle = start, sweepAngle = 240f, useCenter = false,
+            topLeft = bc - Offset(br * 0.48f, br * 0.48f), size = Size(br * 0.96f, br * 0.96f),
+            style = Stroke(br * 0.16f, cap = StrokeCap.Round),
         )
     }
-    // Fixed shine streaks.
-    drawArc(
-        Color.White.copy(alpha = 0.35f * alpha), startAngle = 200f, sweepAngle = 40f, useCenter = false,
-        topLeft = c - Offset(r * 0.82f, r * 0.82f), size = Size(r * 1.64f, r * 1.64f), style = Stroke(r * 0.06f, cap = StrokeCap.Round),
-    )
-    drawArc(
-        Color.White.copy(alpha = 0.22f * alpha), startAngle = 20f, sweepAngle = 30f, useCenter = false,
-        topLeft = c - Offset(r * 0.74f, r * 0.74f), size = Size(r * 1.48f, r * 1.48f), style = Stroke(r * 0.04f, cap = StrokeCap.Round),
-    )
-    // Centre hole.
-    drawCircle(Color.White.copy(alpha = 0.7f), radius = r * 0.16f, center = c, style = Stroke(r * 0.03f), alpha = alpha)
-    drawCircle(Color(0xFF0B0A0E), radius = r * 0.11f, center = c, alpha = alpha)
-    drawCircle(Color.White.copy(alpha = 0.25f), radius = r, center = c, style = Stroke(2f), alpha = alpha)
-}
-
-private fun DrawScope.drawTonearm(c: Offset, r: Float, lower: Float, alpha: Float, shift: Float) {
-    val pivot = c + Offset(r * 1.18f, -r * 1.08f + shift)
-    val len = r * 1.38f
-    val angle = Math.toRadians(lerp(92f, 112f, lower).toDouble()).toFloat()
-    val tip = pivot + Offset(cos(angle) * len, sin(angle) * len)
-    // The head casts a shadow that tightens as it touches down.
-    val hover = (1f - ease(seg(lower, 0.75f, 1f))) * r * 0.12f
-    drawLine(Color.Black.copy(alpha = 0.35f * alpha), pivot + Offset(hover, hover), tip + Offset(hover * 2f, hover * 2f), strokeWidth = r * 0.07f, cap = StrokeCap.Round)
-    drawCircle(SteelDark, radius = r * 0.17f, center = pivot, alpha = alpha)
-    drawCircle(Steel, radius = r * 0.10f, center = pivot, alpha = alpha)
-    drawLine(Steel.copy(alpha = alpha), pivot, tip, strokeWidth = r * 0.06f, cap = StrokeCap.Round)
-    drawLine(Ampli.Rose.copy(alpha = alpha), tip, tip + Offset(cos(angle) * r * 0.12f, sin(angle) * r * 0.12f), strokeWidth = r * 0.12f, cap = StrokeCap.Round)
-}
-
-private fun DrawScope.drawRobotArm(base: Offset, target: Offset, l1: Float, l2: Float, r: Float, fingerR: Float, alpha: Float) {
-    if (alpha <= 0f) return
-    val dx = target.x - base.x
-    val dy = target.y - base.y
-    val d = hypot(dx, dy).coerceIn(kotlin.math.abs(l1 - l2) + 1f, l1 + l2 - 1f)
-    val theta = atan2(dy, dx)
-    val cosA = ((l1 * l1 + d * d - l2 * l2) / (2f * l1 * d)).coerceIn(-1f, 1f)
-    val shoulder = theta + acos(cosA)
-    val elbow = base + Offset(cos(shoulder) * l1, sin(shoulder) * l1)
-    val shadow = Offset(r * 0.18f, r * 0.24f)
-    val linkW = r * 0.22f
-
-    // Shadow first, then the steel links.
-    drawLine(Color.Black.copy(alpha = 0.3f * alpha), base + shadow, elbow + shadow, strokeWidth = linkW, cap = StrokeCap.Round)
-    drawLine(Color.Black.copy(alpha = 0.3f * alpha), elbow + shadow, target + shadow, strokeWidth = linkW * 0.8f, cap = StrokeCap.Round)
-    drawLine(
-        Brush.linearGradient(listOf(Steel, SteelDark), base, elbow), base, elbow,
-        strokeWidth = linkW, cap = StrokeCap.Round, alpha = alpha,
-    )
-    drawLine(
-        Brush.linearGradient(listOf(Steel, SteelDark), elbow, target), elbow, target,
-        strokeWidth = linkW * 0.8f, cap = StrokeCap.Round, alpha = alpha,
-    )
-    // Joints.
-    drawCircle(Color(0xFF2C2733), radius = r * 0.30f, center = base, alpha = alpha)
-    drawCircle(Steel, radius = r * 0.18f, center = base, alpha = alpha)
-    drawCircle(Color(0xFF2C2733), radius = r * 0.20f, center = elbow, alpha = alpha)
-    drawCircle(Ampli.Rose, radius = r * 0.09f, center = elbow, alpha = alpha)
-
-    // Gripper: three fingers close on the disc edge.
-    val dir = atan2(target.y - elbow.y, target.x - elbow.x)
-    for (k in 0..2) {
-        val a = dir + (k * 2f * PI.toFloat() / 3f) + PI.toFloat() / 3f
-        val tipIn = target + Offset(cos(a) * fingerR, sin(a) * fingerR)
-        val tipOut = target + Offset(cos(a) * (fingerR + r * 0.16f), sin(a) * (fingerR + r * 0.16f))
-        drawLine(SteelDark.copy(alpha = 0.9f * alpha), target, tipIn, strokeWidth = r * 0.05f, cap = StrokeCap.Round)
-        drawLine(Steel.copy(alpha = alpha), tipIn, tipOut, strokeWidth = r * 0.12f, cap = StrokeCap.Round)
+    // Status and title.
+    val tx = px + ph
+    val maxW = (pw - ph - rb * 0.30f).toInt().coerceAtLeast(1)
+    val label = when {
+        live != null -> if (live.playing) status.playing else status.paused
+        t < 0.12f -> status.ready
+        t < 0.56f -> status.opening
+        t < 0.72f -> status.reading
+        else -> status.playing
     }
-    drawCircle(Ampli.RoseDeep, radius = r * 0.17f, center = target, alpha = alpha)
-    drawCircle(Ampli.Rose, radius = r * 0.10f, center = target, alpha = alpha)
+    val statusLayout = text.measure(
+        label.uppercase(),
+        TextStyle(color = Color(0xFFFB7185).copy(alpha = a), fontSize = (rb * 0.058f).toSp(), fontWeight = FontWeight.Bold, letterSpacing = (rb * 0.012f).toSp()),
+        maxLines = 1, overflow = TextOverflow.Ellipsis, constraints = Constraints(maxWidth = maxW),
+    )
+    val titleLayout = text.measure(
+        title,
+        TextStyle(color = Color.White.copy(alpha = a), fontSize = (rb * 0.088f).toSp(), fontWeight = FontWeight.SemiBold),
+        maxLines = 1, overflow = TextOverflow.Ellipsis, constraints = Constraints(maxWidth = maxW),
+    )
+    val textTop = py + (ph - statusLayout.size.height - titleLayout.size.height) / 2f
+    drawText(statusLayout, topLeft = Offset(tx, textTop))
+    drawText(titleLayout, topLeft = Offset(tx, textTop + statusLayout.size.height))
+    // Live bars on the right.
+    for (k in 0 until 4) {
+        val v = if (playing) 0.35f + 0.65f * kotlin.math.abs(sin(phase * (7f + k * 1.7f) + k)) else 0.18f
+        val bh = ph * 0.42f * v
+        val bx = px + pw - rb * 0.26f + k * rb * 0.05f
+        drawRoundRect(
+            (if (playing) Ampli.Rose else Color.White.copy(alpha = 0.25f)).copy(alpha = (if (playing) 1f else 0.25f) * a),
+            Offset(bx, py + ph * 0.71f - bh), Size(rb * 0.028f, bh), CornerRadius(rb * 0.014f),
+        )
+    }
+    // Thin progress line: fills while the disc is read, then shows the song starting.
+    val lineW = pw - ph
+    val fill = when {
+        live != null -> live.progress.coerceIn(0f, 1f)
+        t < 0.56f -> 0f
+        t < 0.72f -> seg(t, 0.56f, 0.72f)
+        else -> 0.02f + 0.03f * seg(t, 0.72f, 1f)
+    }
+    val ly = py + ph - rb * 0.035f
+    drawRoundRect(Color.White.copy(alpha = 0.08f * a), Offset(px + ph / 2f, ly), Size(lineW, rb * 0.012f), CornerRadius(rb * 0.006f))
+    if (fill > 0f) {
+        drawRoundRect(
+            Brush.horizontalGradient(listOf(Ampli.RoseDeep, Color(0xFFFB7185)), px, px + pw),
+            Offset(px + ph / 2f, ly), Size(lineW * fill, rb * 0.012f), CornerRadius(rb * 0.006f), alpha = a,
+        )
+    }
+}
+
+/** Localised labels for the front display. */
+private class DiscStatus(val ready: String, val opening: String, val reading: String, val playing: String, val paused: String = playing)
+
+/** What the resting player shows on Now Playing. */
+private class LiveState(
+    val angle: Float,
+    val playing: Boolean,
+    val phase: Float,
+    val progress: Float,
+    val cyFraction: Float,
+    val rb: (Float, Float) -> Float,
+)
+
+/**
+ * Now Playing as the same CD player, lid closed: the song's CD turns under the smoked lid.
+ * The screen's own title, progress bar and buttons sit below it.
+ */
+@Composable
+fun CdPlayerView(artworkUri: android.net.Uri?, title: String, isPlaying: Boolean, progress: Float, modifier: Modifier = Modifier) {
+    val angle = LocalDiscAngle.current
+    val art = rememberStickerPainter(artworkUri, 640)
+    val logo = painterResource(R.drawable.ic_launcher_foreground)
+    val text = rememberTextMeasurer()
+    val clock = rememberInfiniteTransition(label = "cdPlayer")
+    val phase by clock.animateFloat(0f, 1000f, infiniteRepeatable(tween(1_000_000, easing = LinearEasing)), label = "phase")
+    val status = DiscStatus(
+        ready = "", opening = "", reading = "",
+        playing = stringResource(R.string.player_now_playing),
+        paused = stringResource(R.string.disc_status_paused),
+    )
+    Canvas(modifier) {
+        val glow = 0.10f + if (isPlaying) 0.18f else 0f
+        drawCircle(
+            Brush.radialGradient(listOf(Ampli.Rose.copy(alpha = glow), Color.Transparent), Offset(size.width / 2f, size.height * 0.48f), size.minDimension * 0.6f),
+            radius = size.minDimension * 0.6f, center = Offset(size.width / 2f, size.height * 0.48f),
+        )
+        drawPlayer(
+            1f, art, logo, text, title, status,
+            LiveState(angle.value, isPlaying, phase, progress, 0.48f) { w, h -> min(w * 0.42f, h * 0.44f) },
+        )
+    }
+}
+
+/** The lid hinges at the top: squashing it around the hinge gives the swing; past 90 degrees we see its underside. */
+private fun DrawScope.drawLid(c: Offset, rb: Float, deg: Float, a: Float, text: TextMeasurer) {
+    val r = rb * 0.9f
+    val hinge = Offset(c.x, c.y - r)
+    val k = cos(deg * PI.toFloat() / 180f).let { if (it == 0f) 0.001f else it }
+    val under = k < 0f
+    withTransform({ scale(1f, k, pivot = hinge) }) {
+        drawCircle((if (under) Color(0xEB1E2128) else Color(0x801C2028)).copy(alpha = (if (under) 0.92f else 0.5f) * a), radius = r, center = c)
+        drawCircle((if (under) Color(0xFF7A808C) else Color(0xFFE2E5EB)).copy(alpha = a), radius = r - rb * 0.022f, center = c, style = Stroke(rb * 0.045f))
+        drawCircle(Color.Black.copy(alpha = 0.35f * a), radius = r - rb * 0.05f, center = c, style = Stroke(1f))
+        if (!under) {
+            clipPath(Path().apply { addOval(androidx.compose.ui.geometry.Rect(c, r - rb * 0.05f)) }) {
+                drawRect(
+                    Brush.linearGradient(
+                        0f to Color.White.copy(alpha = 0.28f), 0.45f to Color.White.copy(alpha = 0.04f),
+                        0.5f to Color.White.copy(alpha = 0.16f), 0.56f to Color.Transparent,
+                        start = Offset(c.x - r, c.y - r), end = Offset(c.x + r * 0.2f, c.y + r * 0.3f),
+                    ),
+                    topLeft = Offset(c.x - r, c.y - r), size = Size(r * 2f, r * 2f), alpha = a,
+                )
+            }
+            val name = text.measure("AMPLI", TextStyle(color = Color.White.copy(alpha = 0.55f * a), fontSize = (rb * 0.075f).toSp(), fontWeight = FontWeight.Bold))
+            drawText(name, topLeft = Offset(c.x - name.size.width / 2f, c.y + r * 0.62f - name.size.height / 2f))
+            val sub = text.measure("COMPACT DISC  ·  ESP 40 SEC", TextStyle(color = Color.White.copy(alpha = 0.55f * a), fontSize = (rb * 0.045f).toSp()))
+            drawText(sub, topLeft = Offset(c.x - sub.size.width / 2f, c.y + r * 0.74f - sub.size.height / 2f))
+        }
+    }
+    drawRoundRect(Color(0xFF7D838F).copy(alpha = a), Offset(c.x - rb * 0.28f, hinge.y - rb * 0.035f), Size(rb * 0.56f, rb * 0.07f), CornerRadius(rb * 0.03f))
 }

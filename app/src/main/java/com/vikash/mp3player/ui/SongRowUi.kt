@@ -10,7 +10,7 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
@@ -143,11 +143,7 @@ internal fun SongRowContent(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Box(contentAlignment = Alignment.Center) {
-                Artwork(song.artworkUri, 40.dp)
-                if (isCurrent) {
-                    Box(Modifier.size(40.dp).clip(RoundedCornerShape(6.dp)).background(Color.Black.copy(alpha = 0.45f)))
-                    PlayingBars(playing, Modifier.size(22.dp))
-                }
+                if (isCurrent) SpinningCd(song.artworkUri, 40.dp) else Artwork(song.artworkUri, 40.dp)
             }
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
@@ -283,7 +279,7 @@ private fun RoundActionButton(action: SongAction, index: Int, modifier: Modifier
     }
 }
 
-/** Bar above the tabs: previous, play/pause and next, with the dancing bars on the artwork. */
+/** Bar above the tabs: previous, play/pause and next, with the song's CD turning. */
 @Composable
 fun MiniPlayer(
     state: PlayerUiState,
@@ -296,11 +292,7 @@ fun MiniPlayer(
     Surface(tonalElevation = 3.dp, modifier = Modifier.fillMaxWidth().clickable(onClick = onOpen)) {
         Row(Modifier.padding(horizontal = 10.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(contentAlignment = Alignment.Center) {
-                Artwork(current.artworkUri, 42.dp)
-                if (state.isPlaying) {
-                    Box(Modifier.size(42.dp).clip(RoundedCornerShape(6.dp)).background(Color.Black.copy(alpha = 0.35f)))
-                    PlayingBars(true, Modifier.size(20.dp))
-                }
+                SpinningCd(current.artworkUri, 42.dp)
             }
             Spacer(Modifier.width(10.dp))
             Column(Modifier.weight(1f)) {
