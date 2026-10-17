@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="song_share">பகிர்</string>
+    <string name="library_share_selected">தேர்ந்தெடுத்த பாடல்களைப் பகிர்</string>
+    <string name="share_chooser_title">பாடலைப் பகிர்</string>
+    <string name="share_no_files">ஆன்லைன் பாடல்களைக் கோப்பாகப் பகிர முடியாது</string>
+    <string name="share_no_app">பகிர ஆப் எதுவும் இல்லை</string>
+</resources>

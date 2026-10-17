@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="song_share">Share</string>
+    <string name="library_share_selected">Share selected songs</string>
+    <string name="share_chooser_title">Share song with</string>
+    <string name="share_no_files">Online songs can\'t be shared as files</string>
+    <string name="share_no_app">No app found to share with</string>
+</resources>

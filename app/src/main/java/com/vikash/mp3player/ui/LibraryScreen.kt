@@ -1,6 +1,10 @@
 package com.vikash.mp3player.ui
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.annotation.StringRes
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -476,17 +480,25 @@ private fun SongList(
     val editInfoLabel = stringResource(R.string.song_edit_info)
     val deleteLabel = stringResource(R.string.song_delete_from_phone)
     val moveLabel = stringResource(R.string.song_move)
+    val shareLabel = stringResource(R.string.song_share)
+    val context = LocalContext.current
 
     LazyColumn(Modifier.fillMaxSize()) {
         stickyHeader {
             Surface(tonalElevation = if (selecting) 3.dp else 0.dp) {
                 if (selecting) {
-                    Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                    // Two rows: the count gets the full width (on narrow phones a single row squeezed
+                    // "1 selected" into a one-letter-wide column), and the actions scroll sideways.
+                    Column(Modifier.fillMaxWidth().padding(horizontal = 4.dp)) {
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                         IconButton(onClick = { selected = emptySet() }) { Icon(Icons.Default.Close, stringResource(R.string.library_cancel_selection)) }
-                        Text(stringResource(R.string.library_selected_count, selected.size), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                        Text(stringResource(R.string.library_selected_count, selected.size), style = MaterialTheme.typography.titleMedium,
+                            maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
                         IconButton(onClick = { selected = if (selected.size == songs.size) emptySet() else songs.map { it.id }.toSet() }) {
                             Icon(Icons.Default.SelectAll, stringResource(R.string.library_select_all))
                         }
+                    }
+                    Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), verticalAlignment = Alignment.CenterVertically) {
                         IconButton(onClick = { onPlay(picked, 0, source); selected = emptySet() }) {
                             Icon(Icons.Default.PlayArrow, stringResource(R.string.library_play_selected))
                         }
@@ -502,9 +514,13 @@ private fun SongList(
                         IconButton(onClick = { onMove(picked.filter { !it.isOnline }); selected = emptySet() }) {
                             Icon(Icons.Default.DriveFileMove, stringResource(R.string.library_move_selected))
                         }
+                        IconButton(onClick = { shareSongs(context, picked); selected = emptySet() }) {
+                            Icon(Icons.Default.Share, stringResource(R.string.library_share_selected))
+                        }
                         IconButton(onClick = { onDelete(picked.filter { !it.isOnline }); selected = emptySet() }) {
                             Icon(Icons.Default.Delete, stringResource(R.string.library_delete_selected))
                         }
+                    }
                     }
                 } else {
                     Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -539,6 +555,7 @@ private fun SongList(
                     add(SongAction(if (fav) removeFavoriteLabel else addFavoriteLabel) { onToggleFavorite(song) })
                     add(SongAction(setRingtoneLabel) { onSetRingtone(song) })
                     add(SongAction(editInfoLabel) { onEditTags(song) })
+                    if (!song.isOnline) add(SongAction(shareLabel) { shareSongs(context, listOf(song)) })
                     if (!song.isOnline) add(SongAction(moveLabel) { onMove(listOf(song)) })
                     if (!song.isOnline) add(SongAction(deleteLabel) { onDelete(listOf(song)) })
                 },

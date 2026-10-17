@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="song_share">షేర్ చేయి</string>
+    <string name="library_share_selected">ఎంచుకున్న పాటలను షేర్ చేయి</string>
+    <string name="share_chooser_title">పాటను షేర్ చేయి</string>
+    <string name="share_no_files">ఆన్‌లైన్ పాటలను ఫైల్‌గా షేర్ చేయలేము</string>
+    <string name="share_no_app">షేర్ చేయడానికి యాప్ లేదు</string>
+</resources>
