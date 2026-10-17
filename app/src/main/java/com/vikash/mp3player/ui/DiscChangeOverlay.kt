@@ -229,7 +229,8 @@ private fun DrawScope.drawPlayer(
     drawLid(c, rb, lidDeg, a, text)
     if (t < 0.52f) drawDisc()
 
-    drawFrontDisplay(cx, cy, rb, t, a, title, status, text, live)
+    // Now Playing shows the player alone; its own controls sit below it.
+    if (live == null) drawFrontDisplay(cx, cy, rb, t, a, title, status, text, null)
 }
 
 /** Dark glass strip under the player: status, song title, live bars and a thin progress line. */
@@ -339,8 +340,8 @@ private class LiveState(
 )
 
 /**
- * Now Playing as the same CD player, lid closed: the song's CD turns under the smoked lid and
- * the glass display shows Now playing or Paused, the title, live bars and the song progress.
+ * Now Playing as the same CD player, lid closed: the song's CD turns under the smoked lid.
+ * The screen's own title, progress bar and buttons sit below it.
  */
 @Composable
 fun CdPlayerView(artworkUri: android.net.Uri?, title: String, isPlaying: Boolean, progress: Float, modifier: Modifier = Modifier) {
@@ -358,12 +359,12 @@ fun CdPlayerView(artworkUri: android.net.Uri?, title: String, isPlaying: Boolean
     Canvas(modifier) {
         val glow = 0.10f + if (isPlaying) 0.18f else 0f
         drawCircle(
-            Brush.radialGradient(listOf(Ampli.Rose.copy(alpha = glow), Color.Transparent), Offset(size.width / 2f, size.height * 0.44f), size.minDimension * 0.6f),
-            radius = size.minDimension * 0.6f, center = Offset(size.width / 2f, size.height * 0.44f),
+            Brush.radialGradient(listOf(Ampli.Rose.copy(alpha = glow), Color.Transparent), Offset(size.width / 2f, size.height * 0.48f), size.minDimension * 0.6f),
+            radius = size.minDimension * 0.6f, center = Offset(size.width / 2f, size.height * 0.48f),
         )
         drawPlayer(
             1f, art, logo, text, title, status,
-            LiveState(angle.value, isPlaying, phase, progress, 0.44f) { w, h -> min(w * 0.40f, h * 0.40f) },
+            LiveState(angle.value, isPlaying, phase, progress, 0.48f) { w, h -> min(w * 0.42f, h * 0.44f) },
         )
     }
 }
