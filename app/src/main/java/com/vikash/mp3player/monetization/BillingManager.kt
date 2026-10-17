@@ -188,10 +188,7 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
     /** Tells the Ampli Owner app about a completed purchase (skipped when no server is set). */
     private fun report(kind: String, purchase: Purchase) {
         val sku = purchase.products.firstOrNull() ?: return
-        val offer = (if (kind == "tip") tipDetails[sku] else productDetails)?.oneTimePurchaseOfferDetails
-        com.vikash.mp3player.data.OwnerHooks.purchase(
-            kind, sku, offer?.priceAmountMicros ?: 0L, offer?.priceCurrencyCode ?: "INR", purchase.orderId, purchase.purchaseToken,
-        )
+        com.vikash.mp3player.data.OwnerHooks.purchase(kind, sku, purchase.purchaseToken)
     }
 
     private fun Purchase.ownsRemoveAds() =

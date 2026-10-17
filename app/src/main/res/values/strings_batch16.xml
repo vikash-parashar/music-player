@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="welcome_privacy_title">Your privacy</string>
+    <string name="welcome_privacy_body">Your songs never leave your phone. Ampli sends only a random app ID, purchases, app version, phone model, country, how you found the app, and any report you choose to send. We use it for support, checking purchases, stopping fraud and making Ampli better. Nothing is sold.</string>
+    <string name="welcome_privacy_contact">Questions or deletion: support@ampliapps.in</string>
+    <string name="about_title">About</string>
+    <string name="about_version">Version %1$s</string>
+    <string name="about_install_id">Your app ID</string>
+    <string name="about_install_id_desc">Quote this ID when you write to support@ampliapps.in to see or delete your data.</string>
+    <string name="about_copy">Copy</string>
+    <string name="about_copied">App ID copied</string>
+</resources>

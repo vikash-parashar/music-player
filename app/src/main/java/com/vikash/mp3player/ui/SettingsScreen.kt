@@ -55,6 +55,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -126,6 +127,7 @@ fun SettingsScreen(
         HelpCard(onOpenHelp)
         PrivacyChoicesCard()
         UsageCountsCard()
+        AboutCard()
     }
 }
 
@@ -454,6 +456,37 @@ private fun UsageCountsCard() {
             }
             Spacer(Modifier.width(12.dp))
             Switch(checked = on, onCheckedChange = { on = it; com.vikash.mp3player.data.OwnerHooks.setUsageOn(context, it) })
+        }
+    }
+}
+
+/** Version and the random app ID, so people can ask support to show or delete their data. */
+@Composable
+private fun AboutCard() {
+    val context = LocalContext.current
+    val id = remember { com.vikash.mp3player.data.OwnerHooks.installId(context) }
+    val copied = stringResource(R.string.about_copied)
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(16.dp)) {
+            Text(stringResource(R.string.about_title), style = MaterialTheme.typography.titleMedium)
+            Text(
+                stringResource(R.string.about_version, "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})"),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(12.dp))
+            Text(stringResource(R.string.about_install_id), style = MaterialTheme.typography.labelLarge)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    id, modifier = Modifier.weight(1f), fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+                TextButton(onClick = {
+                    val cm = context.getSystemService(android.content.ClipboardManager::class.java)
+                    cm?.setPrimaryClip(android.content.ClipData.newPlainText("Ampli app ID", id))
+                    android.widget.Toast.makeText(context, copied, android.widget.Toast.LENGTH_SHORT).show()
+                }) { Text(stringResource(R.string.about_copy)) }
+            }
+            Text(stringResource(R.string.about_install_id_desc), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
         }
     }
 }

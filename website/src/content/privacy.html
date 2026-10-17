@@ -73,9 +73,10 @@ href="https://policies.google.com/technologies/partner-sites">https://policies.g
 <li><strong>Purchases.</strong> Ampli Pro and the optional chai tips are
 sold through Google Play Billing. Google handles payment; Ampli receives
 only a purchase confirmation, never your card or UPI details. When our
-server is live, the app sends each completed purchase (product, price,
-Google order number and purchase token) with the random app ID below, so
-we can check the purchase with Google and count sales.</li>
+server is live, the app sends each completed purchase (the product name
+and Google's purchase token) with the random app ID below. Our server
+checks the token with Google Play to confirm the purchase and look up
+its price, then counts the sale.</li>
 <li><strong>Install source and usage counts.</strong> When our server is
 live, the app sends once, on first launch, where the install came from
 (the Google Play install referrer, cut down to its campaign tags), with
@@ -85,7 +86,11 @@ played"), at most once per app start. These are tied to a random ID made
 by the app (not your Google account, phone number, Android ID or
 advertising ID). This data is pseudonymous, not anonymous, because the
 same ID comes with each message. You can turn usage counts off in
-<strong>Settings &gt; Share usage counts</strong>.</li>
+<strong>Settings &gt; Share usage statistics</strong>. Install and
+purchase records are always sent, because we need them to check
+purchases and stop fraud. This data is stored on our own server at
+Amazon Web Services in Mumbai, India (ap-south-1), and is not sold or
+shared with anyone.</li>
 <li><strong>Help &amp; feedback (optional).</strong> When you send a bug
 report, feature request or support message, Ampli sends what you type,
 your email only if you enter it, the app version, phone model, Android
@@ -108,9 +113,10 @@ through <strong>Settings &gt; Help &amp; feedback</strong> and mention
 your reference number; we delete it within 30 days. Support messages are
 kept for up to 2 years. To delete install, purchase and usage records
 linked to your app ID, email <strong><a
-href="mailto:support@ampliapps.in">support@ampliapps.in</a></strong>; we
-delete them within 30 days. Raw install-source data is kept for at most
-90 days.</p>
+href="mailto:support@ampliapps.in">support@ampliapps.in</a></strong>
+with the ID shown in <strong>Settings &gt; About</strong>; we delete
+them within 30 days. Raw install-source data is kept for at most 90
+days.</p>
 <h2 id="6-children">6. Children</h2>
 <p>Ampli is a general-audience media player and is not directed at
 children under 13. We do not knowingly collect personal information from

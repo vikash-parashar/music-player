@@ -164,10 +164,12 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
             if (result == SnackbarResult.ActionPerformed) AppUpdates.complete()
         }
     }
-    // Re-scan when returning to the app: picks up finished downloads and newly copied files.
+    // Re-scan when returning to the app if MediaStore changed (finished downloads, newly copied files).
     LifecycleResumeEffect(Unit) {
+        val had = hasPermission
         hasPermission = context.hasAudioPermission()
-        if (hasPermission) vm.loadLibrary()
+        // Full scan when permission was just granted; otherwise only if MediaStore changed.
+        if (hasPermission) { if (had) vm.loadLibraryIfChanged() else vm.loadLibrary() }
         onPauseOrDispose { }
     }
     LaunchedEffect(Unit) { vm.messages.collect { snackbar.showSnackbar(it) } }

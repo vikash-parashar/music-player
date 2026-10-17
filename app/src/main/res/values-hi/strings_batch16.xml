@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="welcome_privacy_title">आपकी प्राइवेसी</string>
+    <string name="welcome_privacy_body">आपके गाने कभी आपके फ़ोन से बाहर नहीं जाते। Ampli सिर्फ़ एक रैंडम ऐप ID, खरीदारी, ऐप वर्ज़न, फ़ोन मॉडल, देश, आपको ऐप कहाँ से मिला, और जो रिपोर्ट आप खुद भेजें, वही भेजता है। इसका इस्तेमाल सपोर्ट, खरीदारी की जाँच, धोखाधड़ी रोकने और Ampli को बेहतर बनाने में होता है। कुछ भी बेचा नहीं जाता।</string>
+    <string name="welcome_privacy_contact">सवाल या डेटा हटवाने के लिए: support@ampliapps.in</string>
+    <string name="about_title">ऐप के बारे में</string>
+    <string name="about_version">वर्ज़न %1$s</string>
+    <string name="about_install_id">आपकी ऐप ID</string>
+    <string name="about_install_id_desc">अपना डेटा देखने या हटवाने के लिए support@ampliapps.in पर लिखते समय यह ID बताएं।</string>
+    <string name="about_copy">कॉपी करें</string>
+    <string name="about_copied">ऐप ID कॉपी हो गई</string>
+</resources>

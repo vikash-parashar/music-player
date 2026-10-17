@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="welcome_privacy_title">మీ గోప్యత</string>
+    <string name="welcome_privacy_body">మీ పాటలు ఎప్పుడూ ఫోన్ బయటకు వెళ్లవు. Ampli ఒక రాండమ్ యాప్ ID, కొనుగోళ్లు, యాప్ వెర్షన్, ఫోన్ మోడల్, దేశం, యాప్ ఎక్కడ దొరికింది, మీరే పంపే రిపోర్ట్ మాత్రమే పంపుతుంది. ఇది సపోర్ట్, కొనుగోళ్ల తనిఖీ, మోసాల నివారణ మరియు Ampli మెరుగుదల కోసం. ఏదీ అమ్మబడదు.</string>
+    <string name="welcome_privacy_contact">ప్రశ్నలు లేదా తొలగింపు: support@ampliapps.in</string>
+    <string name="about_title">యాప్ గురించి</string>
+    <string name="about_version">వెర్షన్ %1$s</string>
+    <string name="about_install_id">మీ యాప్ ID</string>
+    <string name="about_install_id_desc">మీ డేటా చూడటానికి లేదా తొలగించడానికి support@ampliapps.in కి రాసేటప్పుడు ఈ ID చెప్పండి.</string>
+    <string name="about_copy">కాపీ</string>
+    <string name="about_copied">యాప్ ID కాపీ అయింది</string>
+</resources>

@@ -18,12 +18,12 @@ fun prop(name: String, default: String = "") = localProps.getProperty(name) ?: d
 
 android {
     namespace = "com.vikash.mp3player"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.vikash.ampli"
         minSdk = 24
-        targetSdk = 35
+        targetSdk = 36
         // CI passes the run number so each test build installs as an update over the last one.
         versionCode = (System.getenv("GITHUB_RUN_NUMBER") ?: "1").toInt()
         versionName = "1.0.${System.getenv("GITHUB_RUN_NUMBER") ?: "0"}"

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="welcome_privacy_title">আপনার গোপনীয়তা</string>
+    <string name="welcome_privacy_body">আপনার গান কখনও ফোনের বাইরে যায় না। Ampli শুধু একটি র‍্যান্ডম অ্যাপ ID, কেনাকাটা, অ্যাপ ভার্সন, ফোনের মডেল, দেশ, অ্যাপটি কোথা থেকে পেলেন এবং আপনি নিজে যে রিপোর্ট পাঠান তা পাঠায়। এটি সাপোর্ট, কেনাকাটা যাচাই, প্রতারণা রোধ এবং Ampli উন্নত করতে ব্যবহার হয়। কিছুই বিক্রি করা হয় না।</string>
+    <string name="welcome_privacy_contact">প্রশ্ন বা ডেটা মুছতে: support@ampliapps.in</string>
+    <string name="about_title">অ্যাপ সম্পর্কে</string>
+    <string name="about_version">ভার্সন %1$s</string>
+    <string name="about_install_id">আপনার অ্যাপ ID</string>
+    <string name="about_install_id_desc">ডেটা দেখতে বা মুছতে support@ampliapps.in-এ লেখার সময় এই ID উল্লেখ করুন।</string>
+    <string name="about_copy">কপি</string>
+    <string name="about_copied">অ্যাপ ID কপি হয়েছে</string>
+</resources>

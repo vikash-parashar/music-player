@@ -32,7 +32,11 @@ object OwnerHooks {
     private const val KEY_PURCHASES = "owner_purchases"
     private const val KEY_PLAYED = "owner_played_count"
     private const val KEY_USAGE = "owner_usage_on"
-    private val NAME = Regex("^[a-z0-9_]{1,40}$")
+    /** The only names the Owner server accepts for this app (spec v1.1 §3); anything else would fail the whole batch. */
+    private val ALLOWED = setOf(
+        "played_10", "pro_feature_opened", "pro_trial", "feature_eq", "feature_record_player",
+        "feature_sleep_timer", "feature_ringtone", "feature_wifi_transfer",
+    )
 
     private val base = BuildConfig.OWNER_API_URL.trimEnd('/')
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -55,7 +59,13 @@ object OwnerHooks {
         scope.launch { flushPurchases(); flushEvents() }
     }
 
-    /** Settings > Share usage counts. Installs and purchases are always sent (needed to check purchases). */
+    /** The random install id (UUID v4), shown in Settings > About so people can ask for deletion. */
+    fun installId(context: Context): String {
+        val p = context.getSharedPreferences("ampli_prefs", Context.MODE_PRIVATE)
+        return p.getString(KEY_INSTALL, null) ?: UUID.randomUUID().toString().also { p.edit().putString(KEY_INSTALL, it).apply() }
+    }
+
+    /** Settings > Share usage statistics. Installs and purchases are always sent (needed to check purchases). */
     fun usageOn(context: Context): Boolean = context.getSharedPreferences("ampli_prefs", Context.MODE_PRIVATE).getBoolean(KEY_USAGE, true)
 
     fun setUsageOn(context: Context, on: Boolean) {
@@ -66,7 +76,7 @@ object OwnerHooks {
 
     /** Counts a feature use. Sent in one batch, at most once per app start (on the next start). */
     fun event(name: String) {
-        if (!::prefs.isInitialized || !enabled || !NAME.matches(name) || !prefs.getBoolean(KEY_USAGE, true)) return
+        if (!::prefs.isInitialized || !enabled || name !in ALLOWED || !prefs.getBoolean(KEY_USAGE, true)) return
         val now = prefs.getStringSet(KEY_EVENTS, emptySet()).orEmpty()
         if (name !in now && now.size < 20) prefs.edit().putStringSet(KEY_EVENTS, now + name).apply()
     }
@@ -80,20 +90,18 @@ object OwnerHooks {
         if (n + 1 == 10) event("played_10")
     }
 
-    /** A purchase Play has completed. Retries are safe: the server keys on [orderId]. */
-    fun purchase(kind: String, sku: String, priceMicros: Long, currency: String, orderId: String?, purchaseToken: String) {
+    /**
+     * A purchase Play has completed. Only the token goes up: the server checks it with Google Play and
+     * prices it from its own table (spec v1.1 §2). Retries are safe, the token is unique.
+     */
+    fun purchase(kind: String, sku: String, purchaseToken: String) {
         if (!::prefs.isInitialized || !enabled) return
         val body = buildJsonObject {
             put("product", PRODUCT)
             put("install_id", installId)
-            put("kind", kind)
             put("sku", sku)
-            put("amount_paise", priceMicros / 10_000)
-            put("currency", currency)
-            put("order_id", orderId ?: "")
-            // The server checks the token with Google Play before it counts the money.
-            put("product_id", sku)
             put("purchase_token", purchaseToken)
+            put("kind", kind)
         }.toString()
         val queued = prefs.getStringSet(KEY_PURCHASES, emptySet()).orEmpty()
         prefs.edit().putStringSet(KEY_PURCHASES, (queued + body).toList().takeLast(30).toSet()).apply()
@@ -132,7 +140,8 @@ object OwnerHooks {
     private fun flushPurchases() {
         val queued = prefs.getStringSet(KEY_PURCHASES, emptySet()).orEmpty()
         if (queued.isEmpty()) return
-        val sent = queued.filter { post("/v1/public/purchases", it) }.toSet()
+        // 2xx = stored; 4xx = the server will never take it (unknown sku, token Google rejected), so drop it too.
+        val sent = queued.filter { postStatus("/v1/public/purchases", it).let { c -> c in 200..299 || c in 400..499 && c != 429 } }.toSet()
         if (sent.isNotEmpty()) prefs.edit().putStringSet(KEY_PURCHASES, prefs.getStringSet(KEY_PURCHASES, emptySet()).orEmpty() - sent).apply()
     }
 
@@ -149,7 +158,10 @@ object OwnerHooks {
         }
     }
 
-    private fun post(path: String, body: String): Boolean = runCatching {
+    private fun post(path: String, body: String): Boolean = postStatus(path, body) in 200..299
+
+    /** HTTP status of the call, or -1 when it never reached the server. */
+    private fun postStatus(path: String, body: String): Int = runCatching {
         val conn = (URL(base + path).openConnection() as HttpURLConnection).apply {
             requestMethod = "POST"
             connectTimeout = 10_000
@@ -159,9 +171,9 @@ object OwnerHooks {
         }
         try {
             conn.outputStream.use { it.write(body.toByteArray()) }
-            conn.responseCode in 200..299
+            conn.responseCode
         } finally {
             conn.disconnect()
         }
-    }.getOrDefault(false)
+    }.getOrDefault(-1)
 }

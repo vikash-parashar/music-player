@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="welcome_privacy_title">உங்கள் தனியுரிமை</string>
+    <string name="welcome_privacy_body">உங்கள் பாடல்கள் ஒருபோதும் போனை விட்டு வெளியே செல்லாது. Ampli ஒரு சீரற்ற ஆப் ID, வாங்கியவை, ஆப் பதிப்பு, போன் மாடல், நாடு, ஆப்பை எங்கே கண்டீர்கள், நீங்களே அனுப்பும் அறிக்கை ஆகியவற்றை மட்டுமே அனுப்புகிறது. இது உதவி, வாங்குதல் சரிபார்ப்பு, மோசடி தடுப்பு மற்றும் Ampli-ஐ மேம்படுத்த பயன்படுகிறது. எதுவும் விற்கப்படுவதில்லை.</string>
+    <string name="welcome_privacy_contact">கேள்விகள் அல்லது நீக்க: support@ampliapps.in</string>
+    <string name="about_title">ஆப் பற்றி</string>
+    <string name="about_version">பதிப்பு %1$s</string>
+    <string name="about_install_id">உங்கள் ஆப் ID</string>
+    <string name="about_install_id_desc">உங்கள் தரவைப் பார்க்க அல்லது நீக்க support@ampliapps.in-க்கு எழுதும்போது இந்த ID-ஐக் குறிப்பிடுங்கள்.</string>
+    <string name="about_copy">நகலெடு</string>
+    <string name="about_copied">ஆப் ID நகலெடுக்கப்பட்டது</string>
+</resources>

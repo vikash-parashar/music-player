@@ -85,7 +85,6 @@ fun CarModeScreen(
     onPlay: (songs: List<Song>, startIndex: Int, source: String) -> Unit,
     onClose: () -> Unit,
 ) {
-    androidx.compose.runtime.LaunchedEffect(Unit) { com.vikash.mp3player.data.OwnerHooks.event("feature_car_mode") }
     BackHandler(onBack = onClose)
     val context = LocalContext.current
     var heard by remember { mutableStateOf<String?>(null) }

@@ -193,12 +193,27 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    /** Set when MediaStore reports a change; returning to the app rescans only then. */
+    @Volatile private var libraryDirty = true
+    private val mediaObserver = object : android.database.ContentObserver(android.os.Handler(android.os.Looper.getMainLooper())) {
+        override fun onChange(selfChange: Boolean) { libraryDirty = true }
+    }.also {
+        runCatching { app.contentResolver.registerContentObserver(android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, true, it) }
+    }
+
     fun loadLibrary() {
+        libraryDirty = false
         viewModelScope.launch {
-            _library.update { it.copy(loading = true) }
+            if (_library.value.songs.isEmpty()) _library.update { it.copy(loading = true) }
             val songs = runCatching { musicApp.localMusic.loadSongs() }.getOrDefault(emptyList())
-            _library.value = LibraryState(loading = false, songs = songs)
+            // Same list as before: keep the old one so the big lists don't re-sort and redraw.
+            if (songs != _library.value.songs || _library.value.loading) _library.value = LibraryState(loading = false, songs = songs)
         }
+    }
+
+    /** On resume: rescan only if songs were added, changed or removed since the last scan. */
+    fun loadLibraryIfChanged() {
+        if (libraryDirty) loadLibrary()
     }
 
     /** Debounced, so typing doesn't fire a request per keystroke. Blank shows popular tracks. */
@@ -260,6 +275,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     override fun onCleared() {
+        runCatching { getApplication<Application>().contentResolver.unregisterContentObserver(mediaObserver) }
         player.release()
     }
 }

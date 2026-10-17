@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 11 and older. Pro and trial state come from Google Play, never from a restored backup. -->
+<full-backup-content>
+    <exclude domain="sharedpref" path="billing.xml" />
+    <exclude domain="sharedpref" path="pro_trial.xml" />
+</full-backup-content>
