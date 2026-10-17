@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="welcome_skip">தவிர்</string>
+    <string name="welcome_next">அடுத்து</string>
+    <string name="welcome_allow">இசை அணுகலை அனுமதி</string>
+    <string name="welcome_1_title">உங்கள் இசை.\nமாதக் கட்டணம் இல்லை.</string>
+    <string name="welcome_1_body">கணக்கு, சந்தா எதுவும் இல்லாமல் போனில் உள்ள எல்லா பாடல்களையும் இயக்குங்கள். பிடித்தால் Pro-வை ஒருமுறை வாங்குங்கள்.</string>
+    <string name="welcome_2_title">நீங்கள் கேட்கும் விதத்திற்காக</string>
+    <string name="welcome_2_eq">10-பேண்ட் ஈக்வலைசர் மற்றும் பேஸ் பூஸ்ட்</string>
+    <string name="welcome_2_ringtone">ரிங்டோன் மேக்கர்</string>
+    <string name="welcome_2_car">பெரிய பட்டன்களுடன் கார் பயன்முறை</string>
+    <string name="welcome_2_share">நண்பர்களுடன் பாடல்களைப் பகிருங்கள்</string>
+    <string name="welcome_3_title">உங்கள் இசையைக் கண்டறியுங்கள்</string>
+    <string name="welcome_3_body">உங்கள் பாடல்கள், ஆல்பங்கள், கோப்புறைகளைக் காட்ட Ampli-க்கு இந்த போனில் உள்ள ஆடியோ கோப்புகளுக்கான அணுகல் தேவை.</string>
+    <string name="welcome_3_private">உங்கள் இசை உங்கள் போனை விட்டு வெளியே போகாது.</string>
+    <string name="crash_title">Ampli எதிர்பாராமல் மூடப்பட்டது</string>
+    <string name="crash_body">கடந்த முறை Ampli நின்றுவிட்டது. நாங்கள் சரிசெய்ய பிழை அறிக்கையை மின்னஞ்சலில் அனுப்பவா? தொழில்நுட்ப விவரங்கள் மட்டுமே இருக்கும், பாடல்களோ தனிப்பட்ட கோப்புகளோ இல்லை.</string>
+    <string name="crash_send">அறிக்கை அனுப்பு</string>
+    <string name="crash_skip">இப்போது வேண்டாம்</string>
+    <string name="update_ready">அப்டேட் பதிவிறக்கப்பட்டது</string>
+    <string name="update_restart">மறுதொடக்கம்</string>
+</resources>

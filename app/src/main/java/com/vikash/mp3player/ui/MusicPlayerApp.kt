@@ -20,7 +20,11 @@ import androidx.compose.material.icons.filled.LibraryMusic
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.VideoLibrary
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarResult
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
@@ -45,7 +49,9 @@ import com.vikash.mp3player.data.Song
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.vikash.mp3player.data.CrashLog
 import com.vikash.mp3player.monetization.Ads
+import com.vikash.mp3player.play.AppUpdates
 import com.vikash.mp3player.monetization.BannerAd
 
 private val audioPermission =
@@ -117,8 +123,20 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
         hasPermission = context.hasAudioPermission()
         if (hasPermission) vm.loadLibrary()
     }
+    // First run shows the welcome screens; its last page asks for music access.
+    var welcomeDone by remember { mutableStateOf(vm.prefs.welcomeDone || context.hasAudioPermission()) }
     LaunchedEffect(Unit) {
-        if (!hasPermission) permissionLauncher.launch(launchPermissions)
+        if (welcomeDone && !hasPermission) permissionLauncher.launch(launchPermissions)
+    }
+    var crashReport by remember { mutableStateOf(CrashLog.pending(context)) }
+    val updateReady by AppUpdates.ready.collectAsStateWithLifecycle()
+    val updateText = stringResource(R.string.update_ready)
+    val updateAction = stringResource(R.string.update_restart)
+    LaunchedEffect(updateReady) {
+        if (updateReady) {
+            val result = snackbar.showSnackbar(updateText, actionLabel = updateAction, duration = SnackbarDuration.Indefinite)
+            if (result == SnackbarResult.ActionPerformed) AppUpdates.complete()
+        }
     }
     // Re-scan when returning to the app: picks up finished downloads and newly copied files.
     LifecycleResumeEffect(Unit) {
@@ -359,6 +377,39 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                     },
                 )
             }
+        }
+
+        val report = crashReport
+        if (welcomeDone && report != null) {
+            AlertDialog(
+                onDismissRequest = { CrashLog.clear(context); crashReport = null },
+                title = { Text(stringResource(R.string.crash_title)) },
+                text = { Text(stringResource(R.string.crash_body)) },
+                confirmButton = {
+                    TextButton(onClick = {
+                        runCatching { context.startActivity(CrashLog.emailIntent(report)) }
+                        CrashLog.clear(context)
+                        crashReport = null
+                    }) { Text(stringResource(R.string.crash_send)) }
+                },
+                dismissButton = {
+                    TextButton(onClick = { CrashLog.clear(context); crashReport = null }) {
+                        Text(stringResource(R.string.crash_skip))
+                    }
+                },
+            )
+        }
+
+        AnimatedVisibility(
+            visible = !welcomeDone,
+            enter = fadeIn(),
+            exit = fadeOut() + slideOutVertically { -it / 4 },
+        ) {
+            WelcomeScreen(onAllow = {
+                vm.prefs.setWelcomeDone()
+                welcomeDone = true
+                permissionLauncher.launch(launchPermissions)
+            })
         }
     }
 }

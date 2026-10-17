@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="welcome_skip">Skip</string>
+    <string name="welcome_next">Next</string>
+    <string name="welcome_allow">Allow music access</string>
+    <string name="welcome_1_title">Your music.\nNo monthly fee.</string>
+    <string name="welcome_1_body">Play every song on your phone, with no account and no subscription. Pay once for Pro if you like it.</string>
+    <string name="welcome_2_title">Made for how you listen</string>
+    <string name="welcome_2_eq">10-band equaliser and bass boost</string>
+    <string name="welcome_2_ringtone">Ringtone maker</string>
+    <string name="welcome_2_car">Car mode with big buttons</string>
+    <string name="welcome_2_share">Share songs with friends</string>
+    <string name="welcome_3_title">Find your music</string>
+    <string name="welcome_3_body">Ampli needs access to the audio files on this phone to show your songs, albums and folders.</string>
+    <string name="welcome_3_private">Your music never leaves your phone.</string>
+    <string name="crash_title">Ampli closed unexpectedly</string>
+    <string name="crash_body">Ampli stopped working last time. Send the error report by email so we can fix it? Only technical details are included, no songs or personal files.</string>
+    <string name="crash_send">Send report</string>
+    <string name="crash_skip">Not now</string>
+    <string name="update_ready">Update downloaded</string>
+    <string name="update_restart">Restart</string>
+</resources>

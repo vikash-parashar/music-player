@@ -83,6 +83,13 @@ class AppPrefs(context: Context) {
         prefs.edit().putString(KEY_HIDDEN, next.joinToString("\n")).apply()
     }
 
+    /** True once the first-run welcome screens were finished. */
+    val welcomeDone: Boolean get() = prefs.getBoolean(KEY_WELCOME, false)
+
+    fun setWelcomeDone() {
+        prefs.edit().putBoolean(KEY_WELCOME, true).apply()
+    }
+
     private fun readSort() = runCatching { SongSort.valueOf(prefs.getString(KEY_SORT, null) ?: "") }.getOrDefault(SongSort.Title)
     private fun readHidden() = prefs.getString(KEY_HIDDEN, "").orEmpty().split('\n').filter { it.isNotBlank() }.toSet()
 
@@ -102,5 +109,6 @@ class AppPrefs(context: Context) {
         const val KEY_SEEK_STYLE = "seek_style"
         const val KEY_SORT = "song_sort"
         const val KEY_HIDDEN = "hidden_folders"
+        const val KEY_WELCOME = "welcome_done"
     }
 }

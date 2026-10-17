@@ -121,4 +121,6 @@ dependencies {
     implementation(libs.play.services.ads)
     implementation(libs.ump)
     implementation(libs.glance.appwidget)
+    implementation(libs.play.review.ktx)
+    implementation(libs.play.app.update.ktx)
 }
