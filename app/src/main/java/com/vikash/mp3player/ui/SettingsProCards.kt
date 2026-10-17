@@ -95,6 +95,28 @@ fun DiscAnimationCard() {
     }
 }
 
+/**
+ * Free: Lite mode for older phones. On by default when the phone has about 3 GB of RAM or less;
+ * the dance buddy, visualiser and looping animations rest and transitions are shorter.
+ */
+@Composable
+fun LiteModeCard() {
+    val prefs = (LocalContext.current.applicationContext as MusicApp).prefs
+    val on by prefs.liteMode.collectAsState()
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(16.dp)) {
+            CardTitle(stringResource(R.string.lite_mode_title), pro = false, unlocked = true) {
+                Switch(checked = on, onCheckedChange = prefs::setLiteMode)
+            }
+            Text(
+                stringResource(R.string.lite_mode_desc),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
 /** Pro: 10-band equaliser, bass boost and 3D surround. */
 @Composable
 fun ProSoundCard(unlocked: Boolean, onGetPro: () -> Unit) {

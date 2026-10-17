@@ -59,6 +59,7 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableLongStateOf
@@ -427,14 +428,15 @@ fun StatusMakerScreen(song: Song, isPro: Boolean, onGetPro: () -> Unit, onClose:
 /** The 9:16 card: what the video will look like. The record turns at the video's speed. */
 @Composable
 private fun StatusPreviewCard(title: String, artist: String, lyric: String?, watermark: String?) {
-    val spin = rememberInfiniteTransition(label = "statusSpin")
-    // 120 degrees per second, like the made video.
-    val angle by spin.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(tween(3000, easing = LinearEasing), RepeatMode.Restart),
-        label = "statusAngle",
-    )
+    // 120 degrees per second, like the made video. Lite mode shows the record still.
+    val angleState: State<Float> = if (LocalLiteMode.current) remember { mutableFloatStateOf(0f) } else
+        rememberInfiniteTransition(label = "statusSpin").animateFloat(
+            initialValue = 0f,
+            targetValue = 360f,
+            animationSpec = infiniteRepeatable(tween(3000, easing = LinearEasing), RepeatMode.Restart),
+            label = "statusAngle",
+        )
+    val angle by angleState
     val description = stringResource(R.string.status_preview_desc)
     Box(
         Modifier.fillMaxWidth(0.62f).widthIn(max = 280.dp).aspectRatio(9f / 16f)

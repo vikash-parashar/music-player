@@ -159,7 +159,8 @@ fun CarModeScreen(
             )
             Box(Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
                 val b = buddy
-                if (b != null) {
+                // Lite mode hides the buddy but keeps the driver's pick for when it is turned off.
+                if (b != null && !LocalLiteMode.current) {
                     DanceBuddy(b, state.isPlaying, current?.mediaId, Modifier.fillMaxSize().padding(top = 8.dp))
                 } else {
                     Text(stringResource(R.string.car_swipe_hint), color = Color.White.copy(alpha = 0.4f), fontSize = 14.sp, textAlign = TextAlign.Center)

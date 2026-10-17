@@ -29,7 +29,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -159,8 +161,10 @@ fun RecognizeDialog(isPro: Boolean, onGetPro: () -> Unit, onDismiss: () -> Unit)
 
 @Composable
 private fun Pulse() {
-    val t = rememberInfiniteTransition(label = "pulse")
-    val scale by t.animateFloat(0.85f, 1.15f, infiniteRepeatable(tween(700), RepeatMode.Reverse), label = "scale")
+    // Lite mode: the circle stays still.
+    val scaleState: State<Float> = if (LocalLiteMode.current) remember { mutableFloatStateOf(1f) } else
+        rememberInfiniteTransition(label = "pulse").animateFloat(0.85f, 1.15f, infiniteRepeatable(tween(700), RepeatMode.Reverse), label = "scale")
+    val scale by scaleState
     Box(Modifier.size(96.dp).scale(scale).clip(CircleShape).background(Ampli.Gradient), contentAlignment = Alignment.Center) {
         Icon(Icons.Default.Hearing, null, tint = Color.White, modifier = Modifier.size(44.dp))
     }

@@ -7,6 +7,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -14,6 +15,7 @@ import com.vikash.mp3player.monetization.Ads
 import com.vikash.mp3player.monetization.BillingManager
 import com.vikash.mp3player.play.AppUpdates
 import com.vikash.mp3player.play.PlayReview
+import com.vikash.mp3player.ui.LocalLiteMode
 import com.vikash.mp3player.ui.MainViewModel
 import com.vikash.mp3player.ui.MusicPlayerApp
 import com.vikash.mp3player.ui.theme.Mp3PlayerTheme
@@ -56,8 +58,10 @@ class MainActivity : ComponentActivity() {
             val pro by app.proUnlocked.collectAsState()
             val amoled by app.prefs.amoledBlack.collectAsState()
             val wallpaper by app.prefs.wallpaperColors.collectAsState()
+            val lite by app.prefs.liteMode.collectAsState()
             // Pro looks fall back to the brand theme if Pro (or the trial) ends.
             Mp3PlayerTheme(themeMode, amoledBlack = pro && amoled, wallpaperColors = pro && wallpaper) {
+                CompositionLocalProvider(LocalLiteMode provides lite) {
                 MusicPlayerApp(vm, onRemoveAds = {
                     when (billing.purchaseRemoveAds(this)) {
                         BillingManager.Buy.OPENED -> Unit
@@ -69,6 +73,7 @@ class MainActivity : ComponentActivity() {
                         ).show()
                     }
                 })
+                }
             }
         }
     }

@@ -50,6 +50,7 @@ class MusicApp : Application(), SingletonImageLoader.Factory {
         com.vikash.mp3player.data.OwnerHooks.init(this, onboarded)
     }
 
+    // Lite mode: covers appear at once instead of fading in (read when the loader is first made).
     override fun newImageLoader(context: PlatformContext): ImageLoader =
-        ImageLoader.Builder(context).crossfade(true).build()
+        ImageLoader.Builder(context).crossfade(!prefs.liteMode.value).build()
 }

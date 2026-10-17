@@ -96,11 +96,15 @@ private fun speedFactor(posMs: Long, durMs: Long): Float {
     return 0.06f + 0.94f * FastOutSlowInEasing.transform(f)
 }
 
-/** Loads the song poster for the CD sticker; null until it is ready or when there is none. */
+/**
+ * Loads the song poster for the CD sticker; null until it is ready or when there is none.
+ * Lite mode decodes it at half size to save memory.
+ */
 @Composable
 fun rememberStickerPainter(uri: Uri?, px: Int = 512): Painter? {
     val context = LocalContext.current
-    val painter = rememberAsyncImagePainter(remember(uri) { ImageRequest.Builder(context).data(uri).size(px).build() })
+    val size = if (LocalLiteMode.current) px / 2 else px
+    val painter = rememberAsyncImagePainter(remember(uri, size) { ImageRequest.Builder(context).data(uri).size(size).build() })
     val state by painter.state.collectAsState()
     return painter.takeIf { uri != null && state is AsyncImagePainter.State.Success }
 }
