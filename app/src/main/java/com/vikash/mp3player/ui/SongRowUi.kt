@@ -95,7 +95,8 @@ internal fun SongRowContent(
 
     // The current song "floats": a soft rose glow sweeps across it and it bobs gently.
     // Only the current row runs these loops, so the rest of the list stays cheap.
-    val fx = if (isCurrent) rememberNowPlayingFx() else null
+    // Lite mode: the row is highlighted but still.
+    val fx = if (isCurrent && !LocalLiteMode.current) rememberNowPlayingFx() else null
     val sweep = fx?.sweep?.value ?: 0f
     val lift = remember { Animatable(0f) }
     LaunchedEffect(isCurrent) { lift.animateTo(if (isCurrent) 1f else 0f, spring(dampingRatio = 0.55f, stiffness = 300f)) }
@@ -150,11 +151,11 @@ internal fun SongRowContent(
                 Text(
                     song.title,
                     maxLines = 1,
-                    overflow = if (isCurrent) TextOverflow.Clip else TextOverflow.Ellipsis,
+                    overflow = if (isCurrent && fx != null) TextOverflow.Clip else TextOverflow.Ellipsis,
                     fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Normal,
                     color = if (isCurrent) primary else MaterialTheme.colorScheme.onSurface,
                     // Long titles of the playing song glide sideways so the whole name is seen.
-                    modifier = if (playing) Modifier.basicMarquee(iterations = Int.MAX_VALUE, initialDelayMillis = 800) else Modifier,
+                    modifier = if (playing && fx != null) Modifier.basicMarquee(iterations = Int.MAX_VALUE, initialDelayMillis = 800) else Modifier,
                 )
                 Text(
                     listOf(song.artist, formatDuration(song.durationMs)).filter { it.isNotBlank() }.joinToString(" · "),
@@ -189,6 +190,15 @@ private fun rememberNowPlayingFx(): NowPlayingFx {
 /** Three bouncing equaliser bars; they rest low while paused. */
 @Composable
 fun PlayingBars(playing: Boolean, modifier: Modifier = Modifier, color: Color = Color.White) {
+    if (LocalLiteMode.current) {
+        // Lite mode: three still bars, taller while playing.
+        Row(modifier, horizontalArrangement = Arrangement.spacedBy(3.dp), verticalAlignment = Alignment.Bottom) {
+            floatArrayOf(0.6f, 1f, 0.75f).forEach { h ->
+                Box(Modifier.weight(1f).fillMaxHeight(if (playing) h else 0.3f).clip(RoundedCornerShape(2.dp)).background(color))
+            }
+        }
+        return
+    }
     val t = rememberInfiniteTransition(label = "bars")
     val speeds = intArrayOf(520, 380, 640)
     val heights = speeds.mapIndexed { i, ms ->

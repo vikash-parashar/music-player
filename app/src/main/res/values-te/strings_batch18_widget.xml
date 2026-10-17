@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_up_next">తర్వాత · %1$s</string>
+    <string name="widget_queue_end">క్యూలో చివరి పాట</string>
+    <string name="widget_album_art">ఆల్బమ్ ఆర్ట్</string>
+</resources>

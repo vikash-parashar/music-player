@@ -96,6 +96,7 @@ fun SettingsScreen(
     tipPrices: Map<String, String> = emptyMap(),
     tipsReceived: Int = 0,
     onTip: (String) -> Unit = {},
+    songs: List<com.vikash.mp3player.data.Song> = emptyList(),
 ) {
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
@@ -107,6 +108,7 @@ fun SettingsScreen(
         if (BuildConfig.DEBUG) TestProCard(adsRemoved, onTestPro)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) LanguageCard()
         AppearanceCard(themeMode, onThemeMode)
+        LiteModeCard()
         ProLookCard(proUnlocked, onRemoveAds)
         SeekStyleCard(seekStyle, isPro = adsRemoved, onPick = onSeekStyle, onGetPro = onRemoveAds)
         SleepTimerCard()
@@ -121,6 +123,7 @@ fun SettingsScreen(
         TransferCard(onOpenTransfer)
         FoldersCard(folders, hiddenFolders, onFolderHidden)
         DuplicatesCard(onOpenDuplicates)
+        FindMissingArtCard(songs)
         ConvertCard(onConverted = onLibraryChanged)
         BackupCard(onBackup, onRestore)
         InviteCard()

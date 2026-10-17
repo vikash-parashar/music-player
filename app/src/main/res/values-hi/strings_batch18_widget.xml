@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_up_next">आगे · %1$s</string>
+    <string name="widget_queue_end">कतार का आख़िरी गाना</string>
+    <string name="widget_album_art">एल्बम आर्ट</string>
+</resources>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="album_art_find">ఆల్బమ్ కవర్ వెతకండి</string>
+    <string name="album_art_consent_title">ఆల్బమ్ కవర్ వెతకండి</string>
+    <string name="album_art_consent_text">కవర్లు కనుగొనడానికి ఆల్బమ్ మరియు కళాకారుల పేర్లు MusicBrainz మరియు Cover Art Archive కి పంపబడతాయి. ఇంకేమీ పంపబడదు.</string>
+    <string name="album_art_continue">కొనసాగించు</string>
+    <string name="album_art_found">ఆల్బమ్ కవర్ దొరికింది</string>
+    <string name="album_art_not_found">ఈ ఆల్బమ్‌కు కవర్ దొరకలేదు</string>
+    <string name="album_art_offline">MusicBrainz ను చేరుకోలేకపోయాం. ఇంటర్నెట్ చూసి తర్వాత మళ్లీ ప్రయత్నించండి.</string>
+    <string name="album_art_already">ఈ ఆల్బమ్‌కు ఇప్పటికే కవర్ ఉంది</string>
+    <string name="album_art_settings_title">లేని ఆల్బమ్ కవర్లు వెతకండి</string>
+    <string name="album_art_settings_desc">కవర్ లేని ఆల్బమ్‌ల కోసం కవర్లు వెతుకుతుంది, సెకనుకు ఒక ఆల్బమ్. కవర్లు Ampli లోపలే సేవ్ అవుతాయి; మీ పాటల ఫైల్‌లు ఎప్పుడూ మార్చబడవు.</string>
+    <string name="album_art_settings_button">లేని ఆల్బమ్ కవర్లు వెతకండి</string>
+    <string name="album_art_scanning">ఏ ఆల్బమ్‌లకు కవర్ లేదో చూస్తోంది…</string>
+    <string name="album_art_progress">ఆల్బమ్ %1$d / %2$d · %3$d దొరికాయి</string>
+    <string name="album_art_done">%2$d ఆల్బమ్‌లలో %1$d కి కవర్లు దొరికాయి</string>
+    <string name="album_art_none_missing">ప్రతి ఆల్బమ్‌కు ఇప్పటికే కవర్ ఉంది</string>
+</resources>

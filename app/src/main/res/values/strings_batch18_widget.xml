@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_up_next">Up next · %1$s</string>
+    <string name="widget_queue_end">Last song in the queue</string>
+    <string name="widget_album_art">Album art</string>
+</resources>

@@ -130,7 +130,7 @@ fun NowPlayingScreen(
                 // Saved queues: tap to switch (resumes where it left off), x to remove.
                 if (state.queues.size > 1) {
                     LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(bottom = 8.dp)) {
-                        items(state.queues.size) { i ->
+                        items(state.queues.size, key = { i -> "$i:${state.queues[i].name}" }) { i ->
                             val q = state.queues[i]
                             val selected = i == state.activeQueue
                             val queueName = if (q.name == ALL_SONGS_QUEUE) stringResource(R.string.library_all_songs) else q.name
@@ -138,6 +138,7 @@ fun NowPlayingScreen(
                                 selected = selected,
                                 onClick = { player.switchQueue(i) },
                                 label = { Text("$queueName · ${q.size}", maxLines = 1) },
+                                modifier = Modifier.animateItem(),
                                 trailingIcon = {
                                     Icon(
                                         Icons.Default.Close, stringResource(R.string.player_remove_queue),
@@ -149,12 +150,22 @@ fun NowPlayingScreen(
                     }
                 }
                 val listState = rememberLazyListState(initialFirstVisibleItemIndex = state.currentIndex)
+                // The same song can be in the queue twice, so each key is the song id plus which
+                // copy of it this is; removing another song keeps the rest of the keys.
+                val queueKeys = remember(state.queue) {
+                    val seen = HashMap<String, Int>()
+                    state.queue.map { item ->
+                        val n = seen.getOrElse(item.mediaId) { 0 }
+                        seen[item.mediaId] = n + 1
+                        "${item.mediaId}#$n"
+                    }
+                }
                 LazyColumn(Modifier.weight(1f), state = listState) {
-                    items(state.queue.size) { i ->
+                    items(state.queue.size, key = { i -> queueKeys[i] }) { i ->
                         val item = state.queue[i]
                         val isCurrent = i == state.currentIndex
                         Row(
-                            Modifier.fillMaxWidth().clickable { player.skipToQueueItem(i) }.padding(vertical = 6.dp),
+                            Modifier.animateItem().fillMaxWidth().clickable { player.skipToQueueItem(i) }.padding(vertical = 6.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Artwork(item.artworkUri, 40.dp)

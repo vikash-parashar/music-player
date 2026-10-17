@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Lite mode for phones with about 3 GB of RAM or less (Settings, under Theme). -->
+    <string name="lite_mode_title">பழைய போன்களுக்கான லைட் மோட்</string>
+    <string name="lite_mode_desc">டான்ஸ் பட்டி, விஷுவலைசர் மற்றும் சுழலும் சிடிகளை நிறுத்துகிறது; குறைந்த நினைவகம் உள்ள போன்களிலும் Ampli சீராக இயங்கும்.</string>
+    <string name="lite_visualizer_note">லைட் மோட் இயக்கத்தில் உள்ளது, அதனால் விஷுவலைசர் எளிய பார்களைக் காட்டுகிறது.</string>
+</resources>

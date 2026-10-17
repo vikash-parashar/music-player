@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Lite mode for phones with about 3 GB of RAM or less (Settings, under Theme). -->
+    <string name="lite_mode_title">పాత ఫోన్ల కోసం లైట్ మోడ్</string>
+    <string name="lite_mode_desc">డాన్స్ బడ్డీ, విజువలైజర్, తిరిగే సీడీలను ఆపుతుంది, తద్వారా తక్కువ మెమరీ ఉన్న ఫోన్లలో కూడా Ampli సాఫీగా నడుస్తుంది.</string>
+    <string name="lite_visualizer_note">లైట్ మోడ్ ఆన్‌లో ఉంది, కాబట్టి విజువలైజర్ సాధారణ బార్లను చూపిస్తుంది.</string>
+</resources>

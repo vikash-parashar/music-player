@@ -5,10 +5,12 @@
         <exclude domain="sharedpref" path="billing.xml" />
         <exclude domain="sharedpref" path="pro_trial.xml" />
         <exclude domain="sharedpref" path="owner_hooks.xml" />
+        <exclude domain="file" path="albumart/" />
     </cloud-backup>
     <device-transfer>
         <exclude domain="sharedpref" path="billing.xml" />
         <exclude domain="sharedpref" path="pro_trial.xml" />
         <exclude domain="sharedpref" path="owner_hooks.xml" />
+        <exclude domain="file" path="albumart/" />
     </device-transfer>
 </data-extraction-rules>

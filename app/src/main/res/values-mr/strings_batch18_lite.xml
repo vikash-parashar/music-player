@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Lite mode for phones with about 3 GB of RAM or less (Settings, under Theme). -->
+    <string name="lite_mode_title">जुन्या फोनसाठी लाइट मोड</string>
+    <string name="lite_mode_desc">डान्स बडी, व्हिज्युअलायझर आणि फिरणाऱ्या सीडी थांबवतो, म्हणजे कमी मेमरीच्या फोनवरही Ampli सुरळीत चालते.</string>
+    <string name="lite_visualizer_note">लाइट मोड चालू आहे, त्यामुळे व्हिज्युअलायझर साधे बार दाखवतो.</string>
+</resources>

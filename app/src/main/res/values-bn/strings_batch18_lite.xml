@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Lite mode for phones with about 3 GB of RAM or less (Settings, under Theme). -->
+    <string name="lite_mode_title">পুরোনো ফোনের জন্য লাইট মোড</string>
+    <string name="lite_mode_desc">ডান্স বাডি, ভিজ্যুয়ালাইজার আর ঘুরন্ত সিডি থামিয়ে রাখে, যাতে কম মেমোরির ফোনেও Ampli মসৃণভাবে চলে।</string>
+    <string name="lite_visualizer_note">লাইট মোড চালু আছে, তাই ভিজ্যুয়ালাইজার সাধারণ বার দেখায়।</string>
+</resources>

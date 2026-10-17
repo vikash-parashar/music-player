@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="album_art_find">অ্যালবাম কভার খুঁজুন</string>
+    <string name="album_art_consent_title">অ্যালবাম কভার খুঁজুন</string>
+    <string name="album_art_consent_text">কভার খুঁজতে অ্যালবাম ও শিল্পীর নাম MusicBrainz এবং Cover Art Archive-এ পাঠানো হয়। এ ছাড়া আর কিছুই পাঠানো হয় না।</string>
+    <string name="album_art_continue">চালিয়ে যান</string>
+    <string name="album_art_found">অ্যালবাম কভার পাওয়া গেছে</string>
+    <string name="album_art_not_found">এই অ্যালবামের কোনো কভার পাওয়া যায়নি</string>
+    <string name="album_art_offline">MusicBrainz-এ সংযোগ করা যায়নি। ইন্টারনেট দেখে পরে আবার চেষ্টা করুন।</string>
+    <string name="album_art_already">এই অ্যালবামের কভার আগে থেকেই আছে</string>
+    <string name="album_art_settings_title">না থাকা অ্যালবাম কভার খুঁজুন</string>
+    <string name="album_art_settings_desc">যেসব অ্যালবামের কভার নেই সেগুলোর কভার খোঁজে, প্রতি সেকেন্ডে একটি অ্যালবাম। কভার Ampli-র ভেতরে সেভ হয়; আপনার গানের ফাইল কখনো বদলানো হয় না।</string>
+    <string name="album_art_settings_button">না থাকা অ্যালবাম কভার খুঁজুন</string>
+    <string name="album_art_scanning">কোন অ্যালবামের কভার নেই দেখা হচ্ছে…</string>
+    <string name="album_art_progress">অ্যালবাম %1$d / %2$d · %3$dটি পাওয়া গেছে</string>
+    <string name="album_art_done">%2$dটির মধ্যে %1$dটি অ্যালবামের কভার পাওয়া গেছে</string>
+    <string name="album_art_none_missing">সব অ্যালবামের কভার আগে থেকেই আছে</string>
+</resources>
