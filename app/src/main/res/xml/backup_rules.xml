@@ -3,4 +3,5 @@
 <full-backup-content>
     <exclude domain="sharedpref" path="billing.xml" />
     <exclude domain="sharedpref" path="pro_trial.xml" />
+    <exclude domain="sharedpref" path="owner_hooks.xml" />
 </full-backup-content>

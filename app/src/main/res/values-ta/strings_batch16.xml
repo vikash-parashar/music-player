@@ -9,4 +9,7 @@
     <string name="about_install_id_desc">உங்கள் தரவைப் பார்க்க அல்லது நீக்க support@ampliapps.in-க்கு எழுதும்போது இந்த ID-ஐக் குறிப்பிடுங்கள்.</string>
     <string name="about_copy">நகலெடு</string>
     <string name="about_copied">ஆப் ID நகலெடுக்கப்பட்டது</string>
+    <string name="billing_loading">Google Play-இலிருந்து விலையைப் பெறுகிறது…</string>
+    <string name="transfer_idle_title">பரிமாற்றம் நின்றது</string>
+    <string name="transfer_idle_desc">10 நிமிடங்கள் எதுவும் அனுப்பப்படவில்லை, அதனால் Ampli கேட்பதை நிறுத்தியது. புதிய முகவரிக்கு மீண்டும் முயல் என்பதைத் தட்டவும்.</string>
 </resources>

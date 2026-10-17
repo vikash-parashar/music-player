@@ -9,4 +9,7 @@
     <string name="about_install_id_desc">Quote this ID when you write to support@ampliapps.in to see or delete your data.</string>
     <string name="about_copy">Copy</string>
     <string name="about_copied">App ID copied</string>
+    <string name="billing_loading">Getting the price from Google Play…</string>
+    <string name="transfer_idle_title">Transfer stopped</string>
+    <string name="transfer_idle_desc">Nothing was sent for 10 minutes, so Ampli stopped listening. Tap Try again to get a new address.</string>
 </resources>

@@ -64,11 +64,22 @@ fun WifiTransferScreen(onClose: () -> Unit) {
     var address by remember { mutableStateOf<String?>(null) }
     var starting by remember { mutableStateOf(true) }
     var attempt by remember { mutableIntStateOf(0) }
+    var stoppedIdle by remember { mutableStateOf(false) }
 
     LaunchedEffect(attempt) {
         starting = true
+        stoppedIdle = false
         address = withContext(Dispatchers.IO) { runCatching { server.start() }.getOrNull() }
         starting = false
+        // Close the door after 10 minutes with nothing sent, so the phone isn't left listening on the Wi-Fi.
+        while (address != null) {
+            kotlinx.coroutines.delay(30_000)
+            if (server.idleMillis() > 10 * 60_000L) {
+                server.stop()
+                address = null
+                stoppedIdle = true
+            }
+        }
     }
     DisposableEffect(Unit) {
         // Keep the screen on so the phone doesn't sleep in the middle of a big transfer.
@@ -96,9 +107,12 @@ fun WifiTransferScreen(onClose: () -> Unit) {
                     when {
                         starting -> Text(stringResource(R.string.transfer_starting), color = Color.White)
                         address == null -> {
-                            Text(stringResource(R.string.transfer_connect_wifi), color = Color.White, style = MaterialTheme.typography.titleLarge)
                             Text(
-                                stringResource(R.string.transfer_same_wifi),
+                                stringResource(if (stoppedIdle) R.string.transfer_idle_title else R.string.transfer_connect_wifi),
+                                color = Color.White, style = MaterialTheme.typography.titleLarge,
+                            )
+                            Text(
+                                stringResource(if (stoppedIdle) R.string.transfer_idle_desc else R.string.transfer_same_wifi),
                                 color = Color.White.copy(alpha = 0.9f),
                             )
                             Spacer(Modifier.height(10.dp))

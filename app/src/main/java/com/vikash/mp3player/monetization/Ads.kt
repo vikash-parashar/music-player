@@ -76,6 +76,12 @@ object Ads {
     /** True where the law requires a way to change ad consent later (EU/UK, some US states). */
     val privacyOptionsRequired: StateFlow<Boolean> = _privacyRequired.asStateFlow()
 
+    /** Same as [privacyOptionsRequired], read from UMP's saved answer so it also works before any screen opens. */
+    fun privacyRequired(context: android.content.Context): Boolean = _privacyRequired.value || runCatching {
+        UserMessagingPlatform.getConsentInformation(context).privacyOptionsRequirementStatus ==
+            com.google.android.ump.ConsentInformation.PrivacyOptionsRequirementStatus.REQUIRED
+    }.getOrDefault(false)
+
     private fun refreshPrivacy(activity: Activity) {
         _privacyRequired.value = UserMessagingPlatform.getConsentInformation(activity).privacyOptionsRequirementStatus ==
             com.google.android.ump.ConsentInformation.PrivacyOptionsRequirementStatus.REQUIRED

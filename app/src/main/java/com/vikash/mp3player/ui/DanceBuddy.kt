@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import com.vikash.mp3player.R
 import com.vikash.mp3player.playback.VisualizerTap
+import kotlinx.coroutines.delay
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.exp
@@ -106,18 +107,25 @@ fun DanceBuddy(buddy: Buddy, isPlaying: Boolean, songKey: String?, modifier: Mod
     // Fallback step when the tap hears nothing (quiet intro, or audio the tap can't read).
     LaunchedEffect(Unit) {
         while (true) {
-            withFrameNanos { }
+            delay(50)
             val t = now()
             if (playing && t - lastBeat.longValue > 650) beat(t, beats, lastBeat, interval, steady = true)
         }
     }
-    // Redraw every frame while anything moves.
-    val tick = remember { mutableLongStateOf(0L) }
-    LaunchedEffect(Unit) { while (true) withFrameNanos { tick.longValue = it } }
 
     val shown = remember { mutableIntStateOf(0) }
     val previous = remember { mutableIntStateOf(0) }
     val swapAt = remember { mutableLongStateOf(0L) }
+    // Redraw every frame only while something moves (dancing, the pose jump, the hop-in, a fade);
+    // paused, the buddy is a still picture and costs nothing.
+    val tick = remember { mutableLongStateOf(0L) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            val t = now()
+            val moving = playing || t < poseUntil.longValue + FADE_MS || t - enterAt.longValue < 1000 || t - swapAt.longValue < 200
+            if (moving) withFrameNanos { tick.longValue = it } else delay(100)
+        }
+    }
 
     Canvas(modifier) {
         tick.longValue // read so the canvas redraws each frame
@@ -134,7 +142,6 @@ fun DanceBuddy(buddy: Buddy, isPlaying: Boolean, songKey: String?, modifier: Mod
             squash = if (k > 0.45f && k < 0.52f) 0.1f else 0f
         } else if (!playing) {
             target = 0
-            squash = sin(t / 1000f * 2.2f) * 0.01f
         } else {
             val n = beats.intValue
             target = ROUTINES[(n / 8) % ROUTINES.size][n % 8]

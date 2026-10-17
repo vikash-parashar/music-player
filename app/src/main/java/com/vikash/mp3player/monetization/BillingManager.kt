@@ -1,5 +1,7 @@
 package com.vikash.mp3player.monetization
 
+import android.os.SystemClock
+import java.lang.ref.WeakReference
 import android.app.Activity
 import android.content.Context
 import com.android.billingclient.api.AcknowledgePurchaseParams
@@ -76,28 +78,53 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
         })
     }
 
-    /** Opens Google Play's payment sheet. Returns false when Play has no product to sell yet. */
-    fun purchaseRemoveAds(activity: Activity): Boolean {
-        val details = productDetails ?: run { start(); return false }
-        val params = BillingFlowParams.newBuilder()
-            .setProductDetailsParamsList(
-                listOf(BillingFlowParams.ProductDetailsParams.newBuilder().setProductDetails(details).build())
-            )
-            .build()
-        client.launchBillingFlow(activity, params)
-        return true
+    /** What a buy tap did: opened Play's sheet, is waiting for Play's price, or Play has no such product. */
+    enum class Buy { OPENED, LOADING, UNAVAILABLE }
+
+    // A tap that came before Play answered: the sheet opens as soon as the price arrives (within 15 s).
+    private var waitingFor: String? = null
+    private var waitingActivity: WeakReference<Activity>? = null
+    private var waitingSince = 0L
+    private var proQueried = false
+    private var tipsQueried = false
+
+    /** Opens Google Play's payment sheet for Ampli Pro. */
+    fun purchaseRemoveAds(activity: Activity): Buy =
+        buy(activity, BuildConfig.REMOVE_ADS_PRODUCT_ID, productDetails, proQueried)
+
+    /** Opens Play's payment sheet for a "buy the developer a chai" tip. */
+    fun purchaseTip(activity: Activity, productId: String): Buy =
+        buy(activity, productId, tipDetails[productId], tipsQueried)
+
+    private fun buy(activity: Activity, id: String, details: ProductDetails?, queried: Boolean): Buy {
+        if (details != null) { launch(activity, details); return Buy.OPENED }
+        if (queried && client.isReady) return Buy.UNAVAILABLE
+        waitingFor = id
+        waitingActivity = WeakReference(activity)
+        waitingSince = SystemClock.elapsedRealtime()
+        if (client.isReady) queryProduct() else start()
+        return Buy.LOADING
     }
 
-    /** Opens Play's payment sheet for a "buy the developer a chai" tip. False when Play has no such product yet. */
-    fun purchaseTip(activity: Activity, productId: String): Boolean {
-        val details = tipDetails[productId] ?: run { start(); return false }
+    private fun launch(activity: Activity, details: ProductDetails) {
         val params = BillingFlowParams.newBuilder()
             .setProductDetailsParamsList(
                 listOf(BillingFlowParams.ProductDetailsParams.newBuilder().setProductDetails(details).build())
             )
             .build()
         client.launchBillingFlow(activity, params)
-        return true
+    }
+
+    /** Called when Play's product answer arrives: opens the sheet for a tap that was waiting on it. */
+    private fun launchWaiting() {
+        val id = waitingFor ?: return
+        val details = if (id == BuildConfig.REMOVE_ADS_PRODUCT_ID) productDetails else tipDetails[id]
+        val activity = waitingActivity?.get()
+        if (details == null || activity == null) return
+        waitingFor = null
+        waitingActivity = null
+        if (SystemClock.elapsedRealtime() - waitingSince > 15_000 || activity.isFinishing || activity.isDestroyed) return
+        activity.runOnUiThread { launch(activity, details) }
     }
 
     /** "Restore purchase": asks Play again which products this Google account owns. */
@@ -128,7 +155,9 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
             if (result.responseCode != BillingClient.BillingResponseCode.OK) return@queryProductDetailsAsync
             val list = found.productDetailsList
             productDetails = list.firstOrNull()
+            proQueried = true
             _price.value = productDetails?.oneTimePurchaseOfferDetails?.formattedPrice
+            launchWaiting()
         }
         val tipParams = QueryProductDetailsParams.newBuilder()
             .setProductList(
@@ -141,6 +170,8 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
             if (result.responseCode != BillingClient.BillingResponseCode.OK) return@queryProductDetailsAsync
             val list = found.productDetailsList
             tipDetails = list.associateBy { it.productId }
+            tipsQueried = true
+            launchWaiting()
             _tipPrices.value = list.mapNotNull { d -> d.oneTimePurchaseOfferDetails?.formattedPrice?.let { d.productId to it } }.toMap()
         }
     }

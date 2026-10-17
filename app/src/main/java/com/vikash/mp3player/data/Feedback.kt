@@ -72,8 +72,9 @@ class Feedback(private val context: Context) {
 
     val hasServer: Boolean get() = base.isNotEmpty()
 
+    /** Same random id the Owner numbers use (kept out of backups). */
     val installId: String
-        get() = prefs.getString(KEY_INSTALL, null) ?: UUID.randomUUID().toString().also { prefs.edit().putString(KEY_INSTALL, it).apply() }
+        get() = OwnerHooks.installId(context)
 
     suspend fun send(
         kind: FeedbackKind,

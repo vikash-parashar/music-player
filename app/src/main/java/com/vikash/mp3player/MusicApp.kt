@@ -43,7 +43,11 @@ class MusicApp : Application(), SingletonImageLoader.Factory {
         super.onCreate()
         com.vikash.mp3player.data.CrashLog.install(this)
         com.vikash.mp3player.monetization.ProTrial.init(this)
-        com.vikash.mp3player.data.OwnerHooks.init(this)
+        // Users upgrading from builds without the welcome screens already gave music access.
+        val audio = if (android.os.Build.VERSION.SDK_INT >= 33) android.Manifest.permission.READ_MEDIA_AUDIO else android.Manifest.permission.READ_EXTERNAL_STORAGE
+        val onboarded = getSharedPreferences("ampli_prefs", MODE_PRIVATE).getBoolean("welcome_done", false) ||
+            checkSelfPermission(audio) == android.content.pm.PackageManager.PERMISSION_GRANTED
+        com.vikash.mp3player.data.OwnerHooks.init(this, onboarded)
     }
 
     override fun newImageLoader(context: PlatformContext): ImageLoader =

@@ -9,4 +9,7 @@
     <string name="about_install_id_desc">अपना डेटा देखने या हटवाने के लिए support@ampliapps.in पर लिखते समय यह ID बताएं।</string>
     <string name="about_copy">कॉपी करें</string>
     <string name="about_copied">ऐप ID कॉपी हो गई</string>
+    <string name="billing_loading">Google Play से कीमत ली जा रही है…</string>
+    <string name="transfer_idle_title">ट्रांसफ़र बंद हुआ</string>
+    <string name="transfer_idle_desc">10 मिनट तक कुछ नहीं भेजा गया, इसलिए Ampli ने सुनना बंद कर दिया। नया पता पाने के लिए फिर कोशिश करें पर टैप करें।</string>
 </resources>

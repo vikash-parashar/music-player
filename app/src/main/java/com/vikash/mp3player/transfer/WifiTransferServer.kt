@@ -41,6 +41,11 @@ class WifiTransferServer(private val context: Context) {
     // A few uploads at once is plenty; extra connections wait their turn.
     private val pool = Executors.newFixedThreadPool(4)
     private var server: ServerSocket? = null
+    @Volatile private var lastActivity = 0L
+    private val active = java.util.concurrent.atomic.AtomicInteger(0)
+
+    /** Milliseconds since the last request, or 0 while a request (an upload) is running. */
+    fun idleMillis(): Long = if (active.get() > 0) 0L else android.os.SystemClock.elapsedRealtime() - lastActivity
 
     private val _received = MutableStateFlow<List<String>>(emptyList())
     /** File names received so far, newest first. */
@@ -53,10 +58,20 @@ class WifiTransferServer(private val context: Context) {
         val socket = ServerSocket().apply { reuseAddress = true }
         runCatching { socket.bind(InetSocketAddress(PORT)) }.onFailure { socket.bind(InetSocketAddress(0)) }
         server = socket
+        lastActivity = android.os.SystemClock.elapsedRealtime()
         thread(name = "ampli-transfer", isDaemon = true) {
             while (!socket.isClosed) {
                 val client = runCatching { socket.accept() }.getOrNull() ?: break
-                runCatching { pool.execute { client.use { runCatching { handle(it) } } } }.onFailure { runCatching { client.close() } }
+                lastActivity = android.os.SystemClock.elapsedRealtime()
+                runCatching {
+                    pool.execute {
+                        active.incrementAndGet()
+                        try { client.use { runCatching { handle(it) } } } finally {
+                            active.decrementAndGet()
+                            lastActivity = android.os.SystemClock.elapsedRealtime()
+                        }
+                    }
+                }.onFailure { runCatching { client.close() } }
             }
         }
         return "http://$ip:${socket.localPort}/$token"

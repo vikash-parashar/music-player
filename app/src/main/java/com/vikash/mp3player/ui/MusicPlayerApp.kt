@@ -136,8 +136,11 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     }
     val onTip: (String) -> Unit = { id ->
         val activity = context as? android.app.Activity
-        if (activity == null || !vm.billing.purchaseTip(activity, id)) {
-            Toast.makeText(context, context.getString(R.string.tip_unavailable), Toast.LENGTH_SHORT).show()
+        when (if (activity == null) null else vm.billing.purchaseTip(activity, id)) {
+            com.vikash.mp3player.monetization.BillingManager.Buy.OPENED -> Unit
+            com.vikash.mp3player.monetization.BillingManager.Buy.LOADING ->
+                Toast.makeText(context, context.getString(R.string.billing_loading), Toast.LENGTH_SHORT).show()
+            else -> Toast.makeText(context, context.getString(R.string.tip_unavailable), Toast.LENGTH_SHORT).show()
         }
     }
     val snackbar = remember { SnackbarHostState() }
@@ -493,6 +496,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
         ) {
             WelcomeScreen(onAllow = {
                 vm.prefs.setWelcomeDone()
+                com.vikash.mp3player.data.OwnerHooks.onboardingDone(context)
                 welcomeDone = true
                 permissionLauncher.launch(launchPermissions)
             })

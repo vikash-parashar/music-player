@@ -1,5 +1,8 @@
 package com.vikash.mp3player.ui
 
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.Dispatchers
+import androidx.compose.runtime.produceState
 import com.vikash.mp3player.data.HinglishSearch
 import androidx.compose.material.icons.automirrored.filled.PlaylistPlay
 import androidx.compose.material.icons.filled.RemoveCircleOutline
@@ -210,15 +213,18 @@ fun LibraryScreen(
     val searchKeys = remember(state.songs) {
         lazy { state.songs.associate { it.id to HinglishSearch.key("${it.title} ${it.artist} ${it.album}") } }
     }
-    val filtered = remember(state.songs, filter, sort) {
-        val q = filter.trim()
-        val qKey = HinglishSearch.key(q)
-        val matching = if (q.isEmpty()) state.songs else state.songs.filter {
-            it.title.contains(q, true) || it.artist.contains(q, true) ||
-                it.album.contains(q, true) || it.folder.contains(q, true) ||
-                (qKey.length >= 2 && searchKeys.value[it.id]?.contains(qKey) == true)
+    // Filtering and sorting 10k+ songs happens off the main thread; the old list stays until it's done.
+    val filtered by produceState(initialValue = state.songs, state.songs, filter, sort) {
+        value = withContext(Dispatchers.Default) {
+            val q = filter.trim()
+            val qKey = HinglishSearch.key(q)
+            val matching = if (q.isEmpty()) state.songs else state.songs.filter {
+                it.title.contains(q, true) || it.artist.contains(q, true) ||
+                    it.album.contains(q, true) || it.folder.contains(q, true) ||
+                    (qKey.length >= 2 && searchKeys.value[it.id]?.contains(qKey) == true)
+            }
+            sort.apply(matching)
         }
-        sort.apply(matching)
     }
     val sortMenu: @Composable () -> Unit = {
         var open by remember { mutableStateOf(false) }
