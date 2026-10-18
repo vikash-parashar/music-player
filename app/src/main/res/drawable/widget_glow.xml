@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Soft ring that grows and fades behind play/pause while playing (driven by an indeterminate ProgressBar). -->
+<animation-list xmlns:android="http://schemas.android.com/apk/res/android" android:oneshot="false">
+    <item android:drawable="@drawable/widget_glow_0" android:duration="180" />
+    <item android:drawable="@drawable/widget_glow_1" android:duration="180" />
+    <item android:drawable="@drawable/widget_glow_2" android:duration="180" />
+    <item android:drawable="@drawable/widget_glow_3" android:duration="180" />
+    <item android:drawable="@drawable/widget_glow_4" android:duration="180" />
+    <item android:drawable="@drawable/widget_glow_5" android:duration="360" />
+</animation-list>

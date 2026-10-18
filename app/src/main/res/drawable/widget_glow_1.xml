@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Glow ring behind the widget's play/pause, frame 2 of 6. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp" android:height="48dp" android:viewportWidth="48" android:viewportHeight="48">
+    <path android:strokeColor="#70FFFFFF" android:strokeWidth="2.16" android:pathData="M5.00,24.00a19.00,19.00 0 1,0 38.00,0a19.00,19.00 0 1,0 -38.00,0Z" />
+</vector>

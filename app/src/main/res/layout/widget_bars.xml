@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Dancing bars before the song title: an indeterminate ProgressBar runs the animation-list by itself. -->
+<ProgressBar xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@android:style/Widget.ProgressBar"
+    android:layout_width="14dp"
+    android:layout_height="12dp"
+    android:minWidth="0dp"
+    android:minHeight="0dp"
+    android:maxWidth="1000dp"
+    android:maxHeight="1000dp"
+    android:indeterminate="true"
+    android:indeterminateOnly="true"
+    android:indeterminateDrawable="@drawable/widget_bars" />

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Widget background, top layer: a soft white highlight in the top-left corner. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <gradient android:angle="315" android:startColor="#2EFFFFFF" android:centerColor="#00FFFFFF"
+        android:centerX="0.45" android:centerY="0.45" android:endColor="#00FFFFFF" />
+    <corners android:radius="24dp" />
+</shape>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Spins the widget disc: a ProgressBar drives the level 0..10000, which maps to 0..360 degrees. -->
+<rotate xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/widget_disc"
+    android:fromDegrees="0" android:toDegrees="360"
+    android:pivotX="50%" android:pivotY="50%" />
