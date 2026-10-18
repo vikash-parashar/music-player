@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Default size 4x1. Resizable from 2x1 (art + play/pause) up to 4x3 (big art, up next, bigger buttons);
-    AmpliWidget picks the layout with SizeMode.Responsive.
+    Default size 4x1. Resizable from 2x1 (disc + play/pause) up to 4x3 (disc, up next, elapsed time,
+    bigger buttons); AmpliWidget picks the layout with SizeMode.Responsive.
 -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:description="@string/widget_description"

@@ -138,6 +138,16 @@ class PlaybackService : MediaLibraryService() {
 
             override fun onPlaybackStateChanged(playbackState: Int) {
                 if (playbackState == Player.STATE_READY && player.duration > 0) trackedDurationMs = player.duration
+                // The length is often unknown at the song change; the widget's "/ 4:28" needs it.
+                if (playbackState == Player.STATE_READY) refreshWidget(player)
+            }
+
+            override fun onPositionDiscontinuity(
+                oldPosition: Player.PositionInfo,
+                newPosition: Player.PositionInfo,
+                reason: Int,
+            ) {
+                refreshWidget(player) // a seek: the widget's clock carries on from the new position
             }
 
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {

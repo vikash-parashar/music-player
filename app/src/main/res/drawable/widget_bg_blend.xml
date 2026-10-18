@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Widget background from album colours, layer 2: opaque at the bottom-right, clear at the top-left.
+    Tinted with the second colour in code (the tint keeps the alpha), so the card fades between the two.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <gradient android:angle="135" android:startColor="#FFFFFFFF" android:endColor="#00FFFFFF" />
+    <corners android:radius="24dp" />
+</shape>

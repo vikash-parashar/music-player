@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Dancing bars shown before the song title while playing (driven by an indeterminate ProgressBar). -->
+<animation-list xmlns:android="http://schemas.android.com/apk/res/android" android:oneshot="false">
+    <item android:drawable="@drawable/widget_bars_0" android:duration="120" />
+    <item android:drawable="@drawable/widget_bars_1" android:duration="120" />
+    <item android:drawable="@drawable/widget_bars_2" android:duration="120" />
+    <item android:drawable="@drawable/widget_bars_3" android:duration="120" />
+    <item android:drawable="@drawable/widget_bars_4" android:duration="120" />
+    <item android:drawable="@drawable/widget_bars_5" android:duration="120" />
+</animation-list>

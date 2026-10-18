@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Widget equaliser bars, frame 1 of 6. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="14dp" android:height="12dp" android:viewportWidth="14" android:viewportHeight="12">
+    <path android:fillColor="#FFFFFFFF" android:pathData="M0.50,12V8.10a1.10,1.10 0 0,1 2.20,0V12Z" />
+    <path android:fillColor="#FFFFFFFF" android:pathData="M4.00,12V3.10a1.10,1.10 0 0,1 2.20,0V12Z" />
+    <path android:fillColor="#FFFFFFFF" android:pathData="M7.50,12V6.10a1.10,1.10 0 0,1 2.20,0V12Z" />
+    <path android:fillColor="#FFFFFFFF" android:pathData="M11.00,12V1.10a1.10,1.10 0 0,1 2.20,0V12Z" />
+</vector>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The widget's spinning record, embedded with Glance AndroidRemoteViews. An indeterminate ProgressBar
+    animates its drawable's level, and the rotate drawable turns that into 0..360 degrees, so the disc
+    spins with no app code running. The album art sits on top (from Glance) and does not turn.
+-->
+<ProgressBar xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@android:style/Widget.ProgressBar"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:minWidth="0dp"
+    android:minHeight="0dp"
+    android:maxWidth="1000dp"
+    android:maxHeight="1000dp"
+    android:indeterminate="true"
+    android:indeterminateOnly="true"
+    android:indeterminateBehavior="repeat"
+    android:indeterminateDuration="4000"
+    android:interpolator="@android:anim/linear_interpolator"
+    android:indeterminateDrawable="@drawable/widget_disc_spin" />

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Widget vinyl disc: grooves, an off-centre sheen so the spin is visible, and a rose label under the album art. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="96dp" android:height="96dp" android:viewportWidth="100" android:viewportHeight="100">
+    <path android:fillColor="#FF101014" android:pathData="M0.00,50.00a50.00,50.00 0 1,0 100.00,0a50.00,50.00 0 1,0 -100.00,0Z" />
+    <path android:strokeColor="#26FFFFFF" android:strokeWidth="0.6" android:pathData="M2.50,50.00a47.50,47.50 0 1,0 95.00,0a47.50,47.50 0 1,0 -95.00,0Z" />
+    <path android:strokeColor="#26FFFFFF" android:strokeWidth="0.6" android:pathData="M5.00,50.00a45.00,45.00 0 1,0 90.00,0a45.00,45.00 0 1,0 -90.00,0Z" />
+    <path android:strokeColor="#26FFFFFF" android:strokeWidth="0.6" android:pathData="M7.50,50.00a42.50,42.50 0 1,0 85.00,0a42.50,42.50 0 1,0 -85.00,0Z" />
+    <path android:strokeColor="#26FFFFFF" android:strokeWidth="0.6" android:pathData="M10.00,50.00a40.00,40.00 0 1,0 80.00,0a40.00,40.00 0 1,0 -80.00,0Z" />
+    <path android:strokeColor="#26FFFFFF" android:strokeWidth="0.6" android:pathData="M12.50,50.00a37.50,37.50 0 1,0 75.00,0a37.50,37.50 0 1,0 -75.00,0Z" />
+    <path android:strokeColor="#26FFFFFF" android:strokeWidth="0.6" android:pathData="M15.00,50.00a35.00,35.00 0 1,0 70.00,0a35.00,35.00 0 1,0 -70.00,0Z" />
+    <path android:strokeColor="#26FFFFFF" android:strokeWidth="0.6" android:pathData="M17.50,50.00a32.50,32.50 0 1,0 65.00,0a32.50,32.50 0 1,0 -65.00,0Z" />
+    <path android:fillColor="#30FFFFFF" android:pathData="M7.56,25.50A49,49 0 0,1 33.24,3.96L39.40,20.87A31,31 0 0,0 23.15,34.50Z" />
+    <path android:fillColor="#14FFFFFF" android:pathData="M92.44,74.50A49,49 0 0,1 74.50,92.44L65.50,76.85A31,31 0 0,0 76.85,65.50Z" />
+    <path android:fillColor="#99FFFFFF" android:pathData="M86.81,28.00a1.30,1.30 0 1,0 2.60,0a1.30,1.30 0 1,0 -2.60,0Z" />
+    <path android:fillColor="#FFE11D48" android:pathData="M20.50,50.00a29.50,29.50 0 1,0 59.00,0a29.50,29.50 0 1,0 -59.00,0Z" />
+    <path android:fillColor="#FF9F1239" android:pathData="M22.28,39.91A29.5,29.5 0 0,1 39.91,22.28L45.90,38.72A12,12 0 0,0 38.72,45.90Z" />
+    <path android:strokeColor="#55FFFFFF" android:strokeWidth="1.2" android:pathData="M19.60,50.00a30.40,30.40 0 1,0 60.80,0a30.40,30.40 0 1,0 -60.80,0Z" />
+    <path android:fillColor="#FF101014" android:pathData="M47.40,50.00a2.60,2.60 0 1,0 5.20,0a2.60,2.60 0 1,0 -5.20,0Z" />
+</vector>

@@ -1,7 +1,9 @@
 package com.vikash.mp3player
 
 import android.app.Application
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import coil3.ImageLoader
 import coil3.PlatformContext
 import coil3.SingletonImageLoader
@@ -48,6 +50,8 @@ class MusicApp : Application(), SingletonImageLoader.Factory {
         val onboarded = getSharedPreferences("ampli_prefs", MODE_PRIVATE).getBoolean("welcome_done", false) ||
             checkSelfPermission(audio) == android.content.pm.PackageManager.PERMISSION_GRANTED
         com.vikash.mp3player.data.OwnerHooks.init(this, onboarded)
+        // Lite mode switched in Settings: the widget's disc, bars and glow stop or start.
+        appScope.launch { prefs.liteMode.drop(1).collect { com.vikash.mp3player.widget.WidgetState.redraw(this@MusicApp) } }
     }
 
     // Lite mode: covers appear at once instead of fading in (read when the loader is first made).
