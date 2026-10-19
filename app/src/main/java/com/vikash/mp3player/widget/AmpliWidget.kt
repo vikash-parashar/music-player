@@ -545,13 +545,15 @@ class AmpliWidgetReceiver : GlanceAppWidgetReceiver() {
 class PlayerAction : ActionCallback {
     override suspend fun onAction(context: Context, glanceId: GlanceId, parameters: ActionParameters) {
         val command = parameters[AmpliWidget.CommandKey] ?: return
-        // Glance runs this off the main thread, but a MediaController built there uses the main
-        // looper and refuses calls from any other thread, so every button press was dropped.
-        withContext(Dispatchers.Main) { send(context, command) }
+        // Glance hands us the BroadcastReceiver's context, which Android forbids from binding to a
+        // service, so the MediaController never connected and every press was dropped. The
+        // application context may bind. Glance also runs this off the main thread, while a
+        // MediaController only accepts calls on the main looper.
+        withContext(Dispatchers.Main) { send(context.applicationContext, command) }
     }
 
     private suspend fun send(context: Context, command: String) {
-        val controller = connect(context) ?: return
+        val controller = withTimeoutOrNull(5_000) { connect(context) } ?: return
         try {
             // If the app was closed, the button woke a fresh service with an empty player, so
             // every press did nothing. Load the queue the app saved, like the app does on launch.
