@@ -2,6 +2,7 @@ package com.vikash.mp3player.playback
 
 import android.content.ComponentName
 import android.content.Context
+import android.content.SharedPreferences
 import android.net.Uri
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
@@ -268,17 +269,9 @@ class PlayerConnection(private val context: Context) {
     }
 
     private fun restoreQueue(c: MediaController) {
-        val raw = prefs.getString(KEY_QUEUES, null)
-        queues = if (raw != null) {
-            runCatching { json.decodeFromString<List<SavedQueue>>(raw) }.getOrNull().orEmpty().toMutableList()
-        } else {
-            // Builds before multiple queues saved a single queue under these keys.
-            val old = prefs.getString("items", null)
-                ?.let { runCatching { json.decodeFromString<List<SavedItem>>(it) }.getOrNull() }
-            if (old.isNullOrEmpty()) mutableListOf()
-            else mutableListOf(SavedQueue(DEFAULT_QUEUE, old, prefs.getInt("index", 0), prefs.getLong("position", 0)))
-        }
-        active = prefs.getInt(KEY_ACTIVE, 0).coerceIn(0, (queues.size - 1).coerceAtLeast(0))
+        val (saved, index) = readSavedQueues(prefs, json)
+        queues = saved.toMutableList()
+        active = index
         loadActive(c) // ready to resume, but don't start playing on app launch
     }
 
@@ -288,6 +281,35 @@ class PlayerConnection(private val context: Context) {
         const val KEY_QUEUES = "queues"
         const val KEY_ACTIVE = "active"
     }
+}
+
+/** The saved queues and the index of the active one. */
+private fun readSavedQueues(prefs: SharedPreferences, json: Json): Pair<List<SavedQueue>, Int> {
+    val raw = prefs.getString("queues", null)
+    val queues = if (raw != null) {
+        runCatching { json.decodeFromString<List<SavedQueue>>(raw) }.getOrNull().orEmpty()
+    } else {
+        // Builds before multiple queues saved a single queue under these keys.
+        val old = prefs.getString("items", null)
+            ?.let { runCatching { json.decodeFromString<List<SavedItem>>(it) }.getOrNull() }
+        if (old.isNullOrEmpty()) emptyList()
+        else listOf(SavedQueue("All songs", old, prefs.getInt("index", 0), prefs.getLong("position", 0)))
+    }
+    return queues to prefs.getInt("active", 0).coerceIn(0, (queues.size - 1).coerceAtLeast(0))
+}
+
+/**
+ * Loads the queue the app saved last time into [player], for a player that starts empty because
+ * the app had been closed (a widget or headset button woke the service). Returns false when
+ * nothing was saved.
+ */
+fun loadSavedQueue(context: Context, player: Player): Boolean {
+    val prefs = context.getSharedPreferences("queue", Context.MODE_PRIVATE)
+    val (queues, active) = readSavedQueues(prefs, Json { ignoreUnknownKeys = true })
+    val q = queues.getOrNull(active)?.takeIf { it.items.isNotEmpty() } ?: return false
+    player.setMediaItems(q.items.map { it.toMediaItem() }, q.index.coerceIn(0, q.items.lastIndex), q.positionMs)
+    player.prepare()
+    return true
 }
 
 @Serializable

@@ -69,6 +69,7 @@ import com.vikash.mp3player.MainActivity
 import com.vikash.mp3player.MusicApp
 import com.vikash.mp3player.R
 import com.vikash.mp3player.playback.PlaybackService
+import com.vikash.mp3player.playback.loadSavedQueue
 import coil3.SingletonImageLoader
 import coil3.request.ImageRequest
 import coil3.request.SuccessResult
@@ -552,12 +553,23 @@ class PlayerAction : ActionCallback {
     private suspend fun send(context: Context, command: String) {
         val controller = connect(context) ?: return
         try {
+            // If the app was closed, the button woke a fresh service with an empty player, so
+            // every press did nothing. Load the queue the app saved, like the app does on launch.
+            val restored = controller.mediaItemCount == 0 && loadSavedQueue(context, controller)
+            if (controller.mediaItemCount == 0) return
             when (command) {
                 AmpliWidget.CMD_PREV -> controller.seekToPrevious()
                 AmpliWidget.CMD_NEXT -> controller.seekToNext()
-                AmpliWidget.CMD_TOGGLE -> if (controller.isPlaying) controller.pause() else if (controller.mediaItemCount > 0) {
+                AmpliWidget.CMD_TOGGLE -> if (controller.isPlaying && !restored) controller.pause() else {
                     if (controller.playbackState == Player.STATE_IDLE) controller.prepare()
                     controller.play()
+                }
+            }
+            if (restored || command == AmpliWidget.CMD_TOGGLE) {
+                // Stay connected until the song is really playing (or paused): releasing earlier
+                // unbinds a service that is not yet in the foreground, and Android stops it.
+                withTimeoutOrNull(4_000) {
+                    while (controller.playWhenReady != controller.isPlaying) delay(100)
                 }
             }
             delay(300) // let the command reach the service before disconnecting
