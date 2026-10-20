@@ -84,6 +84,9 @@ fun NowPlayingScreen(
     onClose: () -> Unit,
     onVisualizer: () -> Unit = {},
     onMakeStatus: () -> Unit = {},
+    introToken: Int = 0,
+    introShown: Int = 0,
+    onIntroShown: (Int) -> Unit = {},
 ) {
     androidx.compose.runtime.LaunchedEffect(Unit) { com.vikash.mp3player.data.OwnerHooks.event("feature_record_player") }
     var showCast by remember { mutableStateOf(false) }
@@ -95,6 +98,16 @@ fun NowPlayingScreen(
     val bookmarkStore = (androidx.compose.ui.platform.LocalContext.current.applicationContext as com.vikash.mp3player.MusicApp).bookmarks
     val allBookmarks by bookmarkStore.all.collectAsState()
     BackHandler { if (showQueue) showQueue = false else onClose() }
+    // A song tapped in a list: the record drops onto the deck and the arm swings in, once per tap.
+    // Keyed on the tap only, so marking it shown doesn't cut the animation short.
+    val intro = remember { androidx.compose.animation.core.Animatable(1f) }
+    LaunchedEffect(introToken) {
+        if (introToken != 0 && introToken != introShown) {
+            onIntroShown(introToken)
+            intro.snapTo(0f)
+            intro.animateTo(1f, androidx.compose.animation.core.tween(2600, easing = androidx.compose.animation.core.LinearEasing))
+        }
+    }
     val current = state.current
     if (current == null) {
         LaunchedEffect(Unit) { onClose() }
@@ -204,6 +217,7 @@ fun NowPlayingScreen(
                         isPlaying = state.isPlaying,
                         progress = { position.toFloat() / state.durationMs.coerceAtLeast(1) },
                         modifier = Modifier.fillMaxWidth().weight(1f).padding(vertical = 8.dp),
+                        intro = { intro.value },
                     )
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
