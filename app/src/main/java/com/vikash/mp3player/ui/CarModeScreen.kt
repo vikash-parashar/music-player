@@ -71,6 +71,19 @@ import com.vikash.mp3player.playback.PlayerConnection
 import com.vikash.mp3player.playback.PlayerUiState
 import com.vikash.mp3player.ui.theme.Ampli
 import kotlin.math.abs
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.filled.Face
+import androidx.compose.material.icons.filled.MusicNote
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.layout.ContentScale
+import kotlinx.coroutines.delay
 
 private val CarBg = Color(0xFF0B0A10)
 
@@ -116,8 +129,23 @@ fun CarModeScreen(
     val current = state.current
     var buddy by remember { mutableStateOf(Buddy.load(context)) }
     var promoClosed by remember { mutableStateOf(CarHubPromo.isClosed(context)) }
+    var pickBuddy by remember { mutableStateOf(false) }
+    // Song progress for the ring and the thin bar; twice a second is plenty for a glance.
+    var progress by remember { mutableFloatStateOf(0f) }
+    LaunchedEffect(current?.mediaId, state.isPlaying, state.durationMs) {
+        while (true) {
+            progress = (player.positionMs().toFloat() / state.durationMs.coerceAtLeast(1)).coerceIn(0f, 1f)
+            delay(500)
+        }
+    }
+    var clock by remember { mutableStateOf("") }
+    LaunchedEffect(Unit) {
+        val fmt = android.text.format.DateFormat.getTimeFormat(context)
+        while (true) { clock = fmt.format(java.util.Date()); delay(15_000) }
+    }
+    val lite = LocalLiteMode.current
     Box(
-        Modifier.fillMaxSize().background(CarBg).systemBarsPadding()
+        Modifier.fillMaxSize().background(CarBg)
             .pointerInput(Unit) {
                 var total = 0f
                 detectHorizontalDragGestures(
@@ -128,19 +156,47 @@ fun CarModeScreen(
                 ) { _, dx -> total += dx }
             },
     ) {
-        Column(Modifier.fillMaxSize().padding(horizontal = 20.dp, vertical = 12.dp)) {
+        // Soft rose glow behind the buddy.
+        if (!lite) Box(
+            Modifier.fillMaxWidth().fillMaxHeight(0.62f)
+                .background(Brush.radialGradient(listOf(Ampli.Rose.copy(alpha = 0.28f), Color.Transparent))),
+        )
+        Column(Modifier.fillMaxSize().systemBarsPadding().padding(horizontal = 20.dp, vertical = 12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(stringResource(R.string.car_mode), color = Color.White.copy(alpha = 0.6f), fontSize = 18.sp, modifier = Modifier.weight(1f))
-                IconButton(onClick = onClose, modifier = Modifier.size(56.dp)) {
-                    Icon(Icons.Default.Close, stringResource(R.string.car_exit), tint = Color.White, modifier = Modifier.size(32.dp))
-                }
+                Text(clock, color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
+                CarIconButton(Icons.Default.Face, stringResource(R.string.car_buddy_title)) { pickBuddy = true }
+                Spacer(Modifier.width(10.dp))
+                CarIconButton(Icons.Default.Close, stringResource(R.string.car_exit), onClick = onClose)
             }
             if (!promoClosed) {
+                Spacer(Modifier.height(10.dp))
                 CarHubPromoCard(
                     onOpen = { CarHubPromo.open(context) },
                     onClose = { promoClosed = true; CarHubPromo.close(context) },
                 )
-                Spacer(Modifier.height(8.dp))
+            }
+            Box(Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
+                val b = buddy
+                // Thin ring that fills as the song plays.
+                Canvas(Modifier.size(250.dp)) {
+                    val w = 2.dp.toPx()
+                    drawCircle(Color.White.copy(alpha = 0.08f), style = Stroke(w))
+                    drawArc(Ampli.Rose, -90f, 360f * progress, false, style = Stroke(w, cap = StrokeCap.Round))
+                }
+                // Lite mode hides the buddy but keeps the driver's pick for when it is turned off.
+                if (b != null && !lite) {
+                    DanceBuddy(b, state.isPlaying, current?.mediaId, Modifier.size(220.dp))
+                } else {
+                    val art = rememberStickerPainter(current?.artworkUri, 512)
+                    Box(
+                        Modifier.size(200.dp).clip(RoundedCornerShape(28.dp))
+                            .background(Brush.linearGradient(listOf(Ampli.Rose, Color(0xFF1B1022)))),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        if (art != null) Image(art, null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+                        else Icon(Icons.Default.MusicNote, null, tint = Color.White.copy(alpha = 0.8f), modifier = Modifier.size(72.dp))
+                    }
+                }
             }
             Text(
                 current?.title ?: stringResource(R.string.car_nothing_playing),
@@ -150,46 +206,93 @@ fun CarModeScreen(
             )
             Text(
                 heard ?: current?.artist ?: stringResource(R.string.car_tap_mic),
-                color = if (heard != null) Ampli.Rose else Color.White.copy(alpha = 0.7f), fontSize = 18.sp,
+                color = if (heard != null) Color(0xFFFDA4AF) else Color.White.copy(alpha = 0.65f), fontSize = 17.sp,
                 textAlign = TextAlign.Center, maxLines = 1, overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.fillMaxWidth().padding(top = 2.dp),
             )
-            Box(Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
-                val b = buddy
-                // Lite mode hides the buddy but keeps the driver's pick for when it is turned off.
-                if (b != null && !LocalLiteMode.current) {
-                    DanceBuddy(b, state.isPlaying, current?.mediaId, Modifier.fillMaxSize().padding(top = 8.dp))
-                } else {
-                    Text(stringResource(R.string.car_swipe_hint), color = Color.White.copy(alpha = 0.4f), fontSize = 14.sp, textAlign = TextAlign.Center)
-                }
+            Box(
+                Modifier.fillMaxWidth().padding(start = 6.dp, end = 6.dp, top = 14.dp).height(4.dp)
+                    .clip(CircleShape).background(Color.White.copy(alpha = 0.12f)),
+            ) {
+                Box(Modifier.fillMaxWidth(progress).fillMaxHeight().clip(CircleShape).background(Ampli.Rose))
             }
-            // Buddy picker, all options visible at once.
-            Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally)) {
-                (Buddy.entries + listOf<Buddy?>(null)).forEach { option ->
-                    val on = option == buddy
-                    Text(
-                        stringResource(option?.label ?: R.string.buddy_off),
-                        color = if (on) Color.White else Color(0xFFCFC6CC), fontSize = 13.sp, fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.clip(CircleShape)
-                            .background(if (on) Ampli.Rose.copy(alpha = 0.3f) else Color(0xFF16131A))
-                            .border(1.dp, if (on) Color(0xFFFDA4AF) else Color(0xFF2A2430), CircleShape)
-                            .clickable { buddy = option; Buddy.save(context, option) }
-                            .padding(horizontal = 12.dp, vertical = 7.dp),
-                    )
-                }
-            }
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
-                BoldRoundButton(Icons.Default.SkipPrevious, stringResource(R.string.common_previous), 88.dp) { player.previous() }
+            Spacer(Modifier.height(18.dp))
+            // One dock: previous, play/pause, next.
+            Row(
+                Modifier.fillMaxWidth().clip(CircleShape).background(Color.White.copy(alpha = 0.06f))
+                    .border(1.dp, Color.White.copy(alpha = 0.08f), CircleShape)
+                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                DockKey(Icons.Default.SkipPrevious, stringResource(R.string.common_previous)) { player.previous() }
                 BoldRoundButton(
                     if (state.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
                     stringResource(if (state.isPlaying) R.string.common_pause else R.string.common_play),
-                    116.dp, highlight = true,
+                    96.dp, highlight = true,
                 ) { player.togglePlay() }
-                BoldRoundButton(Icons.Default.SkipNext, stringResource(R.string.common_next), 88.dp) { player.next() }
+                DockKey(Icons.Default.SkipNext, stringResource(R.string.common_next)) { player.next() }
             }
-            Spacer(Modifier.height(12.dp))
-            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                BoldRoundButton(Icons.Default.Mic, stringResource(R.string.car_voice_search), 72.dp, iconTint = Color(0xFF67E8F9)) { listen() }
+            Spacer(Modifier.height(14.dp))
+            Row(
+                Modifier.fillMaxWidth().height(60.dp).clip(CircleShape)
+                    .background(Color(0x240891B2)).border(1.dp, Color(0x5967E8F9), CircleShape)
+                    .clickable { listen() },
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(Icons.Default.Mic, null, tint = Color(0xFF67E8F9), modifier = Modifier.size(26.dp))
+                Spacer(Modifier.width(10.dp))
+                Text(stringResource(R.string.car_say_song), color = Color(0xFFCFFAFE), fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
+            }
+            Text(
+                stringResource(R.string.car_swipe_short), color = Color.White.copy(alpha = 0.35f), fontSize = 12.sp,
+                textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
+            )
+        }
+    }
+    if (pickBuddy) BuddySheet(buddy, onPick = { buddy = it; Buddy.save(context, it) }, onDismiss = { pickBuddy = false })
+}
+
+/** Round dark key in the top bar (buddy, close). */
+@Composable
+private fun CarIconButton(icon: ImageVector, label: String, onClick: () -> Unit) {
+    Box(
+        Modifier.size(52.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.08f)).clickable(onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) { Icon(icon, label, tint = Color.White, modifier = Modifier.size(26.dp)) }
+}
+
+/** Previous / next inside the dock: a big icon with a large touch area, no extra chrome. */
+@Composable
+private fun DockKey(icon: ImageVector, label: String, onClick: () -> Unit) {
+    Box(Modifier.size(76.dp).clip(CircleShape).clickable(onClick = onClick), contentAlignment = Alignment.Center) {
+        Icon(icon, label, tint = Color.White, modifier = Modifier.size(42.dp))
+    }
+}
+
+/** Girl, Boy or Off, picked from a small sheet instead of a row of chips. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun BuddySheet(current: Buddy?, onPick: (Buddy?) -> Unit, onDismiss: () -> Unit) {
+    val sheet = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheet, containerColor = Color(0xFF16131A)) {
+        Column(Modifier.fillMaxWidth().padding(horizontal = 18.dp).padding(bottom = 28.dp)) {
+            Text(stringResource(R.string.car_buddy_title), color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.SemiBold,
+                textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(bottom = 14.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                (Buddy.entries + listOf<Buddy?>(null)).forEach { option ->
+                    val on = option == current
+                    Box(
+                        Modifier.weight(1f).height(64.dp).clip(RoundedCornerShape(16.dp))
+                            .background(if (on) Ampli.Rose.copy(alpha = 0.22f) else Color(0xFF0F0D12))
+                            .border(1.dp, if (on) Color(0xFFFDA4AF) else Color(0xFF2A2430), RoundedCornerShape(16.dp))
+                            .clickable { onPick(option); onDismiss() },
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(stringResource(option?.label ?: R.string.buddy_off), color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                    }
+                }
             }
         }
     }

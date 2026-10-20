@@ -38,13 +38,17 @@ jobs:
           echo "OWNER_API_URL=${OWNER_API_URL}" >> local.properties
           echo "SUPPORT_EMAIL=${SUPPORT_EMAIL}" >> local.properties
 
-      - name: Build debug APK
+      # Ampli-N.apk is the fast, non-debuggable test build (qa). Ampli-N-protest.apk is the slower
+      # debuggable build that keeps the test "unlock Pro" switch, for trying Pro features.
+      - name: Build test APKs
         run: |
           chmod +x gradlew
-          ./gradlew --no-daemon assembleDebug
+          ./gradlew --no-daemon assembleQa assembleDebug
 
-      - name: Rename APK
-        run: cp app/build/outputs/apk/debug/app-debug.apk "Ampli-${GITHUB_RUN_NUMBER}.apk"
+      - name: Rename APKs
+        run: |
+          cp app/build/outputs/apk/qa/app-qa.apk "Ampli-${GITHUB_RUN_NUMBER}.apk"
+          cp app/build/outputs/apk/debug/app-debug.apk "Ampli-${GITHUB_RUN_NUMBER}-protest.apk"
 
       # Play Store bundle. Always built (so release-only problems show up early), but only
       # signed and attached when the upload key secrets exist. Test Pro switch is debug-only.

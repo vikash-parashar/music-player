@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="car_buddy_title">Dance buddy</string>
+    <string name="car_say_song">Say a song or singer</string>
+    <string name="car_swipe_short">Swipe anywhere to change song</string>
+</resources>
