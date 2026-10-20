@@ -73,13 +73,6 @@ import com.vikash.mp3player.ui.theme.Ampli
 import kotlin.math.abs
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.width
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.ui.graphics.StrokeCap
@@ -180,21 +173,8 @@ fun CarModeScreen(
                     drawCircle(Color.White.copy(alpha = 0.08f), style = Stroke(w))
                     drawArc(Ampli.Rose, -90f, 360f * progress, false, style = Stroke(w, cap = StrokeCap.Round))
                 }
-                // A CD with the album art as its label: it spins with the music and floats gently.
-                val float = rememberInfiniteTransition(label = "carCd")
-                val drift by float.animateFloat(
-                    -1f, 1f, infiniteRepeatable(tween(2400, easing = FastOutSlowInEasing), RepeatMode.Reverse), label = "drift",
-                )
-                val floating = state.isPlaying && !lite
-                SpinningCd(
-                    current?.artworkUri, 220.dp,
-                    // Read inside the layer so the float only redraws, never recomposes.
-                    Modifier.graphicsLayer {
-                        val m = if (floating) drift else 0f
-                        translationY = m * 8.dp.toPx(); translationX = m * 4.dp.toPx()
-                    },
-                    spinning = !lite,
-                )
+                // A CD with the album art as its label. It stays put and only spins with the music.
+                SpinningCd(current?.artworkUri, 220.dp, spinning = !lite)
             }
             Text(
                 current?.title ?: stringResource(R.string.car_nothing_playing),
