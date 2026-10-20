@@ -102,6 +102,15 @@ class AppPrefs(context: Context) {
         prefs.edit().putString(KEY_COLOR_PROFILE, profile.id).apply()
     }
 
+    /** Now Playing picture style (record, cassette, boombox...). Pro styles fall back to Record without Pro. */
+    private val _playerStyle = MutableStateFlow(PlayerStyle.from(prefs.getString(KEY_PLAYER_STYLE, null)))
+    val playerStyle: StateFlow<PlayerStyle> = _playerStyle.asStateFlow()
+
+    fun setPlayerStyle(style: PlayerStyle) {
+        _playerStyle.value = style
+        prefs.edit().putString(KEY_PLAYER_STYLE, style.id).apply()
+    }
+
     /** Robot arm CD change animation when a song is tapped. */
     private val _discAnimation = MutableStateFlow(prefs.getBoolean(KEY_DISC_ANIM, true))
     val discAnimation: StateFlow<Boolean> = _discAnimation.asStateFlow()
@@ -186,6 +195,7 @@ class AppPrefs(context: Context) {
         const val KEY_SWITCH = "switch_screen_done"
         const val KEY_AMOLED = "amoled_black"
         const val KEY_COLOR_PROFILE = "color_profile"
+        const val KEY_PLAYER_STYLE = "player_style"
         const val KEY_DISC_ANIM = "disc_animation"
         const val KEY_WALLPAPER = "wallpaper_colors"
         const val KEY_LITE = "lite_mode"

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pstyle_chip">स्टाइल</string>
+    <string name="pstyle_title">प्लेयर स्टाइल</string>
+    <string name="pstyle_desc">गाने के साथ चलने वाली तस्वीर चुनें।</string>
+    <string name="pstyle_free">मुफ़्त</string>
+    <string name="pstyle_pro">Pro</string>
+    <string name="pstyle_record">रिकॉर्ड</string>
+    <string name="pstyle_cassette">कैसेट</string>
+    <string name="pstyle_boombox">बूमबॉक्स</string>
+    <string name="pstyle_jukebox">ज्यूकबॉक्स</string>
+    <string name="pstyle_reel">रील-टू-रील</string>
+    <string name="pstyle_neon">नियॉन रिंग</string>
+    <string name="pstyle_lyrics">पहले बोल</string>
+    <string name="pstyle_radio">पुराना रेडियो</string>
+    <string name="pstyle_wheel">क्लिक व्हील</string>
+</resources>

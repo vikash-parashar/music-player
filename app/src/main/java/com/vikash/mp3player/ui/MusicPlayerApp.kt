@@ -87,6 +87,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     val paymentPending by vm.billing.pending.collectAsStateWithLifecycle()
     var showVisualizer by rememberSaveable { mutableStateOf(false) }
     val discAnim by app.prefs.discAnimation.collectAsStateWithLifecycle()
+    val playerStyle by app.prefs.playerStyle.collectAsStateWithLifecycle()
     val liteMode = LocalLiteMode.current
     var showPlayer by rememberSaveable { mutableStateOf(false) }
     // Tapping a song plays it at once and opens Now Playing, where the record drops onto the deck
@@ -334,6 +335,9 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                 introToken = introToken,
                 introShown = introShown,
                 onIntroShown = { introShown = it },
+                playerStyle = playerStyle,
+                stylesUnlocked = proUnlocked,
+                onPickStyle = app.prefs::setPlayerStyle,
             )
         }
 
