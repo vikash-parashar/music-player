@@ -37,6 +37,7 @@ import androidx.compose.material.icons.filled.CastConnected
 import androidx.compose.material.icons.filled.Loop
 import androidx.compose.material.icons.filled.Lyrics
 import androidx.compose.material.icons.filled.Speed
+import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -87,6 +88,9 @@ fun NowPlayingScreen(
     introToken: Int = 0,
     introShown: Int = 0,
     onIntroShown: (Int) -> Unit = {},
+    playerStyle: com.vikash.mp3player.data.PlayerStyle = com.vikash.mp3player.data.PlayerStyle.Record,
+    stylesUnlocked: Boolean = false,
+    onPickStyle: (com.vikash.mp3player.data.PlayerStyle) -> Unit = {},
 ) {
     androidx.compose.runtime.LaunchedEffect(Unit) { com.vikash.mp3player.data.OwnerHooks.event("feature_record_player") }
     var showCast by remember { mutableStateOf(false) }
@@ -95,6 +99,7 @@ fun NowPlayingScreen(
     var showSpeed by remember { mutableStateOf(false) }
     var showLyrics by rememberSaveable { mutableStateOf(false) }
     var showBookmarks by remember { mutableStateOf(false) }
+    var showStyles by remember { mutableStateOf(false) }
     val bookmarkStore = (androidx.compose.ui.platform.LocalContext.current.applicationContext as com.vikash.mp3player.MusicApp).bookmarks
     val allBookmarks by bookmarkStore.all.collectAsState()
     BackHandler { if (showQueue) showQueue = false else onClose() }
@@ -209,13 +214,21 @@ fun NowPlayingScreen(
                         artist = current.artist,
                     )
                 } else {
-                    // The same record player as the song-tap view: the arm follows the song.
-                    RecordPlayerView(
+                    // The chosen player style; Pro styles show the record when Pro isn't active.
+                    val style = if (!playerStyle.pro || stylesUnlocked) playerStyle else com.vikash.mp3player.data.PlayerStyle.Record
+                    PlayerPicture(
+                        style = style,
                         artworkUri = current.artworkUri,
+                        songId = current.mediaId,
                         title = current.title,
                         artist = current.artist,
                         isPlaying = state.isPlaying,
-                        progress = { position.toFloat() / state.durationMs.coerceAtLeast(1) },
+                        positionMs = position,
+                        durationMs = state.durationMs,
+                        onSeek = { player.seekTo(it); position = it },
+                        onTogglePlay = player::togglePlay,
+                        onNext = { player.next() },
+                        onPrevious = { player.previous() },
                         modifier = Modifier.fillMaxWidth().weight(1f).padding(vertical = 8.dp),
                         intro = { intro.value },
                     )
@@ -287,6 +300,13 @@ fun NowPlayingScreen(
                 )
                 Spacer(Modifier.width(8.dp))
                 FilterChip(
+                    selected = playerStyle != com.vikash.mp3player.data.PlayerStyle.Record,
+                    onClick = { showLyrics = false; showStyles = true },
+                    leadingIcon = { Icon(Icons.Default.Palette, null, Modifier.size(18.dp)) },
+                    label = { Text(stringResource(R.string.pstyle_chip)) },
+                )
+                Spacer(Modifier.width(8.dp))
+                FilterChip(
                     selected = showLyrics,
                     onClick = { showLyrics = !showLyrics },
                     leadingIcon = { Icon(Icons.Default.Lyrics, null, Modifier.size(18.dp)) },
@@ -333,6 +353,13 @@ fun NowPlayingScreen(
         }
     }
 
+    if (showStyles) PlayerStyleSheet(
+        current = playerStyle,
+        unlocked = stylesUnlocked,
+        onPick = onPickStyle,
+        onGetPro = { showStyles = false; onGetPro() },
+        onDismiss = { showStyles = false },
+    )
     if (showSpeed) SpeedPitchDialog(state.speed, state.pitch, player::setSpeedAndPitch) { showSpeed = false }
     if (showCast) CastDialog(isPro, onGetPro) { showCast = false }
     if (showBookmarks) BookmarksDialog(

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pstyle_chip">Style</string>
+    <string name="pstyle_title">Player style</string>
+    <string name="pstyle_desc">Pick the picture that plays along with your song.</string>
+    <string name="pstyle_free">Free</string>
+    <string name="pstyle_pro">Pro</string>
+    <string name="pstyle_record">Record</string>
+    <string name="pstyle_cassette">Cassette tape</string>
+    <string name="pstyle_boombox">Boombox</string>
+    <string name="pstyle_jukebox">Jukebox</string>
+    <string name="pstyle_reel">Reel-to-reel</string>
+    <string name="pstyle_neon">Neon rings</string>
+    <string name="pstyle_lyrics">Lyrics first</string>
+    <string name="pstyle_radio">Old radio</string>
+    <string name="pstyle_wheel">Click wheel</string>
+</resources>
