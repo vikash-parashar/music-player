@@ -1,5 +1,6 @@
 package com.vikash.mp3player
 
+import com.vikash.mp3player.data.ColorProfile
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -58,9 +59,13 @@ class MainActivity : ComponentActivity() {
             val pro by app.proUnlocked.collectAsState()
             val amoled by app.prefs.amoledBlack.collectAsState()
             val wallpaper by app.prefs.wallpaperColors.collectAsState()
+            val profile by app.prefs.colorProfile.collectAsState()
             val lite by app.prefs.liteMode.collectAsState()
             // Pro looks fall back to the brand theme if Pro (or the trial) ends.
-            Mp3PlayerTheme(themeMode, amoledBlack = pro && amoled, wallpaperColors = pro && wallpaper) {
+            Mp3PlayerTheme(
+                themeMode, amoledBlack = pro && amoled, wallpaperColors = pro && wallpaper,
+                profile = if (pro) profile else ColorProfile.Ampli,
+            ) {
                 CompositionLocalProvider(LocalLiteMode provides lite) {
                 MusicPlayerApp(vm, onRemoveAds = {
                     when (billing.purchaseRemoveAds(this)) {
