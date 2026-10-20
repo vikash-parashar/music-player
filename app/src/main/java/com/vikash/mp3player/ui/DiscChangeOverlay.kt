@@ -96,7 +96,7 @@ import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.sin
 
-private const val INTRO_MS = 2600
+private const val INTRO_MS = 1500
 
 /**
  * The record player that opens when a song is tapped. The deck rises in, the record drops onto

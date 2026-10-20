@@ -110,7 +110,7 @@ fun NowPlayingScreen(
         if (introToken != 0 && introToken != introShown) {
             onIntroShown(introToken)
             intro.snapTo(0f)
-            intro.animateTo(1f, androidx.compose.animation.core.tween(2600, easing = androidx.compose.animation.core.LinearEasing))
+            intro.animateTo(1f, androidx.compose.animation.core.tween(1500, easing = androidx.compose.animation.core.LinearEasing))
         }
     }
     val current = state.current

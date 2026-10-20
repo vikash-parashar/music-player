@@ -70,6 +70,16 @@ android {
             buildConfigField("String", "ADMOB_REWARDED_ID", "\"ca-app-pub-3940256099942544/5224354917\"")
             buildConfigField("boolean", "ONLINE_MUSIC", "true")
         }
+        // The fast test APK: same as debug (test ads, same signing key so it installs over earlier
+        // builds) but not debuggable. A debuggable app runs Compose and its animations several times
+        // slower, which is why test builds felt sluggish on the phone. BuildConfig.DEBUG is false here,
+        // so the test "unlock Pro" switch is hidden in this build.
+        create("qa") {
+            initWith(getByName("debug"))
+            isDebuggable = false
+            isJniDebuggable = false
+            matchingFallbacks += listOf("debug")
+        }
         release {
             signingConfig = signingConfigs.findByName("upload")
             // R8 stays off for the first Play builds: it has never been tested with Media3/Cast/
@@ -101,6 +111,9 @@ android {
 
 dependencies {
     implementation(libs.androidx.core.ktx)
+    // Installs the baseline profiles that Compose and other AndroidX libraries ship, so a sideloaded
+    // APK gets its hot paths compiled ahead of time instead of running interpreted.
+    implementation(libs.androidx.profileinstaller)
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)

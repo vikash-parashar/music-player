@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="car_buddy_title">डांस बडी</string>
+    <string name="car_say_song">गाना या गायक का नाम बोलें</string>
+    <string name="car_swipe_short">गाना बदलने के लिए कहीं भी स्वाइप करें</string>
+</resources>
