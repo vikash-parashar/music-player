@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="prolook_colors">Colour theme</string>
+    <string name="prolook_colors_desc">Changes the colours of the whole app.</string>
+    <string name="color_profile_ampli">Ampli rose</string>
+    <string name="color_profile_sky">Sky blue</string>
+    <string name="color_profile_milky">Milky white</string>
+    <string name="color_profile_electric">Electric</string>
+    <string name="color_profile_snow">Snow</string>
+    <string name="color_profile_water">Water</string>
+    <string name="color_profile_air">Air</string>
+</resources>

@@ -65,6 +65,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.vikash.mp3player.data.HinglishSearch
 import com.vikash.mp3player.data.Song
 import com.vikash.mp3player.playback.PlayerConnection
 import com.vikash.mp3player.playback.PlayerUiState
@@ -105,12 +106,8 @@ fun CarModeScreen(
     }
 
     fun listen() {
-        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
-            .putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-            .putExtra(RecognizerIntent.EXTRA_PROMPT, context.getString(R.string.car_voice_prompt))
-            .putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 5)
         try {
-            voice.launch(intent)
+            voice.launch(voiceSearchIntent(context))
         } catch (e: ActivityNotFoundException) {
             heard = context.getString(R.string.car_voice_unavailable)
         }
@@ -267,16 +264,35 @@ internal object CarHubPromo {
     }
 }
 
+/**
+ * The phone's speech recogniser, asked for a few guesses. Indian English first with Hindi as a
+ * second language, so both "Arijit Singh" and "तुम ही हो" come back usable.
+ */
+internal fun voiceSearchIntent(context: Context): Intent =
+    Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
+        .putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+        .putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-IN")
+        .putExtra("android.speech.extra.EXTRA_ADDITIONAL_LANGUAGES", arrayOf("hi-IN")) // read by Google speech
+        .putExtra(RecognizerIntent.EXTRA_PROMPT, context.getString(R.string.car_voice_prompt))
+        .putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 5)
+
 /** Turns what the driver said into songs to play: an artist, an album or a song title. */
 internal object VoiceMatch {
     data class Match(val label: String, val songs: List<Song>)
 
     private val filler = Regex("^(play|please play|chalao|bajao|sunao|gaana|song|songs|music)\\s+|\\s+(chalao|bajao|sunao|ke gaane|ka gaana|songs|song)$")
+    private val playWords = Regex("^(play|please play)\\s|\\s(chalao|bajao|sunao|चलाओ|बजाओ|सुनाओ)$")
+
+    /** What was said without "play" / "chalao" and the like: the words to search for. */
+    fun clean(raw: String): String = filler.replace(raw.trim().lowercase(), "").trim()
+
+    /** "Play Arijit" or "Arijit ke gaane chalao": the user wants music now, not just a list. */
+    fun wantsPlay(raw: String): Boolean = playWords.containsMatchIn(raw.trim().lowercase())
 
     fun find(phrases: List<String>, songs: List<Song>): Match? {
         if (songs.isEmpty()) return null
         for (raw in phrases) {
-            val q = filler.replace(raw.trim().lowercase(), "").trim()
+            val q = clean(raw)
             if (q.length < 2) continue
             songs.filter { it.artist.lowercase().contains(q) }.takeIf { it.isNotEmpty() }
                 ?.let { return Match(it.first().artist, it.shuffled()) }
@@ -291,6 +307,12 @@ internal object VoiceMatch {
             val words = q.split(' ').filter { it.length > 1 }
             songs.firstOrNull { s -> val hay = "${s.title} ${s.artist}".lowercase(); words.all { it in hay } }
                 ?.let { return Match(it.title, listOf(it)) }
+            // Sounds alike: "तुम ही हो" (Hindi speech) finds "Tum Hi Ho", and Hinglish spellings fold together.
+            val key = HinglishSearch.key(q)
+            if (key.length >= 2) {
+                songs.firstOrNull { HinglishSearch.key("${it.title} ${it.artist}").contains(key) }
+                    ?.let { return Match(it.title, listOf(it)) }
+            }
         }
         return null
     }

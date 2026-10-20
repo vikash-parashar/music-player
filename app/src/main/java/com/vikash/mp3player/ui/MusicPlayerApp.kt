@@ -88,12 +88,17 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     var showVisualizer by rememberSaveable { mutableStateOf(false) }
     val discAnim by app.prefs.discAnimation.collectAsStateWithLifecycle()
     val liteMode = LocalLiteMode.current
-    // The song starts at once; the CD change animation only plays on top.
-    var discSong by remember { mutableStateOf<Song?>(null) }
+    var showPlayer by rememberSaveable { mutableStateOf(false) }
+    // Tapping a song plays it at once and opens Now Playing, where the record drops onto the deck
+    // and the arm swings in (one intro per tap). Lite mode skips it without changing the setting.
+    var introToken by remember { mutableIntStateOf(0) }
+    var introShown by remember { mutableIntStateOf(0) }
     val playWithDisc: (List<Song>, Int, String) -> Unit = { songs, i, src ->
         vm.player.play(songs, i, src)
-        // Lite mode skips it without changing the user's own setting.
-        if (discAnim && !liteMode) discSong = songs.getOrNull(i)
+        if (discAnim && !liteMode) {
+            introToken++
+            showPlayer = true
+        }
     }
     val videos by vm.videos.collectAsStateWithLifecycle()
     val favorites by vm.prefs.favorites.collectAsStateWithLifecycle()
@@ -107,7 +112,6 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
 
     var hasPermission by remember { mutableStateOf(context.hasAudioPermission()) }
     var tab by rememberSaveable { mutableIntStateOf(0) }
-    var showPlayer by rememberSaveable { mutableStateOf(false) }
     // Ringtone maker: the song stays set while the panel slides away.
     var ringtoneSong by remember { mutableStateOf<Song?>(null) }
     var tagSong by remember { mutableStateOf<Song?>(null) }
@@ -327,6 +331,9 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                     if (song != null) { statusSong = song; showStatus = true }
                     else Toast.makeText(context, context.getString(R.string.status_needs_local), Toast.LENGTH_SHORT).show()
                 },
+                introToken = introToken,
+                introShown = introShown,
+                onIntroShown = { introShown = it },
             )
         }
 
@@ -467,26 +474,6 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                         Toast.makeText(context, context.getString(R.string.msg_song_info_saved), Toast.LENGTH_SHORT).show()
                     },
                 )
-            }
-        }
-
-        AnimatedVisibility(visible = discSong != null, enter = fadeIn(), exit = fadeOut()) {
-            // Keep the last song while fading out.
-            val shown = remember { mutableStateOf<Song?>(null) }
-            discSong?.let { shown.value = it }
-            shown.value?.let { song ->
-                // Follows the player, so the disc changes when the next song starts.
-                val now = player.current
-                key(song.id) {
-                    DiscChangeOverlay(
-                        title = now?.title ?: song.title,
-                        artist = now?.artist ?: song.artist,
-                        artworkUri = now?.artworkUri ?: song.artworkUri,
-                        state = player,
-                        player = vm.player,
-                        onDone = { discSong = null },
-                    )
-                }
             }
         }
 

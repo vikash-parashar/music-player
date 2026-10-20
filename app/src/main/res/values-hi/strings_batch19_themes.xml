@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="prolook_colors">रंग थीम</string>
+    <string name="prolook_colors_desc">पूरे ऐप के रंग बदलता है।</string>
+    <string name="color_profile_ampli">Ampli गुलाबी</string>
+    <string name="color_profile_sky">आसमानी नीला</string>
+    <string name="color_profile_milky">दूधिया सफ़ेद</string>
+    <string name="color_profile_electric">इलेक्ट्रिक</string>
+    <string name="color_profile_snow">बर्फ़</string>
+    <string name="color_profile_water">पानी</string>
+    <string name="color_profile_air">हवा</string>
+</resources>
