@@ -1,5 +1,9 @@
 package com.vikash.mp3player.ui
 
+import androidx.compose.material.icons.filled.Mic
+import android.speech.RecognizerIntent
+import android.content.ActivityNotFoundException
+import android.app.Activity
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.Dispatchers
 import androidx.compose.runtime.produceState
@@ -244,6 +248,28 @@ fun LibraryScreen(
         }
     }
 
+    // Voice search: what was said goes into the search box (Hindi speech still finds Hinglish titles
+    // through HinglishSearch). "Play Arijit" or "Arijit ke gaane chalao" plays the best match at once.
+    val voice = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        val phrases = result.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS).orEmpty()
+        if (result.resultCode != Activity.RESULT_OK || phrases.isEmpty()) return@rememberLauncherForActivityResult
+        val said = phrases.first()
+        val match = if (VoiceMatch.wantsPlay(said)) VoiceMatch.find(phrases, state.songs) else null
+        if (match != null) {
+            onPlay(match.songs, 0, match.label)
+            android.widget.Toast.makeText(m3uContext, m3uContext.getString(R.string.car_playing, match.label), android.widget.Toast.LENGTH_SHORT).show()
+        } else {
+            filter = VoiceMatch.clean(said)
+        }
+    }
+    fun listen() {
+        try {
+            voice.launch(voiceSearchIntent(m3uContext))
+        } catch (_: ActivityNotFoundException) {
+            android.widget.Toast.makeText(m3uContext, m3uContext.getString(R.string.car_voice_unavailable), android.widget.Toast.LENGTH_LONG).show()
+        }
+    }
+
     Column(Modifier.fillMaxSize()) {
         OutlinedTextField(
             value = filter,
@@ -251,7 +277,12 @@ fun LibraryScreen(
             placeholder = { Text(stringResource(R.string.library_search_hint)) },
             leadingIcon = { Icon(Icons.Default.Search, null) },
             trailingIcon = {
-                if (filter.isNotEmpty()) IconButton(onClick = { filter = "" }) { Icon(Icons.Default.Clear, stringResource(R.string.common_clear)) }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (filter.isNotEmpty()) IconButton(onClick = { filter = "" }) { Icon(Icons.Default.Clear, stringResource(R.string.common_clear)) }
+                    IconButton(onClick = { listen() }) {
+                        Icon(Icons.Default.Mic, stringResource(R.string.car_voice_search), tint = MaterialTheme.colorScheme.primary)
+                    }
+                }
             },
             singleLine = true,
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
