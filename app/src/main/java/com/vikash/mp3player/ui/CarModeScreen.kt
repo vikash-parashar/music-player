@@ -266,13 +266,13 @@ internal object CarHubPromo {
 
 /**
  * The phone's speech recogniser, asked for a few guesses. Indian English first with Hindi as a
- * second language (newer Android versions), so both "Arijit Singh" and "तुम ही हो" come back usable.
+ * second language, so both "Arijit Singh" and "तुम ही हो" come back usable.
  */
 internal fun voiceSearchIntent(context: Context): Intent =
     Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
         .putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
         .putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-IN")
-        .putExtra(RecognizerIntent.EXTRA_EXTRA_ADDITIONAL_LANGUAGES, arrayOf("hi-IN"))
+        .putExtra("android.speech.extra.EXTRA_ADDITIONAL_LANGUAGES", arrayOf("hi-IN")) // read by Google speech
         .putExtra(RecognizerIntent.EXTRA_PROMPT, context.getString(R.string.car_voice_prompt))
         .putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 5)
 
