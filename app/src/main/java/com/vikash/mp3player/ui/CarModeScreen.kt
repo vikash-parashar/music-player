@@ -67,6 +67,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.vikash.mp3player.data.HinglishSearch
 import com.vikash.mp3player.data.Song
+import com.vikash.mp3player.data.StatsData
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.ui.unit.min
 import com.vikash.mp3player.playback.PlayerConnection
 import com.vikash.mp3player.playback.PlayerUiState
 import com.vikash.mp3player.ui.theme.Ampli
@@ -91,12 +94,17 @@ fun CarModeScreen(
     state: PlayerUiState,
     player: PlayerConnection,
     songs: List<Song>,
+    favorites: List<String>,
+    stats: StatsData,
     onPlay: (songs: List<Song>, startIndex: Int, source: String) -> Unit,
     onClose: () -> Unit,
 ) {
     BackHandler(onBack = onClose)
     val context = LocalContext.current
     var heard by remember { mutableStateOf<String?>(null) }
+    // The card last tapped, shown as "Playing" until another song source takes over.
+    var activeMood by remember { mutableStateOf<CarMoodKind?>(null) }
+    var activeLabel by remember { mutableStateOf("") }
 
     DisposableEffect(Unit) {
         val window = (context as? Activity)?.window
@@ -110,7 +118,7 @@ fun CarModeScreen(
         val match = VoiceMatch.find(phrases, songs)
         heard = if (match == null) context.getString(R.string.car_not_found, phrases.first())
             else context.getString(R.string.car_playing, match.label)
-        match?.let { onPlay(it.songs, 0, it.label) }
+        match?.let { activeMood = null; onPlay(it.songs, 0, it.label) }
     }
 
     fun listen() {
@@ -137,6 +145,13 @@ fun CarModeScreen(
         while (true) { clock = fmt.format(java.util.Date()); delay(15_000) }
     }
     val lite = LocalLiteMode.current
+    val unknownArtist = stringResource(R.string.library_unknown_artist)
+    val moods = remember(songs, favorites, stats) { CarMoods.build(songs, favorites, stats, unknownArtist) }
+    LaunchedEffect(current?.mediaId, moods) {
+        val id = current?.mediaId ?: return@LaunchedEffect
+        val mood = moods.firstOrNull { it.kind == activeMood } ?: return@LaunchedEffect
+        if (mood.songs.none { it.id == id }) activeMood = null // something else is playing now
+    }
     Box(
         Modifier.fillMaxSize().background(CarBg)
             .pointerInput(Unit) {
@@ -166,15 +181,33 @@ fun CarModeScreen(
                     onClose = { promoClosed = true; CarHubPromo.close(context) },
                 )
             }
-            Box(Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
+            if (moods.isNotEmpty()) {
+                Spacer(Modifier.height(12.dp))
+                CarMoodRow(moods, activeMood, bleed = 20.dp) { mood, label ->
+                    activeMood = mood.kind
+                    activeLabel = label
+                    heard = null
+                    onPlay(if (mood.shuffle) mood.songs.shuffled() else mood.songs, 0, label)
+                }
+            }
+            BoxWithConstraints(Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
+                // The CD shrinks to fit when the cards and the Car Hub card take room.
+                val ring = min(min(maxWidth, maxHeight) - 12.dp, 250.dp).coerceAtLeast(96.dp)
                 // Thin ring that fills as the song plays.
-                Canvas(Modifier.size(250.dp)) {
+                Canvas(Modifier.size(ring)) {
                     val w = 2.dp.toPx()
                     drawCircle(Color.White.copy(alpha = 0.08f), style = Stroke(w))
                     drawArc(Ampli.Rose, -90f, 360f * progress, false, style = Stroke(w, cap = StrokeCap.Round))
                 }
                 // A CD with the album art as its label. It stays put and only spins with the music.
-                SpinningCd(current?.artworkUri, 220.dp, spinning = !lite)
+                SpinningCd(current?.artworkUri, ring * 0.88f, spinning = !lite)
+            }
+            if (activeMood != null) {
+                Text(
+                    stringResource(R.string.car_playing_from, activeLabel), color = Color.White.copy(alpha = 0.5f), fontSize = 12.sp,
+                    textAlign = TextAlign.Center, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 2.dp),
+                )
             }
             Text(
                 current?.title ?: stringResource(R.string.car_nothing_playing),

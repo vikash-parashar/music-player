@@ -389,7 +389,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
         }
 
         AnimatedVisibility(visible = showCarMode, enter = screenFadeIn(), exit = screenFadeOut()) {
-            CarModeScreen(player, vm.player, library.songs, onPlay = vm.player::play, onClose = { showCarMode = false })
+            CarModeScreen(player, vm.player, library.songs, favorites, stats, onPlay = vm.player::play, onClose = { showCarMode = false })
         }
 
         AnimatedVisibility(
