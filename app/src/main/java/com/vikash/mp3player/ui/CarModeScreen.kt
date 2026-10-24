@@ -145,6 +145,10 @@ fun CarModeScreen(
         while (true) { clock = fmt.format(java.util.Date()); delay(15_000) }
     }
     val lite = LocalLiteMode.current
+    // Many car head units have no speech engine; then the mic button is left out.
+    val voiceAvailable = remember {
+        context.packageManager.queryIntentActivities(Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH), 0).isNotEmpty()
+    }
     val unknownArtist = stringResource(R.string.library_unknown_artist)
     val moods = remember(songs, favorites, stats) { CarMoods.build(songs, favorites, stats, unknownArtist) }
     LaunchedEffect(current?.mediaId, moods) {
@@ -169,30 +173,22 @@ fun CarModeScreen(
             Modifier.fillMaxWidth().fillMaxHeight(0.62f)
                 .background(Brush.radialGradient(listOf(Ampli.Rose.copy(alpha = 0.28f), Color.Transparent))),
         )
-        Column(Modifier.fillMaxSize().systemBarsPadding().padding(horizontal = 20.dp, vertical = 12.dp)) {
+        val pickMood: (CarMood, String) -> Unit = { mood, label ->
+            activeMood = mood.kind
+            activeLabel = label
+            heard = null
+            onPlay(if (mood.shuffle) mood.songs.shuffled() else mood.songs, 0, label)
+        }
+        val topBar: @Composable () -> Unit = {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(clock, color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
                 CarIconButton(Icons.Default.Close, stringResource(R.string.car_exit), onClick = onClose)
             }
-            if (!promoClosed) {
-                Spacer(Modifier.height(10.dp))
-                CarHubPromoCard(
-                    onOpen = { CarHubPromo.open(context) },
-                    onClose = { promoClosed = true; CarHubPromo.close(context) },
-                )
-            }
-            if (moods.isNotEmpty()) {
-                Spacer(Modifier.height(12.dp))
-                CarMoodRow(moods, activeMood, bleed = 20.dp) { mood, label ->
-                    activeMood = mood.kind
-                    activeLabel = label
-                    heard = null
-                    onPlay(if (mood.shuffle) mood.songs.shuffled() else mood.songs, 0, label)
-                }
-            }
-            BoxWithConstraints(Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
+        }
+        val stage: @Composable (Modifier) -> Unit = { m ->
+            BoxWithConstraints(m, contentAlignment = Alignment.Center) {
                 // The CD shrinks to fit when the cards and the Car Hub card take room.
-                val ring = min(min(maxWidth, maxHeight) - 12.dp, 250.dp).coerceAtLeast(96.dp)
+                val ring = min(min(maxWidth, maxHeight) - 12.dp, 320.dp).coerceAtLeast(96.dp)
                 // Thin ring that fills as the song plays.
                 Canvas(Modifier.size(ring)) {
                     val w = 2.dp.toPx()
@@ -202,37 +198,42 @@ fun CarModeScreen(
                 // A CD with the album art as its label. It stays put and only spins with the music.
                 SpinningCd(current?.artworkUri, ring * 0.88f, spinning = !lite)
             }
-            if (activeMood != null) {
+        }
+        val info: @Composable () -> Unit = {
+            Column {
+                if (activeMood != null) {
+                    Text(
+                        stringResource(R.string.car_playing_from, activeLabel), color = Color.White.copy(alpha = 0.5f), fontSize = 12.sp,
+                        textAlign = TextAlign.Center, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 2.dp),
+                    )
+                }
                 Text(
-                    stringResource(R.string.car_playing_from, activeLabel), color = Color.White.copy(alpha = 0.5f), fontSize = 12.sp,
+                    current?.title ?: stringResource(R.string.car_nothing_playing),
+                    color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center, maxLines = 1, overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 2.dp),
+                    modifier = Modifier.fillMaxWidth(),
                 )
+                Text(
+                    heard ?: current?.artist ?: stringResource(if (voiceAvailable) R.string.car_tap_mic else R.string.car_swipe_short),
+                    color = if (heard != null) Color(0xFFFDA4AF) else Color.White.copy(alpha = 0.65f), fontSize = 17.sp,
+                    textAlign = TextAlign.Center, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.fillMaxWidth().padding(top = 2.dp),
+                )
+                Box(
+                    Modifier.fillMaxWidth().padding(start = 6.dp, end = 6.dp, top = 14.dp).height(4.dp)
+                        .clip(CircleShape).background(Color.White.copy(alpha = 0.12f)),
+                ) {
+                    Box(Modifier.fillMaxWidth(progress).fillMaxHeight().clip(CircleShape).background(Ampli.Rose))
+                }
             }
-            Text(
-                current?.title ?: stringResource(R.string.car_nothing_playing),
-                color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center, maxLines = 1, overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.fillMaxWidth(),
-            )
-            Text(
-                heard ?: current?.artist ?: stringResource(R.string.car_tap_mic),
-                color = if (heard != null) Color(0xFFFDA4AF) else Color.White.copy(alpha = 0.65f), fontSize = 17.sp,
-                textAlign = TextAlign.Center, maxLines = 1, overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.fillMaxWidth().padding(top = 2.dp),
-            )
-            Box(
-                Modifier.fillMaxWidth().padding(start = 6.dp, end = 6.dp, top = 14.dp).height(4.dp)
-                    .clip(CircleShape).background(Color.White.copy(alpha = 0.12f)),
-            ) {
-                Box(Modifier.fillMaxWidth(progress).fillMaxHeight().clip(CircleShape).background(Ampli.Rose))
-            }
-            Spacer(Modifier.height(18.dp))
+        }
+        val dock: @Composable (Dp) -> Unit = { playSize ->
             // One dock: previous, play/pause, next.
             Row(
                 Modifier.fillMaxWidth().clip(CircleShape).background(Color.White.copy(alpha = 0.06f))
                     .border(1.dp, Color.White.copy(alpha = 0.08f), CircleShape)
-                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                    .padding(horizontal = 14.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -240,12 +241,14 @@ fun CarModeScreen(
                 BoldRoundButton(
                     if (state.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
                     stringResource(if (state.isPlaying) R.string.common_pause else R.string.common_play),
-                    96.dp, highlight = true,
+                    playSize, highlight = true,
                 ) { player.togglePlay() }
                 DockKey(Icons.Default.SkipNext, stringResource(R.string.common_next)) { player.next() }
             }
-            Spacer(Modifier.height(14.dp))
-            Row(
+        }
+        val mic: @Composable () -> Unit = {
+            // Hidden where the phone or head unit has no speech engine, so there's no dead button.
+            if (voiceAvailable) Row(
                 Modifier.fillMaxWidth().height(60.dp).clip(CircleShape)
                     .background(Color(0x240891B2)).border(1.dp, Color(0x5967E8F9), CircleShape)
                     .clickable { listen() },
@@ -256,10 +259,53 @@ fun CarModeScreen(
                 Spacer(Modifier.width(10.dp))
                 Text(stringResource(R.string.car_say_song), color = Color(0xFFCFFAFE), fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
             }
-            Text(
-                stringResource(R.string.car_swipe_short), color = Color.White.copy(alpha = 0.35f), fontSize = 12.sp,
-                textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
-            )
+        }
+        BoxWithConstraints(Modifier.fillMaxSize().systemBarsPadding()) {
+            if (maxWidth > maxHeight * 1.15f) {
+                // Landscape (car head units, tablets): the CD on the left, everything you press on the right.
+                Row(Modifier.fillMaxSize().padding(horizontal = 24.dp, vertical = 14.dp), verticalAlignment = Alignment.CenterVertically) {
+                    stage(Modifier.weight(0.42f).fillMaxHeight())
+                    Spacer(Modifier.width(24.dp))
+                    Column(Modifier.weight(0.58f).fillMaxHeight()) {
+                        topBar()
+                        if (moods.isNotEmpty()) {
+                            Spacer(Modifier.height(10.dp))
+                            CarMoodRow(moods, activeMood, bleed = 0.dp, onPick = pickMood)
+                        }
+                        Spacer(Modifier.weight(1f))
+                        info()
+                        Spacer(Modifier.height(14.dp))
+                        dock(if (maxHeight < 480.dp) 72.dp else 88.dp)
+                        if (voiceAvailable) Spacer(Modifier.height(12.dp))
+                        mic()
+                    }
+                }
+            } else {
+                Column(Modifier.fillMaxSize().padding(horizontal = 20.dp, vertical = 12.dp)) {
+                    topBar()
+                    if (!promoClosed) {
+                        Spacer(Modifier.height(10.dp))
+                        CarHubPromoCard(
+                            onOpen = { CarHubPromo.open(context) },
+                            onClose = { promoClosed = true; CarHubPromo.close(context) },
+                        )
+                    }
+                    if (moods.isNotEmpty()) {
+                        Spacer(Modifier.height(12.dp))
+                        CarMoodRow(moods, activeMood, bleed = 20.dp, onPick = pickMood)
+                    }
+                    stage(Modifier.fillMaxWidth().weight(1f))
+                    info()
+                    Spacer(Modifier.height(18.dp))
+                    dock(96.dp)
+                    if (voiceAvailable) Spacer(Modifier.height(14.dp))
+                    mic()
+                    Text(
+                        stringResource(R.string.car_swipe_short), color = Color.White.copy(alpha = 0.35f), fontSize = 12.sp,
+                        textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
+                    )
+                }
+            }
         }
     }
 }
