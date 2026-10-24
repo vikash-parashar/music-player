@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Car mode mood cards -->
+    <string name="car_mood_shuffle">Shuffle all</string>
+    <string name="car_mood_favourites">Favourites</string>
+    <string name="car_mood_most_played">Most played</string>
+    <string name="car_mood_artist_mix">%1$s mix</string>
+    <string name="car_mood_recently_added">Recently added</string>
+    <string name="car_mood_old_is_gold">Old is gold</string>
+    <string name="car_mood_playing">Playing</string>
+    <string name="car_playing_from">Playing from %1$s</string>
+    <plurals name="car_mood_songs">
+        <item quantity="one">%d song</item>
+        <item quantity="other">%d songs</item>
+    </plurals>
+</resources>

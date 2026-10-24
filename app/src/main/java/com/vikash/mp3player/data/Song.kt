@@ -22,6 +22,8 @@ data class Song(
     val sizeBytes: Long = 0,
     /** File name such as "Tum Hi Ho.mp3", empty for online tracks. Used for M3U playlists. */
     val fileName: String = "",
+    /** Release year from the file's tags, 0 if unknown. Feeds the "Old is gold" mix in Car mode. */
+    val year: Int = 0,
 )
 
 /**

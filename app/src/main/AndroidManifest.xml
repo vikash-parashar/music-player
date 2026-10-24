@@ -33,6 +33,13 @@
     <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.WRITE_CONTACTS" />
 
+    <!-- Car mode checks for a speech engine so it can hide the mic where there is none. -->
+    <queries>
+        <intent>
+            <action android:name="android.speech.action.RECOGNIZE_SPEECH" />
+        </intent>
+    </queries>
+
     <application
         android:name=".MusicApp"
         android:allowBackup="true"
@@ -70,6 +77,11 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <!-- Ampli Car Hub opens the player straight into Car mode (see CarLaunch). -->
+            <intent-filter>
+                <action android:name="com.vikash.ampli.action.CAR_MODE" />
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
 

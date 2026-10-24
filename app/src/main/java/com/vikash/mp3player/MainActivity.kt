@@ -16,6 +16,7 @@ import com.vikash.mp3player.monetization.Ads
 import com.vikash.mp3player.monetization.BillingManager
 import com.vikash.mp3player.play.AppUpdates
 import com.vikash.mp3player.play.PlayReview
+import com.vikash.mp3player.ui.CarLaunch
 import com.vikash.mp3player.ui.LocalLiteMode
 import com.vikash.mp3player.ui.MainViewModel
 import com.vikash.mp3player.ui.MusicPlayerApp
@@ -32,6 +33,7 @@ class MainActivity : ComponentActivity() {
         installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        if (savedInstanceState == null) CarLaunch.handle(intent)
 
         val billing = (application as MusicApp).billing
         billing.start()
@@ -81,6 +83,12 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onNewIntent(intent: android.content.Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        CarLaunch.handle(intent)
     }
 
     override fun onResume() {
