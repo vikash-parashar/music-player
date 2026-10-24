@@ -261,6 +261,7 @@ fun CarModeScreen(
             }
         }
         BoxWithConstraints(Modifier.fillMaxSize().systemBarsPadding()) {
+            val shortScreen = maxHeight < 480.dp
             if (maxWidth > maxHeight * 1.15f) {
                 // Landscape (car head units, tablets): the CD on the left, everything you press on the right.
                 Row(Modifier.fillMaxSize().padding(horizontal = 24.dp, vertical = 14.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -275,7 +276,7 @@ fun CarModeScreen(
                         Spacer(Modifier.weight(1f))
                         info()
                         Spacer(Modifier.height(14.dp))
-                        dock(if (maxHeight < 480.dp) 72.dp else 88.dp)
+                        dock(if (shortScreen) 72.dp else 88.dp)
                         if (voiceAvailable) Spacer(Modifier.height(12.dp))
                         mic()
                     }
