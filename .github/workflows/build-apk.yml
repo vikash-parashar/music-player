@@ -43,7 +43,9 @@ jobs:
       - name: Build test APKs
         run: |
           chmod +x gradlew
-          ./gradlew --no-daemon assembleQa assembleDebug assembleR8
+          ./gradlew --no-daemon assembleQa assembleDebug
+          # R8 needs a lot of memory; on its own it doesn't compete with the other packaging tasks.
+          ./gradlew --no-daemon assembleR8
 
       - name: Rename APKs
         run: |
