@@ -106,6 +106,32 @@ jobs:
             Ampli-*.aab
             Ampli-*-mapping.txt
 
+      # Every merge to main sends the signed bundle straight to the Play closed test (alpha), so
+      # nobody has to download and upload it by hand. Skipped until the Play service account
+      # secret exists. With managed publishing on, the owner still presses "Publish changes".
+      - name: Check Play upload is set up
+        id: play
+        if: github.ref == 'refs/heads/main'
+        env:
+          PLAY_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          if [ -n "$PLAY_JSON" ] && [ -f "Ampli-${GITHUB_RUN_NUMBER}.aab" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::Play upload skipped: add the PLAY_SERVICE_ACCOUNT_JSON secret to upload automatically."
+          fi
+
+      - name: Upload to Play closed test
+        if: steps.play.outputs.ready == 'true'
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.vikash.ampli
+          releaseFiles: Ampli-${{ github.run_number }}.aab
+          mappingFile: Ampli-${{ github.run_number }}-mapping.txt
+          track: ${{ vars.PLAY_TRACK || 'alpha' }}
+          status: completed
+
   # Installs the R8 (shrunk, like Play) build on an emulator, adds a song, opens Car mode with
   # autoplay and checks that the song actually plays and nothing crashed.
   r8-smoke:
