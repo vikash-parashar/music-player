@@ -6,9 +6,11 @@ on:
     paths:
       - "stories/**"
       - "tools/stories/**"
+      - ".github/workflows/stories.yml"
   workflow_dispatch:
 permissions:
   contents: write
+  actions: write
 concurrency:
   group: stories-${{ github.ref }}
   cancel-in-progress: false
@@ -70,3 +72,8 @@ jobs:
           git add docs/stories/catalog.json app/src/main/assets/stories_catalog.json
           git commit -m "Update Stories catalogue" || exit 0
           for i in 1 2 3; do git pull --rebase -q && git push && break; sleep 5; done
+          # Pushes made with the workflow token don't start other workflows, so ask for the APK
+          # build directly; it then ships the new catalogue inside the app.
+          gh workflow run build-apk.yml --ref "$GITHUB_REF_NAME"
+        env:
+          GH_TOKEN: ${{ github.token }}
