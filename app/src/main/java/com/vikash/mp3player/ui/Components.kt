@@ -68,6 +68,9 @@ import com.vikash.mp3player.data.UNKNOWN_ALBUM
 import com.vikash.mp3player.ui.theme.Ampli
 import com.vikash.mp3player.playback.PlayerUiState
 
+/** "Start radio" from a song, provided by the app; null where radio isn't available. */
+val LocalStartRadio = androidx.compose.runtime.staticCompositionLocalOf<((Song) -> Unit)?> { null }
+
 /** Album art with a music-note placeholder for files that have none. */
 @Composable
 fun Artwork(uri: Uri?, size: Dp, modifier: Modifier = Modifier) {
@@ -225,6 +228,7 @@ fun GradientPlayButton(isPlaying: Boolean, size: Dp, onClick: () -> Unit) = LuxP
 fun groupLabel(name: String): String = when (name) {
     INTERNAL_STORAGE -> stringResource(R.string.library_internal_storage)
     UNKNOWN_ALBUM -> stringResource(R.string.library_unknown_album)
+    com.vikash.mp3player.data.UNKNOWN_GENRE -> stringResource(R.string.genre_unknown)
     else -> name
 }
 

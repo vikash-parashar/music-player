@@ -43,6 +43,10 @@ data class PlayerUiState(
     /** Saved queues (Musicolet-style): one per folder, album, playlist... Names with song counts. */
     val queues: List<QueueInfo> = emptyList(),
     val activeQueue: Int = 0,
+    /** Smart shuffle (Pro) is mixing suggested songs into the queue. */
+    val smartShuffle: Boolean = false,
+    /** Songs Smart shuffle added, marked with a sparkle in the queue. */
+    val smartIds: Set<String> = emptySet(),
 )
 
 data class QueueInfo(val name: String, val size: Int)
@@ -68,8 +72,18 @@ class PlayerConnection(private val context: Context) {
     private var queues: MutableList<SavedQueue> = mutableListOf()
     private var active = 0
 
+    /**
+     * "Keep the music going": when a queue is about to run out, this supplies similar songs to
+     * add (song radio from the last song). Set by the view model; null turns it off.
+     */
+    var radioSource: ((seedId: String, exclude: Set<String>) -> List<Song>)? = null
+
+    private var smartShuffle = false
+    private val smartIds = mutableSetOf<String>()
+
     private val listener = object : Player.Listener {
         override fun onEvents(player: Player, events: Player.Events) {
+            if (events.contains(Player.EVENT_MEDIA_ITEM_TRANSITION)) keepGoing()
             publish()
             if (events.contains(Player.EVENT_MEDIA_ITEM_TRANSITION) ||
                 events.contains(Player.EVENT_TIMELINE_CHANGED) ||
@@ -114,6 +128,8 @@ class PlayerConnection(private val context: Context) {
      */
     fun play(songs: List<Song>, startIndex: Int, source: String = DEFAULT_QUEUE) {
         val c = controller ?: return
+        smartShuffle = false
+        smartIds.clear()
         snapshotActive(c)
         val existing = queues.indexOfFirst { it.name == source }
         when {
@@ -240,6 +256,54 @@ class PlayerConnection(private val context: Context) {
         }
     }
 
+    /** Adds song radio to the end of the queue when only the last song or two are left. */
+    private fun keepGoing() {
+        val c = controller ?: return
+        val source = radioSource ?: return
+        if (c.repeatMode != Player.REPEAT_MODE_OFF || c.mediaItemCount == 0) return
+        if (c.mediaItemCount - c.currentMediaItemIndex > 2) return
+        val seed = c.currentMediaItem?.mediaId ?: return
+        if (!seed.startsWith("local:")) return
+        val inQueue = (0 until c.mediaItemCount).map { c.getMediaItemAt(it).mediaId }.toSet()
+        val more = source(seed, inQueue).take(15)
+        if (more.isNotEmpty()) c.addMediaItems(more.map { it.toMediaItem() })
+    }
+
+    /** Starts endless radio from [songs] (seed first) as its own queue. */
+    fun startRadio(songs: List<Song>, name: String) {
+        if (songs.isEmpty()) return
+        play(songs, 0, name)
+    }
+
+    /**
+     * Smart shuffle (Pro): turns shuffle on and slots one suggested song after every three songs
+     * still to play. [suggest] gets the queue's song ids and returns songs not in it. Turning it
+     * off takes the suggested songs out again.
+     */
+    fun setSmartShuffle(on: Boolean, suggest: (List<String>) -> List<Song>) {
+        val c = controller ?: return
+        if (on == smartShuffle) return
+        smartShuffle = on
+        if (on) {
+            val ids = (0 until c.mediaItemCount).map { c.getMediaItemAt(it).mediaId }
+            val wanted = ((c.mediaItemCount - c.currentMediaItemIndex - 1) / 3).coerceIn(1, 15)
+            val picks = suggest(ids).take(wanted)
+            // Insert from the back so earlier positions stay valid.
+            val slots = picks.indices.map { c.currentMediaItemIndex + 1 + (it + 1) * 3 + it }
+            picks.zip(slots).reversed().forEach { (song, at) ->
+                c.addMediaItem(at.coerceAtMost(c.mediaItemCount), song.toMediaItem())
+                smartIds += song.id
+            }
+            c.shuffleModeEnabled = true
+        } else {
+            for (i in c.mediaItemCount - 1 downTo 0) {
+                if (i != c.currentMediaItemIndex && c.getMediaItemAt(i).mediaId in smartIds) c.removeMediaItem(i)
+            }
+            smartIds.clear()
+        }
+        publish()
+    }
+
     private fun publish() {
         val c = controller ?: return
         _state.value = PlayerUiState(
@@ -255,6 +319,8 @@ class PlayerConnection(private val context: Context) {
             pitch = c.playbackParameters.pitch,
             queues = queues.mapIndexed { i, q -> QueueInfo(q.name, if (i == active) c.mediaItemCount else q.items.size) },
             activeQueue = active,
+            smartShuffle = smartShuffle,
+            smartIds = smartIds.toSet(),
         )
     }
 

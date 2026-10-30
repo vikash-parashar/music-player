@@ -129,6 +129,15 @@ class AppPrefs(context: Context) {
         prefs.edit().putBoolean(KEY_SKIN_HAPTICS, on).apply()
     }
 
+    /** Song radio continues when a queue ends (Spotify's "Autoplay"). */
+    private val _keepGoing = MutableStateFlow(prefs.getBoolean(KEY_KEEP_GOING, true))
+    val keepGoing: StateFlow<Boolean> = _keepGoing.asStateFlow()
+
+    fun setKeepGoing(on: Boolean) {
+        _keepGoing.value = on
+        prefs.edit().putBoolean(KEY_KEEP_GOING, on).apply()
+    }
+
     /** Robot arm CD change animation when a song is tapped. */
     private val _discAnimation = MutableStateFlow(prefs.getBoolean(KEY_DISC_ANIM, true))
     val discAnimation: StateFlow<Boolean> = _discAnimation.asStateFlow()
@@ -219,6 +228,7 @@ class AppPrefs(context: Context) {
         const val KEY_LITE = "lite_mode"
         const val KEY_UI_SKIN = "ui_skin"
         const val KEY_SKIN_HAPTICS = "skin_haptics"
+        const val KEY_KEEP_GOING = "keep_going"
     }
 }
 

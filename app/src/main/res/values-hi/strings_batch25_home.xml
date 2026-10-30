@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="nav_home">होम</string>
+    <string name="tab_genres">जॉनर</string>
+    <string name="genre_unknown">अज्ञात जॉनर</string>
+    <string name="home_good_morning">सुप्रभात</string>
+    <string name="home_good_afternoon">नमस्कार</string>
+    <string name="home_good_evening">शुभ संध्या</string>
+    <string name="home_good_night">देर रात की धुनें</string>
+    <string name="home_greeting_sub">आपके गानों से, आपके फ़ोन पर बना</string>
+    <string name="home_made_for_you">आपके लिए</string>
+    <string name="home_daily_mix">डेली मिक्स %d</string>
+    <string name="home_and_more">%s और भी</string>
+    <string name="home_jump_back">फिर से सुनें</string>
+    <string name="home_your_lists">आपकी टॉप लिस्ट</string>
+    <string name="home_on_repeat">बार-बार</string>
+    <string name="home_on_repeat_sub">जो गाने आप बार-बार सुनते हैं</string>
+    <string name="home_discover">फ़ोन पर खोजें</string>
+    <string name="home_discover_sub">कभी न सुने गाने, आपकी पसंद के</string>
+    <string name="home_forgotten">भूले हुए पसंदीदा</string>
+    <string name="home_forgotten_sub">जो गाने पसंद थे, पर कुछ दिनों से नहीं सुने</string>
+    <string name="home_new">फ़ोन पर नए</string>
+    <string name="home_new_sub">पिछले 30 दिनों में जोड़े गए</string>
+    <string name="home_time_capsule">टाइम कैप्सूल</string>
+    <string name="home_decade">%d का दशक</string>
+    <string name="home_unlock_pro">Pro से अनलॉक करें</string>
+    <string name="home_empty">फ़ोन में गाने जोड़ें, होम पर आपके लिए मिक्स बन जाएंगे।</string>
+    <string name="song_start_radio">रेडियो शुरू करें</string>
+    <string name="radio_queue_name">रेडियो: %s</string>
+    <string name="radio_started">%s से रेडियो शुरू हुआ</string>
+    <string name="radio_needs_local">रेडियो फ़ोन के गानों के साथ चलता है</string>
+    <string name="smart_shuffle">स्मार्ट शफ़ल</string>
+    <string name="smart_shuffle_pick">आपके लिए सुझाया गया</string>
+    <string name="keep_going_title">संगीत चलता रहे</string>
+    <string name="keep_going_desc">कतार खत्म होने पर फ़ोन के मिलते-जुलते गाने चलते रहेंगे।</string>
+</resources>

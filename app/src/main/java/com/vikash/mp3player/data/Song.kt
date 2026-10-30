@@ -24,7 +24,12 @@ data class Song(
     val fileName: String = "",
     /** Release year from the file's tags, 0 if unknown. Feeds the "Old is gold" mix in Car mode. */
     val year: Int = 0,
+    /** Genre tag (Android 11+ reads it from MediaStore), empty if unknown. */
+    val genre: String = "",
 )
+
+/** Group name for songs with no genre tag; the UI shows a translated label for it. */
+const val UNKNOWN_GENRE = "Unknown genre"
 
 /**
  * Group name for songs with no folder (files in the storage root). Kept in English because it is

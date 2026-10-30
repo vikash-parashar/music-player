@@ -117,6 +117,7 @@ fun SettingsScreen(
         EvenVolumeCard()
         EqualizerCard()
         ProSoundCard(proUnlocked, onRemoveAds)
+        KeepGoingCard()
         AutoPlayCard()
         DiscAnimationCard()
         HeadsetClicksCard()

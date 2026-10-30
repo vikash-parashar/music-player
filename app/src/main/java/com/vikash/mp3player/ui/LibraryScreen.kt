@@ -16,6 +16,7 @@ import com.vikash.mp3player.data.HinglishSearch
 import androidx.compose.material.icons.automirrored.filled.PlaylistPlay
 import androidx.compose.material.icons.filled.RemoveCircleOutline
 import androidx.compose.material.icons.filled.HeartBroken
+import androidx.compose.material.icons.filled.Radio
 import androidx.compose.material.icons.filled.RingVolume
 import androidx.compose.material.icons.filled.Movie
 import androidx.activity.compose.BackHandler
@@ -110,6 +111,7 @@ private enum class LibraryTab(@StringRes val labelRes: Int, val key: (Song) -> S
     Songs(R.string.tab_songs, { "" }),
     Albums(R.string.tab_albums, { it.album.ifBlank { UNKNOWN_ALBUM } }),
     Artists(R.string.library_tab_artists, { it.artist }),
+    Genres(R.string.tab_genres, { it.genre.ifBlank { com.vikash.mp3player.data.UNKNOWN_GENRE } }),
     Folders(R.string.tab_folders, { it.folder.ifBlank { INTERNAL_STORAGE } }),
     Playlists(R.string.library_tab_playlists, { "" }),
 }
@@ -587,6 +589,8 @@ private fun SongList(
     BackHandler(enabled = selecting) { selected = emptySet() }
     fun toggle(song: Song) { selected = if (song.id in selected) selected - song.id else selected + song.id }
     val source = title ?: ALL_SONGS_QUEUE
+    val radioLabel = stringResource(R.string.song_start_radio)
+    val startRadio = LocalStartRadio.current
     val playNextLabel = stringResource(R.string.song_play_next)
     val addToQueueLabel = stringResource(R.string.song_add_to_queue)
     val addToPlaylistLabel = stringResource(R.string.song_add_to_playlist)
@@ -666,6 +670,7 @@ private fun SongList(
                 isCurrent = song.id == currentId,
                 onClick = { if (selecting) toggle(song) else onPlay(songs, i, source) },
                 actions = buildList {
+                    if (!song.isOnline && startRadio != null) add(SongAction(radioLabel, Icons.Default.Radio) { startRadio(song) })
                     add(SongAction(playNextLabel, Icons.AutoMirrored.Filled.PlaylistPlay) { onPlayNext(song) })
                     add(SongAction(addToQueueLabel, Icons.AutoMirrored.Filled.QueueMusic) { onAddToQueue(song) })
                     add(SongAction(addToPlaylistLabel, Icons.AutoMirrored.Filled.PlaylistAdd) { onAddToPlaylist(listOf(song)) })
