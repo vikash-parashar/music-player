@@ -20,6 +20,10 @@ import androidx.compose.material.icons.filled.LibraryMusic
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.VideoLibrary
+import androidx.compose.material.icons.outlined.LibraryMusic
+import androidx.compose.material.icons.outlined.Public
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.VideoLibrary
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.SnackbarDuration
@@ -138,6 +142,19 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     var showStats by rememberSaveable { mutableStateOf(false) }
     var showTransfer by rememberSaveable { mutableStateOf(false) }
     var showCarMode by rememberSaveable { mutableStateOf(false) }
+    // Opened from Ampli Car Hub: go straight to Car mode and get the music going.
+    val carLaunches by CarLaunch.requests.collectAsStateWithLifecycle()
+    LaunchedEffect(carLaunches) { if (carLaunches > 0) showCarMode = true }
+    LaunchedEffect(carLaunches, player.connected, library.songs.isNotEmpty()) {
+        if (carLaunches == 0 || !CarLaunch.autoplayPending || !player.connected) return@LaunchedEffect
+        when {
+            player.current != null -> { if (!player.isPlaying) vm.player.togglePlay(); CarLaunch.autoplayPending = false }
+            library.songs.isNotEmpty() -> {
+                vm.player.play(library.songs.filter { !it.isOnline }.shuffled(), 0, context.getString(R.string.car_mood_shuffle))
+                CarLaunch.autoplayPending = false
+            }
+        }
+    }
     var showDuplicates by rememberSaveable { mutableStateOf(false) }
     var showRecognize by remember { mutableStateOf(false) }
     var showPro by rememberSaveable { mutableStateOf(false) }
@@ -228,10 +245,10 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                     )
                     CompactNavBar(
                         tabs = listOf(
-                            NavTab(stringResource(R.string.nav_library), Icons.Default.LibraryMusic),
-                            NavTab(stringResource(R.string.nav_online), Icons.Default.Public),
-                            NavTab(stringResource(R.string.nav_videos), Icons.Default.VideoLibrary),
-                            NavTab(stringResource(R.string.nav_settings), Icons.Default.Settings),
+                            NavTab(stringResource(R.string.nav_library), Icons.Outlined.LibraryMusic, Icons.Filled.LibraryMusic),
+                            NavTab(stringResource(R.string.nav_online), Icons.Outlined.Public, Icons.Filled.Public),
+                            NavTab(stringResource(R.string.nav_videos), Icons.Outlined.VideoLibrary, Icons.Filled.VideoLibrary),
+                            NavTab(stringResource(R.string.nav_settings), Icons.Outlined.Settings, Icons.Filled.Settings),
                         ),
                         selected = tab,
                         onSelect = { tab = it },
@@ -389,7 +406,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
         }
 
         AnimatedVisibility(visible = showCarMode, enter = screenFadeIn(), exit = screenFadeOut()) {
-            CarModeScreen(player, vm.player, library.songs, onPlay = vm.player::play, onClose = { showCarMode = false })
+            CarModeScreen(player, vm.player, library.songs, favorites, stats, onPlay = vm.player::play, onClose = { showCarMode = false })
         }
 
         AnimatedVisibility(

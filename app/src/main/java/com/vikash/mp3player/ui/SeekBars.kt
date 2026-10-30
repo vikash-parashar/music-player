@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.vikash.mp3player.R
 import com.vikash.mp3player.ui.theme.Ampli
+import com.vikash.mp3player.ui.theme.Lux
 import kotlin.math.abs
 import kotlin.math.exp
 import kotlin.math.floor
@@ -117,8 +118,11 @@ private fun DrawScope.drawSeek(style: SeekStyle, p: Float, t: Float, track: Colo
 
     when (style) {
         SeekStyle.Classic -> {
-            baseLine(4.dp.toPx(), gradient)
-            drawCircle(Blush, 7.dp.toPx(), Offset(x, y))
+            // Luxury look: a thin gold line and a gold knob with a soft warm glow.
+            baseLine(3.dp.toPx(), Brush.horizontalGradient(listOf(Lux.Gold, Lux.GoldDeep), startX = pad, endX = x.coerceAtLeast(pad + 1)))
+            drawCircle(Lux.Glow.copy(alpha = 0.22f), 13.dp.toPx(), Offset(x, y))
+            drawCircle(Lux.GoldDeep, 7.dp.toPx(), Offset(x, y))
+            drawCircle(Color.White, 2.5.dp.toPx(), Offset(x, y))
         }
 
         SeekStyle.Squiggle -> {

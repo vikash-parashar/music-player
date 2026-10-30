@@ -82,10 +82,12 @@ android {
         }
         release {
             signingConfig = signingConfigs.findByName("upload")
-            // R8 stays off for the first Play builds: it has never been tested with Media3/Cast/
-            // serialization here, and a crash in closed testing costs more than ~5 MB of APK size.
-            isMinifyEnabled = false
-            isShrinkResources = false
+            // R8 shrinks, optimises and obfuscates the code and drops unused resources. Keep rules
+            // for our own reflection users are in proguard-rules.pro; Media3, Billing, AdMob, Cast,
+            // Coil and kotlinx.serialization ship their own. The mapping file goes into the AAB, so
+            // Play shows readable crash reports; CI also attaches it to the GitHub release.
+            isMinifyEnabled = true
+            isShrinkResources = true
             // Jamendo needs a paid licence for an ad-supported app, so v1 ships without it.
             buildConfigField("boolean", "ONLINE_MUSIC", prop("ONLINE_MUSIC_IN_RELEASE", "false"))
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
@@ -93,6 +95,16 @@ android {
             buildConfigField("String", "ADMOB_BANNER_ID", "\"${prop("ADMOB_BANNER_ID", "ca-app-pub-8097353665002950/5945560776")}\"")
             // Blank until a Rewarded ad unit exists in AdMob; the "try Pro for 24 hours" button hides itself then.
             buildConfigField("String", "ADMOB_REWARDED_ID", "\"${prop("ADMOB_REWARDED_ID")}\"")
+        }
+        // Same R8 settings as release, but test ads and the debug key so it installs over the test
+        // APK on a phone: the build for checking that R8 removed nothing the app needs (Ampli-N-r8.apk).
+        create("r8") {
+            initWith(getByName("release"))
+            signingConfig = signingConfigs.getByName("debug")
+            matchingFallbacks += listOf("release")
+            manifestPlaceholders["admobAppId"] = "ca-app-pub-3940256099942544~3347511713"
+            buildConfigField("String", "ADMOB_BANNER_ID", "\"ca-app-pub-3940256099942544/9214589741\"")
+            buildConfigField("String", "ADMOB_REWARDED_ID", "\"ca-app-pub-3940256099942544/5224354917\"")
         }
     }
 

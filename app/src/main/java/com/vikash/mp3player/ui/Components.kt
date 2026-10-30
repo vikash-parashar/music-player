@@ -208,21 +208,9 @@ fun BrandHeader(showAdFreePill: Boolean, onAdFreeClick: () -> Unit, onRecognize:
     }
 }
 
-/** Big round play/pause button filled with the brand gradient. */
+/** Big round play/pause button; drawn in the luxury style (see [LuxPlayButton]). */
 @Composable
-fun GradientPlayButton(isPlaying: Boolean, size: Dp, onClick: () -> Unit) {
-    Box(
-        Modifier.size(size).clip(CircleShape).background(Ampli.Gradient).clickable(onClick = onClick),
-        contentAlignment = Alignment.Center,
-    ) {
-        Icon(
-            if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
-            stringResource(if (isPlaying) R.string.common_pause else R.string.common_play),
-            tint = Color.White,
-            modifier = Modifier.size(size * 0.55f),
-        )
-    }
-}
+fun GradientPlayButton(isPlaying: Boolean, size: Dp, onClick: () -> Unit) = LuxPlayButton(isPlaying, size, onClick)
 
 /**
  * Display name for a library group (folder, album...). The built-in group names are kept in

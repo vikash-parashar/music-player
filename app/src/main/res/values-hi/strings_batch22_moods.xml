@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="car_mood_shuffle">सब शफ़ल</string>
+    <string name="car_mood_favourites">पसंदीदा</string>
+    <string name="car_mood_most_played">सबसे ज़्यादा सुने</string>
+    <string name="car_mood_artist_mix">%1$s मिक्स</string>
+    <string name="car_mood_recently_added">हाल में जोड़े</string>
+    <string name="car_mood_old_is_gold">पुराने सदाबहार</string>
+    <string name="car_mood_playing">चल रहा है</string>
+    <string name="car_playing_from">%1$s से चल रहा है</string>
+    <plurals name="car_mood_songs">
+        <item quantity="one">%d गाना</item>
+        <item quantity="other">%d गाने</item>
+    </plurals>
+</resources>
