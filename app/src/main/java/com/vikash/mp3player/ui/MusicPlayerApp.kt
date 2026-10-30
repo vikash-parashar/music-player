@@ -355,6 +355,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                 playerStyle = playerStyle,
                 stylesUnlocked = proUnlocked,
                 onPickStyle = app.prefs::setPlayerStyle,
+                showAd = !adsRemoved && adsReady,
             )
         }
 

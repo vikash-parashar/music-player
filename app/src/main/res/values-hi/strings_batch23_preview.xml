@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pstyle_try">Pro · आज़माएँ</string>
+    <string name="pstyle_preview_badge">PRO झलक · %1$ds</string>
+    <string name="pstyle_locked_title">%1$s पसंद आया?</string>
+    <string name="pstyle_locked_body">सभी 9 प्लेयर स्टाइल खोलें और विज्ञापन हटाएँ। एक बार भुगतान करें।</string>
+    <string name="pstyle_unlock">Pro से खोलें</string>
+    <string name="pstyle_back_record">Record पर वापस जाएँ</string>
+    <string name="ad_label">विज्ञापन</string>
+</resources>

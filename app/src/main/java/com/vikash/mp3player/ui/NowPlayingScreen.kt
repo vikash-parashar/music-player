@@ -91,6 +91,8 @@ fun NowPlayingScreen(
     playerStyle: com.vikash.mp3player.data.PlayerStyle = com.vikash.mp3player.data.PlayerStyle.Record,
     stylesUnlocked: Boolean = false,
     onPickStyle: (com.vikash.mp3player.data.PlayerStyle) -> Unit = {},
+    /** Free users: a native ad card under the controls. */
+    showAd: Boolean = false,
 ) {
     androidx.compose.runtime.LaunchedEffect(Unit) { com.vikash.mp3player.data.OwnerHooks.event("feature_record_player") }
     var showCast by remember { mutableStateOf(false) }
@@ -100,6 +102,18 @@ fun NowPlayingScreen(
     var showLyrics by rememberSaveable { mutableStateOf(false) }
     var showBookmarks by remember { mutableStateOf(false) }
     var showStyles by remember { mutableStateOf(false) }
+    // Free users: a locked style plays for a few seconds ("Pro preview"), then asks to unlock.
+    val ctx = androidx.compose.ui.platform.LocalContext.current
+    var previewStyle by remember { mutableStateOf<com.vikash.mp3player.data.PlayerStyle?>(null) }
+    var lockedStyle by remember { mutableStateOf<com.vikash.mp3player.data.PlayerStyle?>(null) }
+    var previewLeft by remember { androidx.compose.runtime.mutableIntStateOf(0) }
+    LaunchedEffect(previewStyle) {
+        val s = previewStyle ?: return@LaunchedEffect
+        for (left in StylePreview.SECONDS downTo 1) { previewLeft = left; delay(1000) }
+        lockedStyle = s
+        previewStyle = null
+    }
+    LaunchedEffect(stylesUnlocked) { if (stylesUnlocked) { previewStyle = null; lockedStyle = null } }
     val bookmarkStore = (androidx.compose.ui.platform.LocalContext.current.applicationContext as com.vikash.mp3player.MusicApp).bookmarks
     val allBookmarks by bookmarkStore.all.collectAsState()
     BackHandler { if (showQueue) showQueue = false else onClose() }
@@ -214,8 +228,11 @@ fun NowPlayingScreen(
                         artist = current.artist,
                     )
                 } else {
-                    // The chosen player style; Pro styles show the record when Pro isn't active.
-                    val style = if (!playerStyle.pro || stylesUnlocked) playerStyle else com.vikash.mp3player.data.PlayerStyle.Record
+                    // The chosen player style; Pro styles show the record when Pro isn't active,
+                    // except during a free user's short Pro preview (or its unlock card that follows).
+                    val chosen = if (!playerStyle.pro || stylesUnlocked) playerStyle else com.vikash.mp3player.data.PlayerStyle.Record
+                    val style = previewStyle ?: lockedStyle ?: chosen
+                    androidx.compose.foundation.layout.Box(Modifier.fillMaxWidth().weight(1f).padding(vertical = 8.dp)) {
                     PlayerPicture(
                         style = style,
                         artworkUri = current.artworkUri,
@@ -229,9 +246,18 @@ fun NowPlayingScreen(
                         onTogglePlay = player::togglePlay,
                         onNext = { player.next() },
                         onPrevious = { player.previous() },
-                        modifier = Modifier.fillMaxWidth().weight(1f).padding(vertical = 8.dp),
+                        modifier = Modifier.fillMaxSize(),
                         intro = { intro.value },
                     )
+                    if (previewStyle != null) StylePreviewBadge(previewLeft, Modifier.align(Alignment.TopStart))
+                    lockedStyle?.let { locked ->
+                        StyleUnlockCard(
+                            styleName = stringResource(playerStyleLabel(locked)),
+                            onUnlock = { lockedStyle = null; onGetPro() },
+                            onBack = { lockedStyle = null },
+                        )
+                    }
+                    }
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
@@ -350,6 +376,12 @@ fun NowPlayingScreen(
                     },
                 )
             }
+
+            // Free users: one native ad, kept well clear of the playback buttons (AdMob placement rules).
+            if (showAd && !showQueue) {
+                Spacer(Modifier.height(20.dp))
+                com.vikash.mp3player.monetization.NativeAdCard()
+            }
         }
     }
 
@@ -359,6 +391,9 @@ fun NowPlayingScreen(
         onPick = onPickStyle,
         onGetPro = { showStyles = false; onGetPro() },
         onDismiss = { showStyles = false },
+        onPreview = { style ->
+            if (StylePreview.tryUse(ctx, style)) { lockedStyle = null; previewStyle = style } else onGetPro()
+        },
     )
     if (showSpeed) SpeedPitchDialog(state.speed, state.pitch, player::setSpeedAndPitch) { showSpeed = false }
     if (showCast) CastDialog(isPro, onGetPro) { showCast = false }

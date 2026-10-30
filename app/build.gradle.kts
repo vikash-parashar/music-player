@@ -68,6 +68,7 @@ android {
             manifestPlaceholders["admobAppId"] = "ca-app-pub-3940256099942544~3347511713"
             buildConfigField("String", "ADMOB_BANNER_ID", "\"ca-app-pub-3940256099942544/9214589741\"")
             buildConfigField("String", "ADMOB_REWARDED_ID", "\"ca-app-pub-3940256099942544/5224354917\"")
+            buildConfigField("String", "ADMOB_NATIVE_ID", "\"ca-app-pub-3940256099942544/2247696110\"")
             buildConfigField("boolean", "ONLINE_MUSIC", "true")
         }
         // The fast test APK: same as debug (test ads, same signing key so it installs over earlier
@@ -95,6 +96,8 @@ android {
             buildConfigField("String", "ADMOB_BANNER_ID", "\"${prop("ADMOB_BANNER_ID", "ca-app-pub-8097353665002950/5945560776")}\"")
             // Blank until a Rewarded ad unit exists in AdMob; the "try Pro for 24 hours" button hides itself then.
             buildConfigField("String", "ADMOB_REWARDED_ID", "\"${prop("ADMOB_REWARDED_ID")}\"")
+            // Blank until a Native ad unit exists in AdMob; the ad card under the Now Playing controls hides itself then.
+            buildConfigField("String", "ADMOB_NATIVE_ID", "\"${prop("ADMOB_NATIVE_ID")}\"")
         }
         // Same R8 settings as release, but test ads and the debug key so it installs over the test
         // APK on a phone: the build for checking that R8 removed nothing the app needs (Ampli-N-r8.apk).
@@ -105,6 +108,7 @@ android {
             manifestPlaceholders["admobAppId"] = "ca-app-pub-3940256099942544~3347511713"
             buildConfigField("String", "ADMOB_BANNER_ID", "\"ca-app-pub-3940256099942544/9214589741\"")
             buildConfigField("String", "ADMOB_REWARDED_ID", "\"ca-app-pub-3940256099942544/5224354917\"")
+            buildConfigField("String", "ADMOB_NATIVE_ID", "\"ca-app-pub-3940256099942544/2247696110\"")
         }
     }
 
