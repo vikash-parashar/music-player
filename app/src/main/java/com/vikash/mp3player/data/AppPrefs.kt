@@ -111,6 +111,24 @@ class AppPrefs(context: Context) {
         prefs.edit().putString(KEY_PLAYER_STYLE, style.id).apply()
     }
 
+    /** Whole-app look (Pro). Classic is today's free look. */
+    private val _uiSkin = MutableStateFlow(UiSkin.from(prefs.getString(KEY_UI_SKIN, null)))
+    val uiSkin: StateFlow<UiSkin> = _uiSkin.asStateFlow()
+
+    fun setUiSkin(skin: UiSkin) {
+        _uiSkin.value = skin
+        prefs.edit().putString(KEY_UI_SKIN, skin.id).apply()
+    }
+
+    /** Light vibration on taps in the Pro looks. */
+    private val _skinHaptics = MutableStateFlow(prefs.getBoolean(KEY_SKIN_HAPTICS, true))
+    val skinHaptics: StateFlow<Boolean> = _skinHaptics.asStateFlow()
+
+    fun setSkinHaptics(on: Boolean) {
+        _skinHaptics.value = on
+        prefs.edit().putBoolean(KEY_SKIN_HAPTICS, on).apply()
+    }
+
     /** Robot arm CD change animation when a song is tapped. */
     private val _discAnimation = MutableStateFlow(prefs.getBoolean(KEY_DISC_ANIM, true))
     val discAnimation: StateFlow<Boolean> = _discAnimation.asStateFlow()
@@ -199,6 +217,8 @@ class AppPrefs(context: Context) {
         const val KEY_DISC_ANIM = "disc_animation"
         const val KEY_WALLPAPER = "wallpaper_colors"
         const val KEY_LITE = "lite_mode"
+        const val KEY_UI_SKIN = "ui_skin"
+        const val KEY_SKIN_HAPTICS = "skin_haptics"
     }
 }
 

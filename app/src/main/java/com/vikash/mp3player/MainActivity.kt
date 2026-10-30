@@ -63,10 +63,15 @@ class MainActivity : ComponentActivity() {
             val wallpaper by app.prefs.wallpaperColors.collectAsState()
             val profile by app.prefs.colorProfile.collectAsState()
             val lite by app.prefs.liteMode.collectAsState()
+            val chosenSkin by app.prefs.uiSkin.collectAsState()
+            val skinTrial by com.vikash.mp3player.ui.skin.SkinTrial.active.collectAsState()
+            val haptics by app.prefs.skinHaptics.collectAsState()
             // Pro looks fall back to the brand theme if Pro (or the trial) ends.
             Mp3PlayerTheme(
                 themeMode, amoledBlack = pro && amoled, wallpaperColors = pro && wallpaper,
                 profile = if (pro) profile else ColorProfile.Ampli,
+                skin = skinTrial ?: if (pro) chosenSkin else com.vikash.mp3player.data.UiSkin.Classic,
+                skinHaptics = haptics,
             ) {
                 CompositionLocalProvider(LocalLiteMode provides lite) {
                 MusicPlayerApp(vm, onRemoveAds = {

@@ -28,13 +28,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.AssistChip
-import androidx.compose.material3.Card
-import androidx.compose.material3.FilledTonalButton
+import com.vikash.mp3player.ui.skin.SkinCard as Card
+import com.vikash.mp3player.ui.skin.SkinTonalButton as FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import com.vikash.mp3player.ui.skin.SkinOutlinedButton as OutlinedButton
 import androidx.compose.material3.Slider
-import androidx.compose.material3.Switch
+import com.vikash.mp3player.ui.skin.SkinSwitch as Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState

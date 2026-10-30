@@ -150,7 +150,8 @@ fun SongRow(
         enableDismissFromStartToEnd = true,
         enableDismissFromEndToStart = false,
         backgroundContent = {
-            Row(
+            // Only while swiping, so see-through rows in the Pro styles don't show it.
+            if (swipeState.dismissDirection != SwipeToDismissBoxValue.Settled) Row(
                 Modifier.fillMaxSize().background(MaterialTheme.colorScheme.primaryContainer).padding(horizontal = 24.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -160,7 +161,7 @@ fun SongRow(
             }
         },
     ) {
-        Surface { SongRowContent(song, isCurrent, onClick, actions, isFavorite, onToggleFavorite, onLongClick, null) }
+        Surface(color = com.vikash.mp3player.ui.skin.skinScreenColor()) { SongRowContent(song, isCurrent, onClick, actions, isFavorite, onToggleFavorite, onLongClick, null) }
     }
 }
 

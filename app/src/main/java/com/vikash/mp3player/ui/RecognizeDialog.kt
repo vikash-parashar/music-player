@@ -21,10 +21,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Hearing
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
+import com.vikash.mp3player.ui.skin.SkinButton as Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import com.vikash.mp3player.ui.skin.SkinOutlinedButton as OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable

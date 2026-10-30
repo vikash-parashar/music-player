@@ -34,8 +34,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AssistChip
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
+import com.vikash.mp3player.ui.skin.SkinButton as Button
+import com.vikash.mp3player.ui.skin.SkinCard as Card
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.SegmentedButton
@@ -51,9 +51,9 @@ import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.LightMode
 import com.vikash.mp3player.data.ThemeMode
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import com.vikash.mp3player.ui.skin.SkinOutlinedButton as OutlinedButton
 import androidx.compose.material3.Slider
-import androidx.compose.material3.Switch
+import com.vikash.mp3player.ui.skin.SkinSwitch as Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -107,6 +107,7 @@ fun SettingsScreen(
         MoreFromAmpliCard()
         if (BuildConfig.DEBUG) TestProCard(adsRemoved, onTestPro)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) LanguageCard()
+        com.vikash.mp3player.ui.skin.SkinPickerCard(proUnlocked, onRemoveAds)
         AppearanceCard(themeMode, onThemeMode)
         LiteModeCard()
         ProLookCard(proUnlocked, onRemoveAds)
@@ -428,7 +429,7 @@ private fun HeadsetClicksCard() {
                 Text(stringResource(R.string.settings_headset_clicks), style = MaterialTheme.typography.titleMedium)
                 Text(stringResource(R.string.settings_headset_clicks_desc), color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            androidx.compose.material3.Switch(checked = on, onCheckedChange = { com.vikash.mp3player.playback.HeadsetClicks.setEnabled(context, it) })
+            com.vikash.mp3player.ui.skin.SkinSwitch(checked = on, onCheckedChange = { com.vikash.mp3player.playback.HeadsetClicks.setEnabled(context, it) })
         }
     }
 }

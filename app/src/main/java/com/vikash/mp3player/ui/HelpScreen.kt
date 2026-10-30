@@ -28,14 +28,14 @@ import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Inbox
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.SupportAgent
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
+import com.vikash.mp3player.ui.skin.SkinButton as Button
+import com.vikash.mp3player.ui.skin.SkinCard as Card
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import com.vikash.mp3player.ui.skin.SkinOutlinedButton as OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text

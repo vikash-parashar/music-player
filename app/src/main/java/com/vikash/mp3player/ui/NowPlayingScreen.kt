@@ -46,6 +46,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
+import com.vikash.mp3player.ui.skin.LocalSkin
+import com.vikash.mp3player.ui.skin.TactileIconButton
+import com.vikash.mp3player.ui.skin.skinBackdrop
+import com.vikash.mp3player.ui.skin.skinScreenColor
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -144,7 +148,11 @@ fun NowPlayingScreen(
         }
     }
 
-    Surface(Modifier.fillMaxSize()) {
+    Surface(
+        Modifier.fillMaxSize().skinBackdrop(),
+        color = skinScreenColor(),
+        contentColor = MaterialTheme.colorScheme.onBackground,
+    ) {
         Column(Modifier.fillMaxSize().systemBarsPadding().padding(horizontal = 24.dp, vertical = 16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 IconButton(onClick = onClose) { Icon(Icons.Default.KeyboardArrowDown, stringResource(R.string.player_close)) }
@@ -300,6 +308,19 @@ fun NowPlayingScreen(
             ) {
                 val active = MaterialTheme.colorScheme.primary
                 val inactive = MaterialTheme.colorScheme.onSurfaceVariant
+                if (!LocalSkin.current.isClassic) {
+                    // Pro app styles: square push keys with a dome that sinks in.
+                    TactileIconButton(Icons.Default.Shuffle, stringResource(R.string.player_shuffle), player::toggleShuffle,
+                        size = 44.dp, tint = if (state.shuffle) active else null)
+                    TactileIconButton(Icons.Default.SkipPrevious, stringResource(R.string.common_previous), { player.previous() }, size = 54.dp)
+                    GradientPlayButton(state.isPlaying, 72.dp, player::togglePlay)
+                    TactileIconButton(Icons.Default.SkipNext, stringResource(R.string.common_next), { player.next() }, size = 54.dp)
+                    TactileIconButton(
+                        if (state.repeatMode == Player.REPEAT_MODE_ONE) Icons.Default.RepeatOne else Icons.Default.Repeat,
+                        stringResource(R.string.player_repeat), player::cycleRepeat,
+                        size = 44.dp, tint = if (state.repeatMode == Player.REPEAT_MODE_OFF) null else active,
+                    )
+                } else {
                 IconButton(onClick = player::toggleShuffle) {
                     Icon(Icons.Default.Shuffle, stringResource(R.string.player_shuffle), tint = if (state.shuffle) active else inactive)
                 }
@@ -312,6 +333,7 @@ fun NowPlayingScreen(
                         stringResource(R.string.player_repeat),
                         tint = if (state.repeatMode == Player.REPEAT_MODE_OFF) inactive else active,
                     )
+                }
                 }
             }
 

@@ -16,9 +16,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Button
+import com.vikash.mp3player.ui.skin.SkinButton as Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
+import com.vikash.mp3player.ui.skin.SkinCard as Card
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
