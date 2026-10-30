@@ -26,43 +26,67 @@ object Ampli {
     val NightRaised = Color(0xFF1C1820)
     val Blush = Color(0xFFFDA4AF)
 
-    /** Same diagonal gradient as the app icon. */
-    val Gradient: Brush = Brush.linearGradient(listOf(Slate, Rose))
+    /**
+     * Hero cards, call-to-action pills and artwork placeholders. Luxury look: deep ink warming
+     * into ember, so white text and gold accents sit on it well. (The app icon keeps slate to rose.)
+     */
+    val Gradient: Brush = Brush.linearGradient(listOf(Color(0xFF1B1512), Color(0xFF4A1F12), Color(0xFFC2410C)))
+}
+
+/**
+ * The "minimal luxury" look: ink-black (day) or ivory (night) controls, a warm coral glow behind
+ * whatever is active, and gold for the thing that's playing or selected.
+ */
+object Lux {
+    val Ink = Color(0xFF16120F)
+    val Ivory = Color(0xFFF4EFEA)
+    val Glow = Color(0xFFFF5A4E)
+    val Ember = Color(0xFFFF7A3C)
+    val Gold = Color(0xFFF59E0B)
+    val GoldDeep = Color(0xFFEA580C)
+    val GoldBrush: Brush = Brush.horizontalGradient(listOf(Gold, GoldDeep))
 }
 
 private val DarkColors = darkColorScheme(
-    primary = Color(0xFFFDA4AF),
-    onPrimary = Color(0xFF4C0519),
-    primaryContainer = Ampli.RoseDeep,
-    onPrimaryContainer = Color.White,
-    secondary = Color(0xFFCBD5E1),
-    secondaryContainer = Color(0xFF2B2F3A),
-    onSecondaryContainer = Color(0xFFF1F5F9),
-    tertiary = Ampli.Rose,
-    background = Ampli.Night,
-    onBackground = Color(0xFFF2EEF0),
-    surface = Ampli.Night,
-    onSurface = Color(0xFFF2EEF0),
-    surfaceVariant = Ampli.NightRaised,
-    onSurfaceVariant = Color(0xFFB8AEB3),
-    surfaceContainer = Ampli.NightRaised,
-    surfaceContainerHigh = Color(0xFF27222B),
-    outline = Color(0xFF4A4248),
+    primary = Lux.Ivory,
+    onPrimary = Lux.Ink,
+    primaryContainer = Color(0xFF3A2416),
+    onPrimaryContainer = Color(0xFFFFE9DC),
+    secondary = Color(0xFFBDB3AA),
+    secondaryContainer = Lux.Ivory,
+    onSecondaryContainer = Lux.Ink,
+    tertiary = Lux.Gold,
+    background = Color(0xFF0D0B0A),
+    onBackground = Lux.Ivory,
+    surface = Color(0xFF0D0B0A),
+    onSurface = Lux.Ivory,
+    surfaceVariant = Color(0xFF1A1715),
+    onSurfaceVariant = Color(0xFF9A9087),
+    surfaceContainer = Color(0xFF171412),
+    surfaceContainerHigh = Color(0xFF221E1B),
+    outline = Color(0xFF3A332E),
+    outlineVariant = Color(0xFF2A2522),
 )
 
 private val LightColors = lightColorScheme(
-    primary = Ampli.RoseDeep,
+    primary = Lux.Ink,
     onPrimary = Color.White,
-    primaryContainer = Color(0xFFFFE4E6),
-    onPrimaryContainer = Color(0xFF4C0519),
-    secondary = Color(0xFF475569),
-    secondaryContainer = Color(0xFFE2E8F0),
-    onSecondaryContainer = Color(0xFF0F172A),
-    tertiary = Ampli.Rose,
-    background = Color(0xFFFFFAFA),
-    surface = Color(0xFFFFFAFA),
-    surfaceVariant = Color(0xFFF3ECEE),
-    surfaceContainer = Color(0xFFF7F1F2),
+    primaryContainer = Color(0xFFFFE9DC),
+    onPrimaryContainer = Color(0xFF3A1A0A),
+    secondary = Color(0xFF6F6760),
+    secondaryContainer = Lux.Ink,
+    onSecondaryContainer = Color.White,
+    tertiary = Lux.GoldDeep,
+    background = Color(0xFFF7F4F0),
+    onBackground = Lux.Ink,
+    surface = Color(0xFFF7F4F0),
+    onSurface = Lux.Ink,
+    surfaceVariant = Color(0xFFEFEAE4),
+    onSurfaceVariant = Color(0xFF7A7169),
+    surfaceContainer = Color.White,
+    surfaceContainerHigh = Color.White,
+    outline = Color(0xFFD9D1C9),
+    outlineVariant = Color(0xFFE9E3DD),
 )
 
 /**
@@ -131,7 +155,7 @@ private fun palette(profile: ColorProfile): Palette? = when (profile) {
 
 /** The swatch shown in Settings: the profile's accent and day background. */
 fun profileSwatch(profile: ColorProfile): Pair<Color, Color> =
-    palette(profile)?.let { it.dayAccent to it.dayBg } ?: (Ampli.Rose to Color(0xFFFFFAFA))
+    palette(profile)?.let { it.dayAccent to it.dayBg } ?: (Lux.Ink to Color(0xFFF7F4F0))
 
 private val AmpliTypography = Typography().run {
     copy(

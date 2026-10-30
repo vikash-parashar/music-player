@@ -70,6 +70,7 @@ import com.vikash.mp3player.R
 import com.vikash.mp3player.data.Song
 import com.vikash.mp3player.playback.PlayerUiState
 import com.vikash.mp3player.ui.theme.Ampli
+import com.vikash.mp3player.ui.theme.Lux
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -91,7 +92,8 @@ internal fun SongRowContent(
 ) {
     var menuOpen by remember { mutableStateOf(false) }
     val playing = isCurrent && LocalIsPlaying.current
-    val primary = MaterialTheme.colorScheme.primary
+    // The playing row glows warm coral, and its title is gold (luxury look).
+    val primary = Lux.Glow
 
     // The current song "floats": a soft rose glow sweeps across it and it bobs gently.
     // Only the current row runs these loops, so the rest of the list stays cheap.
@@ -135,7 +137,7 @@ internal fun SongRowContent(
                 Box(
                     Modifier.width(3.dp).fillMaxHeight().clip(RoundedCornerShape(2.dp))
                         .graphicsLayer { alpha = if (playing) fx?.glow?.value ?: 1f else 0.6f }
-                        .background(Ampli.Rose),
+                        .background(Brush.verticalGradient(listOf(Lux.Gold, Lux.GoldDeep))),
                 )
             }
         }
@@ -153,7 +155,7 @@ internal fun SongRowContent(
                     maxLines = 1,
                     overflow = if (isCurrent && fx != null) TextOverflow.Clip else TextOverflow.Ellipsis,
                     fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Normal,
-                    color = if (isCurrent) primary else MaterialTheme.colorScheme.onSurface,
+                    color = if (isCurrent) Lux.GoldDeep else MaterialTheme.colorScheme.onSurface,
                     // Long titles of the playing song glide sideways so the whole name is seen.
                     modifier = if (playing && fx != null) Modifier.basicMarquee(iterations = Int.MAX_VALUE, initialDelayMillis = 800) else Modifier,
                 )
@@ -299,8 +301,12 @@ fun MiniPlayer(
     onPrevious: () -> Unit = {},
 ) {
     val current = state.current ?: return
-    Surface(tonalElevation = 3.dp, modifier = Modifier.fillMaxWidth().clickable(onClick = onOpen)) {
-        Row(Modifier.padding(horizontal = 10.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+    // A frosted card floating just above the dock, in the same luxury style.
+    Box(
+        Modifier.fillMaxWidth().padding(start = 14.dp, end = 14.dp, top = 6.dp)
+            .luxGlass(RoundedCornerShape(22.dp), elevation = 10.dp).clickable(onClick = onOpen),
+    ) {
+        Row(Modifier.padding(start = 9.dp, end = 4.dp, top = 6.dp, bottom = 6.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(contentAlignment = Alignment.Center) {
                 SpinningCd(current.artworkUri, 42.dp)
             }
