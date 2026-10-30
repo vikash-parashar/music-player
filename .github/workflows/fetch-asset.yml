@@ -1,15 +1,10 @@
 name: Fetch design asset
-# Downloads one image (for example an AI-generated hero picture) into the repo on the
-# branch it runs on, so design assets made outside GitHub can be added without a laptop.
+# Downloads images (for example AI-generated hero pictures) into the repo on the branch
+# where design/fetch-request.txt changes. Each line of that file is: <repo path> <https url>
 on:
-  workflow_dispatch:
-    inputs:
-      url:
-        description: "https URL of the file"
-        required: true
-      path:
-        description: "Repo path to save it to"
-        required: true
+  push:
+    paths:
+      - design/fetch-request.txt
 permissions:
   contents: write
 jobs:
@@ -18,20 +13,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Download
-        env:
-          URL: ${{ inputs.url }}
-          DEST: ${{ inputs.path }}
         run: |
-          case "$DEST" in *..*|/*) echo "bad path"; exit 1;; esac
-          mkdir -p "$(dirname "$DEST")"
-          curl -fsSL --max-filesize 20000000 -o "$DEST" "$URL"
-          file "$DEST"
+          while read -r DEST URL; do
+            [ -z "$DEST" ] && continue
+            case "$DEST" in \#*) continue;; *..*|/*) echo "bad path $DEST"; exit 1;; esac
+            case "$URL" in https://*) ;; *) echo "bad url"; exit 1;; esac
+            mkdir -p "$(dirname "$DEST")"
+            curl -fsSL --max-filesize 20000000 -o "$DEST" "$URL"
+            file "$DEST"
+            git add "$DEST"
+          done < design/fetch-request.txt
       - name: Commit
-        env:
-          DEST: ${{ inputs.path }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
-          git add "$DEST"
-          git commit -m "Add design asset $DEST" || exit 0
+          git commit -m "Add fetched design assets" || exit 0
           git push
