@@ -150,7 +150,8 @@ fun SongRow(
         enableDismissFromStartToEnd = true,
         enableDismissFromEndToStart = false,
         backgroundContent = {
-            Row(
+            // Only while swiping, so see-through rows in the Pro styles don't show it.
+            if (swipeState.dismissDirection != SwipeToDismissBoxValue.Settled) Row(
                 Modifier.fillMaxSize().background(MaterialTheme.colorScheme.primaryContainer).padding(horizontal = 24.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -160,7 +161,7 @@ fun SongRow(
             }
         },
     ) {
-        Surface { SongRowContent(song, isCurrent, onClick, actions, isFavorite, onToggleFavorite, onLongClick, null) }
+        Surface(color = com.vikash.mp3player.ui.skin.skinScreenColor()) { SongRowContent(song, isCurrent, onClick, actions, isFavorite, onToggleFavorite, onLongClick, null) }
     }
 }
 
@@ -188,7 +189,7 @@ fun EmptyMessage(text: String, modifier: Modifier = Modifier, action: (@Composab
 
 /** App bar: logo + wordmark, with a "Get Pro" pill until the user has Pro. */
 @Composable
-fun BrandHeader(showAdFreePill: Boolean, onAdFreeClick: () -> Unit, onRecognize: () -> Unit) {
+fun BrandHeader(showAdFreePill: Boolean, onAdFreeClick: () -> Unit, onRecognize: () -> Unit, onHelp: (() -> Unit)? = null) {
     Row(
         Modifier.fillMaxWidth().statusBarsPadding().padding(start = 16.dp, end = 12.dp, top = 8.dp, bottom = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -196,6 +197,10 @@ fun BrandHeader(showAdFreePill: Boolean, onAdFreeClick: () -> Unit, onRecognize:
         Image(painterResource(R.drawable.ic_logo_mark), contentDescription = null, modifier = Modifier.size(30.dp))
         Spacer(Modifier.width(8.dp))
         Text("Ampli", style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
+        // Pro app styles: the yellow-to-red help key with its tooltip.
+        if (onHelp != null && !com.vikash.mp3player.ui.skin.LocalSkin.current.isClassic) {
+            com.vikash.mp3player.ui.skin.HelpBubble(stringResource(R.string.help_tooltip), onHelp, Modifier.padding(end = 4.dp))
+        }
         IconButton(onClick = onRecognize) { Icon(Icons.Default.Hearing, stringResource(R.string.recognize_title)) }
         if (showAdFreePill) {
             Box(

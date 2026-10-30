@@ -2,6 +2,13 @@ package com.vikash.mp3player.ui.theme
 
 import com.vikash.mp3player.data.ColorProfile
 import com.vikash.mp3player.data.ThemeMode
+import com.vikash.mp3player.data.UiSkin
+import com.vikash.mp3player.ui.skin.LocalSkin
+import com.vikash.mp3player.ui.skin.skinColorScheme
+import com.vikash.mp3player.ui.skin.skinShapes
+import com.vikash.mp3player.ui.skin.skinSpec
+import com.vikash.mp3player.ui.skin.skinTypography
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.material3.ColorScheme
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -176,6 +183,8 @@ fun Mp3PlayerTheme(
     amoledBlack: Boolean = false,
     wallpaperColors: Boolean = false,
     profile: ColorProfile = ColorProfile.Ampli,
+    skin: UiSkin = UiSkin.Classic,
+    skinHaptics: Boolean = true,
     content: @Composable () -> Unit,
 ) {
     val dark = when (mode) {
@@ -184,13 +193,14 @@ fun Mp3PlayerTheme(
         ThemeMode.Dark -> true
     }
     val context = LocalContext.current
-    var scheme = when {
+    // A Pro app style brings its own colours; colour themes and wallpaper colours apply to Classic.
+    var scheme = skinColorScheme(skin, dark) ?: when {
         wallpaperColors && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ->
             if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         dark -> palette(profile)?.dark() ?: DarkColors
         else -> palette(profile)?.light() ?: LightColors
     }
-    if (dark && amoledBlack) {
+    if (dark && amoledBlack && skin == UiSkin.Classic) {
         scheme = scheme.copy(
             background = Color.Black,
             surface = Color.Black,
@@ -199,9 +209,12 @@ fun Mp3PlayerTheme(
             surfaceContainerHigh = Color(0xFF161616),
         )
     }
+    val shapes = skinShapes(skin)
     MaterialTheme(
         colorScheme = scheme,
-        typography = AmpliTypography,
-        content = content,
-    )
+        typography = skinTypography(skin, AmpliTypography) ?: AmpliTypography,
+        shapes = shapes ?: MaterialTheme.shapes,
+    ) {
+        CompositionLocalProvider(LocalSkin provides skinSpec(skin, dark, skinHaptics), content = content)
+    }
 }

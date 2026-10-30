@@ -1,5 +1,10 @@
 package com.vikash.mp3player.ui
 
+import com.vikash.mp3player.data.UiSkin
+import com.vikash.mp3player.ui.skin.BentoHeader
+import com.vikash.mp3player.ui.skin.ExpandFab
+import com.vikash.mp3player.ui.skin.LocalSkin
+import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material.icons.filled.Mic
 import android.speech.RecognizerIntent
 import android.content.ActivityNotFoundException
@@ -78,7 +83,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Shuffle
-import androidx.compose.material3.Button
+import com.vikash.mp3player.ui.skin.SkinButton as Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -270,6 +275,8 @@ fun LibraryScreen(
         }
     }
 
+    val skin = LocalSkin.current
+    Box(Modifier.fillMaxSize()) {
     Column(Modifier.fillMaxSize()) {
         OutlinedTextField(
             value = filter,
@@ -287,7 +294,10 @@ fun LibraryScreen(
             singleLine = true,
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
         )
-        ScrollableTabRow(selectedTabIndex = tab, edgePadding = 8.dp) {
+        if (skin.skin == UiSkin.Bento && filter.isEmpty() && openGroup == null) {
+            BentoHeader(state.songs.size, favorites.size, playlists.size, stats, onOpenStats)
+        }
+        ScrollableTabRow(selectedTabIndex = tab, edgePadding = 8.dp, containerColor = if (skin.isClassic) TabRowDefaults.primaryContainerColor else Color.Transparent) {
             LibraryTab.entries.forEachIndexed { i, t ->
                 Tab(selected = tab == i, onClick = { tab = i; openGroup = null }, text = { Text(stringResource(t.labelRes)) })
             }
@@ -296,7 +306,7 @@ fun LibraryScreen(
         when {
             state.loading && state.songs.isEmpty() ->
                 Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
-                    CircularProgressIndicator(Modifier.padding(32.dp))
+                    com.vikash.mp3player.ui.skin.SkinLoader(Modifier.padding(32.dp))
                 }
             state.songs.isEmpty() -> EmptyMessage(stringResource(R.string.library_no_music))
             current == LibraryTab.Playlists && openGroup == null -> {
@@ -485,6 +495,14 @@ fun LibraryScreen(
                 }
             }
         }
+    }
+
+    if (!skin.isClassic) {
+        ExpandFab(
+            stringResource(R.string.playlist_new), Icons.Default.Add, onClick = { creatingPlaylist = true },
+            modifier = Modifier.align(Alignment.BottomEnd).padding(end = 18.dp, bottom = 18.dp),
+        )
+    }
     }
 
     addingSongs?.let { list ->

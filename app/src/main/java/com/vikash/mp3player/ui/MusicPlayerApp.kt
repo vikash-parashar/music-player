@@ -30,6 +30,10 @@ import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.Scaffold
+import com.vikash.mp3player.ui.skin.SkinTrialEndedDialog
+import com.vikash.mp3player.ui.skin.SkinWelcomeDialog
+import com.vikash.mp3player.ui.skin.skinBackdrop
+import com.vikash.mp3player.ui.skin.skinScreenColor
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -146,7 +150,21 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     val carLaunches by CarLaunch.requests.collectAsStateWithLifecycle()
     LaunchedEffect(carLaunches) { if (carLaunches > 0) showCarMode = true }
     LaunchedEffect(carLaunches, player.connected, library.songs.isNotEmpty()) {
-        if (carLaunches == 0 || !CarLaunch.autoplayPending || !player.connected) return@LaunchedEffect
+        if (carLaunches == 0 || !player.connected) return@LaunchedEffect
+        // "Hey Ampli, play <song>" from Car Hub: play the best match once the library is loaded.
+        val query = CarLaunch.queryPending
+        if (query != null) {
+            if (library.songs.isEmpty()) return@LaunchedEffect
+            CarLaunch.queryPending = null
+            val match = VoiceMatch.find(listOf(query), library.songs.filter { !it.isOnline })
+            if (match != null) {
+                vm.player.play(match.songs, 0, match.label)
+                CarLaunch.autoplayPending = false
+                return@LaunchedEffect
+            }
+            CarLaunch.autoplayPending = true // no match: start the music anyway
+        }
+        if (!CarLaunch.autoplayPending) return@LaunchedEffect
         when {
             player.current != null -> { if (!player.isPlaying) vm.player.togglePlay(); CarLaunch.autoplayPending = false }
             library.songs.isNotEmpty() -> {
@@ -157,6 +175,13 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     }
     var showDuplicates by rememberSaveable { mutableStateOf(false) }
     var showRecognize by remember { mutableStateOf(false) }
+    // Right after Pro starts (purchase or trial), offer the app styles once.
+    var showSkinWelcome by remember { mutableStateOf(false) }
+    var wasPro by remember { mutableStateOf(proUnlocked) }
+    LaunchedEffect(proUnlocked) {
+        if (proUnlocked && !wasPro) showSkinWelcome = true
+        wasPro = proUnlocked
+    }
     var showPro by rememberSaveable { mutableStateOf(false) }
     var showHelp by rememberSaveable { mutableStateOf(false) }
     val openPro: () -> Unit = { showPro = true }
@@ -224,9 +249,10 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     // Lite mode: the CDs stand still, so no frame loop runs while music plays.
     val discAngle: State<Float> = if (liteMode) remember { mutableFloatStateOf(0f) } else rememberDiscSpin(vm.player)
     CompositionLocalProvider(LocalIsPlaying provides player.isPlaying, LocalDiscAngle provides discAngle) {
-    Box(Modifier.fillMaxSize()) {
+    Box(Modifier.fillMaxSize().skinBackdrop()) {
         Scaffold(
-            topBar = { BrandHeader(showAdFreePill = !adsRemoved, onAdFreeClick = openPro, onRecognize = { showRecognize = true }) },
+            containerColor = skinScreenColor(),
+            topBar = { BrandHeader(showAdFreePill = !adsRemoved, onAdFreeClick = openPro, onRecognize = { showRecognize = true }, onHelp = { showHelp = true }) },
             snackbarHost = { SnackbarHost(snackbar) },
             bottomBar = {
                 Column {
@@ -563,6 +589,9 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                 },
             )
         }
+
+        if (showSkinWelcome) SkinWelcomeDialog(onDismiss = { showSkinWelcome = false })
+        if (!proUnlocked) SkinTrialEndedDialog(onGetPro = openPro)
     }
     }
 }

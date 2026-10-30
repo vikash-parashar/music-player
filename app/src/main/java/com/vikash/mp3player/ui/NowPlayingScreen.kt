@@ -30,6 +30,7 @@ import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material.icons.filled.DirectionsCar
+import androidx.compose.material.icons.filled.Equalizer
 import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.Cast
@@ -46,6 +47,11 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
+import com.vikash.mp3player.ui.skin.LocalSkin
+import com.vikash.mp3player.ui.skin.TactileIconButton
+import com.vikash.mp3player.ui.skin.GlowToggle
+import com.vikash.mp3player.ui.skin.skinBackdrop
+import com.vikash.mp3player.ui.skin.skinScreenColor
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -99,6 +105,7 @@ fun NowPlayingScreen(
     val casting by com.vikash.mp3player.cast.CastState.casting.collectAsState()
     var showQueue by remember { mutableStateOf(false) }
     var showSpeed by remember { mutableStateOf(false) }
+    var showSound by remember { mutableStateOf(false) }
     var showLyrics by rememberSaveable { mutableStateOf(false) }
     var showBookmarks by remember { mutableStateOf(false) }
     var showStyles by remember { mutableStateOf(false) }
@@ -144,7 +151,11 @@ fun NowPlayingScreen(
         }
     }
 
-    Surface(Modifier.fillMaxSize()) {
+    Surface(
+        Modifier.fillMaxSize().skinBackdrop(),
+        color = skinScreenColor(),
+        contentColor = MaterialTheme.colorScheme.onBackground,
+    ) {
         Column(Modifier.fillMaxSize().systemBarsPadding().padding(horizontal = 24.dp, vertical = 16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 IconButton(onClick = onClose) { Icon(Icons.Default.KeyboardArrowDown, stringResource(R.string.player_close)) }
@@ -300,6 +311,18 @@ fun NowPlayingScreen(
             ) {
                 val active = MaterialTheme.colorScheme.primary
                 val inactive = MaterialTheme.colorScheme.onSurfaceVariant
+                if (!LocalSkin.current.isClassic) {
+                    // Pro app styles: square push keys with a dome that sinks in.
+                    GlowToggle(state.shuffle, player::toggleShuffle, Icons.Default.Shuffle, stringResource(R.string.player_shuffle), size = 44.dp)
+                    TactileIconButton(Icons.Default.SkipPrevious, stringResource(R.string.common_previous), { player.previous() }, size = 54.dp)
+                    GradientPlayButton(state.isPlaying, 72.dp, player::togglePlay)
+                    TactileIconButton(Icons.Default.SkipNext, stringResource(R.string.common_next), { player.next() }, size = 54.dp)
+                    GlowToggle(
+                        state.repeatMode != Player.REPEAT_MODE_OFF, player::cycleRepeat,
+                        if (state.repeatMode == Player.REPEAT_MODE_ONE) Icons.Default.RepeatOne else Icons.Default.Repeat,
+                        stringResource(R.string.player_repeat), size = 44.dp,
+                    )
+                } else {
                 IconButton(onClick = player::toggleShuffle) {
                     Icon(Icons.Default.Shuffle, stringResource(R.string.player_shuffle), tint = if (state.shuffle) active else inactive)
                 }
@@ -313,11 +336,21 @@ fun NowPlayingScreen(
                         tint = if (state.repeatMode == Player.REPEAT_MODE_OFF) inactive else active,
                     )
                 }
+                }
             }
 
             // Extra tools: speed/pitch, lyrics and A-B repeat.
             Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.Center) {
                 val normal = state.speed == 1f && state.pitch == 1f
+                val eqOn by com.vikash.mp3player.playback.EqualizerController.state.collectAsState()
+                val proEqOn by com.vikash.mp3player.playback.ProSound.state.collectAsState()
+                FilterChip(
+                    selected = eqOn.enabled || proEqOn.eqEnabled,
+                    onClick = { showSound = true },
+                    leadingIcon = { Icon(Icons.Default.Equalizer, null, Modifier.size(18.dp)) },
+                    label = { Text(stringResource(R.string.settings_equalizer)) },
+                )
+                Spacer(Modifier.width(8.dp))
                 FilterChip(
                     selected = !normal,
                     onClick = { showSpeed = true },
@@ -395,6 +428,7 @@ fun NowPlayingScreen(
             if (StylePreview.tryUse(ctx, style)) { lockedStyle = null; previewStyle = style } else onGetPro()
         },
     )
+    if (showSound) SoundSheet(isPro, onGetPro) { showSound = false }
     if (showSpeed) SpeedPitchDialog(state.speed, state.pitch, player::setSpeedAndPitch) { showSpeed = false }
     if (showCast) CastDialog(isPro, onGetPro) { showCast = false }
     if (showBookmarks) BookmarksDialog(

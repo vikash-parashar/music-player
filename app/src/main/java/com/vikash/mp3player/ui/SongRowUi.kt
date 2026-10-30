@@ -1,5 +1,7 @@
 package com.vikash.mp3player.ui
 
+import com.vikash.mp3player.ui.skin.skinSurface
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
@@ -36,7 +38,7 @@ import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
-import androidx.compose.material3.Checkbox
+import com.vikash.mp3player.ui.skin.SkinCheckbox as Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -103,9 +105,20 @@ internal fun SongRowContent(
     val lift = remember { Animatable(0f) }
     LaunchedEffect(isCurrent) { lift.animateTo(if (isCurrent) 1f else 0f, spring(dampingRatio = 0.55f, stiffness = 300f)) }
 
+    val skin = com.vikash.mp3player.ui.skin.LocalSkin.current
     Box(
         Modifier
             .fillMaxWidth()
+            .then(
+                // Pro app styles: each row sits on the style's own card (raised, clay, bordered...).
+                when (skin.style) {
+                    com.vikash.mp3player.ui.skin.SurfaceStyle.Material -> Modifier
+                    com.vikash.mp3player.ui.skin.SurfaceStyle.Hairline -> Modifier.drawBehind {
+                        drawLine(skin.edge, androidx.compose.ui.geometry.Offset(16.dp.toPx(), size.height), androidx.compose.ui.geometry.Offset(size.width - 16.dp.toPx(), size.height), 1.dp.toPx())
+                    }
+                    else -> Modifier.padding(horizontal = 12.dp, vertical = 5.dp).skinSurface(RoundedCornerShape(minOf(skin.corner, 18.dp)))
+                }
+            )
             .graphicsLayer {
                 if (isCurrent) {
                     translationY = if (playing) (fx?.bob?.value ?: 0f) * 1.5.dp.toPx() else 0f

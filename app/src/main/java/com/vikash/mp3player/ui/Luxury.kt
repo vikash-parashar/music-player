@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.vikash.mp3player.R
 import com.vikash.mp3player.ui.theme.Lux
+import com.vikash.mp3player.ui.skin.skinSurface
 
 /** True when the current theme is a dark one (judged from the background, so Pro themes work too). */
 @Composable
@@ -51,6 +52,8 @@ internal fun isDarkTheme(): Boolean = MaterialTheme.colorScheme.background.lumin
  */
 @Composable
 internal fun Modifier.luxGlass(shape: Shape, elevation: Dp = 14.dp): Modifier {
+    // Pro app styles draw the dock and mini player in their own surface (soft shadow, glass, border...).
+    if (!com.vikash.mp3player.ui.skin.LocalSkin.current.isClassic) return this.skinSurface(shape)
     val dark = isDarkTheme()
     val glass = if (dark) Color(0xFF1C1816).copy(alpha = 0.96f) else Color.White.copy(alpha = 0.97f)
     val edge = if (dark) Color.White.copy(alpha = 0.07f) else Color(0x1014100C)
@@ -74,6 +77,13 @@ internal fun luxGlowBrush(strength: Float = 1f): Brush = Brush.radialGradient(
  */
 @Composable
 fun LuxPlayButton(isPlaying: Boolean, size: Dp, onClick: () -> Unit) {
+    if (!com.vikash.mp3player.ui.skin.LocalSkin.current.isClassic) {
+        com.vikash.mp3player.ui.skin.TactilePlayButton(
+            isPlaying, size, Icons.Default.PlayArrow, Icons.Default.Pause,
+            stringResource(if (isPlaying) R.string.common_pause else R.string.common_play), onClick,
+        )
+        return
+    }
     val lite = LocalLiteMode.current
     val source = remember { MutableInteractionSource() }
     val pressed by source.collectIsPressedAsState()

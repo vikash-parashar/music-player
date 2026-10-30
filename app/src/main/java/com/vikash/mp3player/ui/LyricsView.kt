@@ -17,10 +17,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
+import com.vikash.mp3player.ui.skin.SkinButton as Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import com.vikash.mp3player.ui.skin.SkinOutlinedButton as OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -93,7 +93,7 @@ fun LyricsView(
     Box(modifier, contentAlignment = Alignment.Center) {
         val current = lyrics
         when {
-            loading -> CircularProgressIndicator()
+            loading -> com.vikash.mp3player.ui.skin.SkinLoader()
             current == null -> Column(
                 Modifier.padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,

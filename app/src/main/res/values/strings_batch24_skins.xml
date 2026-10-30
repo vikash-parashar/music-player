@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Pro app looks (skins) -->
+    <string name="skin_classic">Classic</string>
+    <string name="skin_minimal">Minimal</string>
+    <string name="skin_glass">Glass</string>
+    <string name="skin_neu">Neumorphic</string>
+    <string name="skin_clay">Clay</string>
+    <string name="skin_brutal">Brutal</string>
+    <string name="skin_bento">Bento</string>
+    <string name="skin_hifi">Hi-Fi</string>
+    <string name="skin_card_title">App style</string>
+    <string name="skin_card_desc">Changes the whole app: buttons, lists, switches, cards and the player.</string>
+    <string name="skin_try">Try 30s</string>
+    <string name="skin_trying">Trying %1$s · %2$ds</string>
+    <string name="skin_keep_title">Keep %1$s?</string>
+    <string name="skin_keep_body">Get all 7 app styles with Pro, plus no ads. Pay once, keep forever.</string>
+    <string name="skin_haptics">Haptic feedback</string>
+    <string name="skin_haptics_desc">A light buzz on taps, tuned to each style</string>
+    <string name="skin_welcome_title">Pick your Ampli style</string>
+    <string name="skin_welcome_body">Thanks for getting Pro! Choose how the whole app looks. You can change it any time in Settings.</string>
+    <string name="skin_done">Done</string>
+    <string name="skin_not_now">Not now</string>
+    <string name="bento_listened">Listened this month</string>
+    <string name="bento_songs">Songs</string>
+    <string name="bento_favourites">Favourites</string>
+    <string name="bento_playlists">Playlists</string>
+    <string name="bento_top">Most played</string>
+    <string name="help_tooltip">Help &amp; tips</string>
+    <string name="sound_sheet_title">Sound</string>
+</resources>

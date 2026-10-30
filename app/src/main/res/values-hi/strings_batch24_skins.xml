@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="skin_classic">क्लासिक</string>
+    <string name="skin_minimal">मिनिमल</string>
+    <string name="skin_glass">ग्लास</string>
+    <string name="skin_neu">न्यूमॉर्फिक</string>
+    <string name="skin_clay">क्ले</string>
+    <string name="skin_brutal">ब्रूटल</string>
+    <string name="skin_bento">बेंटो</string>
+    <string name="skin_hifi">हाई-फाई</string>
+    <string name="skin_card_title">ऐप स्टाइल</string>
+    <string name="skin_card_desc">पूरा ऐप बदल जाता है: बटन, लिस्ट, स्विच, कार्ड और प्लेयर।</string>
+    <string name="skin_try">30 सेकंड आज़माएँ</string>
+    <string name="skin_trying">%1$s आज़मा रहे हैं · %2$ds</string>
+    <string name="skin_keep_title">%1$s रखना है?</string>
+    <string name="skin_keep_body">Pro के साथ सभी 7 ऐप स्टाइल पाएँ, और कोई विज्ञापन नहीं। एक बार भुगतान, हमेशा के लिए।</string>
+    <string name="skin_haptics">हैप्टिक फ़ीडबैक</string>
+    <string name="skin_haptics_desc">टैप पर हल्का कंपन, हर स्टाइल के हिसाब से</string>
+    <string name="skin_welcome_title">अपना Ampli स्टाइल चुनें</string>
+    <string name="skin_welcome_body">Pro लेने के लिए धन्यवाद! चुनें कि पूरा ऐप कैसा दिखे। आप इसे कभी भी सेटिंग्स में बदल सकते हैं।</string>
+    <string name="skin_done">हो गया</string>
+    <string name="skin_not_now">अभी नहीं</string>
+    <string name="bento_listened">इस महीने सुना</string>
+    <string name="bento_songs">गाने</string>
+    <string name="bento_favourites">पसंदीदा</string>
+    <string name="bento_playlists">प्लेलिस्ट</string>
+    <string name="bento_top">सबसे ज़्यादा सुना</string>
+    <string name="help_tooltip">मदद और टिप्स</string>
+    <string name="sound_sheet_title">साउंड</string>
+</resources>
