@@ -1,0 +1,94 @@
+{
+ "version": 1793404128,
+ "series": [
+  {
+   "id": "vikram-betal",
+   "title": "विक्रम और बेताल",
+   "titleEn": "Vikram aur Betal",
+   "genre": "kids",
+   "author": "लोककथा, Ampli द्वारा पुनर्कथन",
+   "source": "Baital Pachisi (public domain folk tales), original retelling by Ampli",
+   "description": "आधी रात के श्मशान में राजा विक्रम के कंधे पर बैठा है एक चालाक बेताल, जो हर रात एक नई कहानी सुनाता है और अंत में ऐसा सवाल पूछता है जिसका जवाब देते ही वह उड़ जाता है। सुनिए वो पहेलियां जिन्होंने सदियों से बच्चों और बड़ों को सोचने पर मजबूर किया है, और जानिए कि उस रहस्यमय योगी के मन में आखिर छुपा क्या है।",
+   "descriptionEn": "In a midnight cremation ground, a clever ghost named Betal rides on King Vikram's shoulder, telling a new story every night and ending with a riddle that sets him free the moment the king answers. Hear the puzzles that have kept children and grown-ups thinking for centuries, and discover what the mysterious yogi is really hiding.",
+   "freeEpisodes": 5,
+   "cover": {
+    "bg": "#171717",
+    "fg": "#C9DDD0",
+    "accent": "#A31C1B"
+   },
+   "voice": "hm_omega",
+   "episodes": [
+    {
+     "n": 1,
+     "title": "योगी का फल और श्मशान का पेड़",
+     "file": "vikram-betal-01-e4eaa21552.m4a",
+     "url": "https://github.com/vikash-parashar/music-player/releases/download/stories-media/vikram-betal-01-e4eaa21552.m4a",
+     "durationSec": 353
+    },
+    {
+     "n": 2,
+     "title": "तीन दीवाने और एक राजकुमारी",
+     "file": "vikram-betal-02-10811c9d14.m4a",
+     "url": "https://github.com/vikash-parashar/music-player/releases/download/stories-media/vikram-betal-02-10811c9d14.m4a",
+     "durationSec": 342
+    },
+    {
+     "n": 3,
+     "title": "तीन रानियां, तीन चोटें",
+     "file": "vikram-betal-03-9754c3dded.m4a",
+     "url": "https://github.com/vikash-parashar/music-player/releases/download/stories-media/vikram-betal-03-9754c3dded.m4a",
+     "durationSec": 330
+    },
+    {
+     "n": 4,
+     "title": "तीन पारखी भाई",
+     "file": "vikram-betal-04-96b1cf378c.m4a",
+     "url": "https://github.com/vikash-parashar/music-player/releases/download/stories-media/vikram-betal-04-96b1cf378c.m4a",
+     "durationSec": 339
+    },
+    {
+     "n": 5,
+     "title": "शेर को जगाने वाले",
+     "file": "vikram-betal-05-30d96e3bf6.m4a",
+     "url": "https://github.com/vikash-parashar/music-player/releases/download/stories-media/vikram-betal-05-30d96e3bf6.m4a",
+     "durationSec": 305
+    },
+    {
+     "n": 6,
+     "title": "उड़ता रथ और राक्षस की गुफ़ा",
+     "file": "vikram-betal-06-0feef97cdc.m4a",
+     "url": "https://github.com/vikash-parashar/music-player/releases/download/stories-media/vikram-betal-06-0feef97cdc.m4a",
+     "durationSec": 341
+    },
+    {
+     "n": 7,
+     "title": "खीर में गिरी एक बूंद",
+     "file": "vikram-betal-07-fa46b92fed.m4a",
+     "url": "https://github.com/vikash-parashar/music-player/releases/download/stories-media/vikram-betal-07-fa46b92fed.m4a",
+     "durationSec": 321
+    },
+    {
+     "n": 8,
+     "title": "गरुड़ की चट्टान",
+     "file": "vikram-betal-08-672bc3ad9c.m4a",
+     "url": "https://github.com/vikash-parashar/music-player/releases/download/stories-media/vikram-betal-08-672bc3ad9c.m4a",
+     "durationSec": 325
+    },
+    {
+     "n": 9,
+     "title": "पत्थर के दो सिर",
+     "file": "vikram-betal-09-6a46c97b00.m4a",
+     "url": "https://github.com/vikash-parashar/music-player/releases/download/stories-media/vikram-betal-09-6a46c97b00.m4a",
+     "durationSec": 336
+    },
+    {
+     "n": 10,
+     "title": "चुप्पी की परीक्षा",
+     "file": "vikram-betal-10-66be3cd82d.m4a",
+     "url": "https://github.com/vikash-parashar/music-player/releases/download/stories-media/vikram-betal-10-66be3cd82d.m4a",
+     "durationSec": 342
+    }
+   ]
+  }
+ ]
+}
