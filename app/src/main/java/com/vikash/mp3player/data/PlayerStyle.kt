@@ -1,11 +1,11 @@
 package com.vikash.mp3player.data
 
-/** The picture at the top of Now Playing. Record, Cassette, Boombox and Jukebox are free; the rest need Pro. */
+/** The picture at the top of Now Playing. Record is free; the rest need Pro (free users get a short preview). */
 enum class PlayerStyle(val id: String, val pro: Boolean) {
     Record("record", false),
-    Cassette("cassette", false),
-    Boombox("boombox", false),
-    Jukebox("jukebox", false),
+    Cassette("cassette", true),
+    Boombox("boombox", true),
+    Jukebox("jukebox", true),
     ReelToReel("reel", true),
     Neon("neon", true),
     Lyrics("lyrics", true),

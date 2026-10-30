@@ -62,6 +62,8 @@ fun PlayerStyleSheet(
     onPick: (PlayerStyle) -> Unit,
     onGetPro: () -> Unit,
     onDismiss: () -> Unit,
+    /** A locked style was tapped: play its short Pro preview. Null falls back to [onGetPro]. */
+    onPreview: ((PlayerStyle) -> Unit)? = null,
 ) {
     val sheet = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheet) {
@@ -81,7 +83,13 @@ fun PlayerStyleSheet(
                     val selected = style == current
                     val locked = style.pro && !unlocked
                     OutlinedCard(
-                        onClick = { if (locked) onGetPro() else { onPick(style); onDismiss() } },
+                        onClick = {
+                            when {
+                                !locked -> { onPick(style); onDismiss() }
+                                onPreview != null -> { onPreview(style); onDismiss() }
+                                else -> onGetPro()
+                            }
+                        },
                         shape = RoundedCornerShape(16.dp),
                         border = BorderStroke(if (selected) 2.dp else 1.dp,
                             if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant),
@@ -94,7 +102,13 @@ fun PlayerStyleSheet(
                                 fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
                                 textAlign = TextAlign.Center, maxLines = 2)
                             Text(
-                                stringResource(if (style.pro) R.string.pstyle_pro else R.string.pstyle_free),
+                                stringResource(
+                                    when {
+                                        !style.pro -> R.string.pstyle_free
+                                        locked && onPreview != null -> R.string.pstyle_try
+                                        else -> R.string.pstyle_pro
+                                    }
+                                ),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = if (style.pro) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                             )
