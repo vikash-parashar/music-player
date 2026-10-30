@@ -94,7 +94,7 @@ fun VideosScreen(state: VideoState, onLoad: () -> Unit) {
         return
     }
     if (state.loading && state.videos.isEmpty()) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) { CircularProgressIndicator(Modifier.padding(32.dp)) }
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) { com.vikash.mp3player.ui.skin.SkinLoader(Modifier.padding(32.dp)) }
         return
     }
     if (state.videos.isEmpty()) {

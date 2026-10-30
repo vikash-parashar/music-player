@@ -48,6 +48,7 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import com.vikash.mp3player.ui.skin.LocalSkin
 import com.vikash.mp3player.ui.skin.TactileIconButton
+import com.vikash.mp3player.ui.skin.GlowToggle
 import com.vikash.mp3player.ui.skin.skinBackdrop
 import com.vikash.mp3player.ui.skin.skinScreenColor
 import androidx.compose.material3.Text
@@ -310,15 +311,14 @@ fun NowPlayingScreen(
                 val inactive = MaterialTheme.colorScheme.onSurfaceVariant
                 if (!LocalSkin.current.isClassic) {
                     // Pro app styles: square push keys with a dome that sinks in.
-                    TactileIconButton(Icons.Default.Shuffle, stringResource(R.string.player_shuffle), player::toggleShuffle,
-                        size = 44.dp, tint = if (state.shuffle) active else null)
+                    GlowToggle(state.shuffle, player::toggleShuffle, Icons.Default.Shuffle, stringResource(R.string.player_shuffle), size = 44.dp)
                     TactileIconButton(Icons.Default.SkipPrevious, stringResource(R.string.common_previous), { player.previous() }, size = 54.dp)
                     GradientPlayButton(state.isPlaying, 72.dp, player::togglePlay)
                     TactileIconButton(Icons.Default.SkipNext, stringResource(R.string.common_next), { player.next() }, size = 54.dp)
-                    TactileIconButton(
+                    GlowToggle(
+                        state.repeatMode != Player.REPEAT_MODE_OFF, player::cycleRepeat,
                         if (state.repeatMode == Player.REPEAT_MODE_ONE) Icons.Default.RepeatOne else Icons.Default.Repeat,
-                        stringResource(R.string.player_repeat), player::cycleRepeat,
-                        size = 44.dp, tint = if (state.repeatMode == Player.REPEAT_MODE_OFF) null else active,
+                        stringResource(R.string.player_repeat), size = 44.dp,
                     )
                 } else {
                 IconButton(onClick = player::toggleShuffle) {

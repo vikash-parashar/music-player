@@ -238,7 +238,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     Box(Modifier.fillMaxSize().skinBackdrop()) {
         Scaffold(
             containerColor = skinScreenColor(),
-            topBar = { BrandHeader(showAdFreePill = !adsRemoved, onAdFreeClick = openPro, onRecognize = { showRecognize = true }) },
+            topBar = { BrandHeader(showAdFreePill = !adsRemoved, onAdFreeClick = openPro, onRecognize = { showRecognize = true }, onHelp = { showHelp = true }) },
             snackbarHost = { SnackbarHost(snackbar) },
             bottomBar = {
                 Column {

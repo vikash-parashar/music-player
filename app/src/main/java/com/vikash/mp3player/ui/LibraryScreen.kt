@@ -306,7 +306,7 @@ fun LibraryScreen(
         when {
             state.loading && state.songs.isEmpty() ->
                 Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
-                    CircularProgressIndicator(Modifier.padding(32.dp))
+                    com.vikash.mp3player.ui.skin.SkinLoader(Modifier.padding(32.dp))
                 }
             state.songs.isEmpty() -> EmptyMessage(stringResource(R.string.library_no_music))
             current == LibraryTab.Playlists && openGroup == null -> {

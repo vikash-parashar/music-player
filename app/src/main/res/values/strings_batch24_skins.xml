@@ -26,4 +26,5 @@
     <string name="bento_favourites">Favourites</string>
     <string name="bento_playlists">Playlists</string>
     <string name="bento_top">Most played</string>
+    <string name="help_tooltip">Help &amp; tips</string>
 </resources>

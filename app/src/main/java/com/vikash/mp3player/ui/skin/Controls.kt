@@ -5,6 +5,7 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
@@ -94,6 +95,10 @@ private val pill = RoundedCornerShape(percent = 50)
 @Composable
 private fun Modifier.tactileBase(shape: Shape): Modifier {
     val s = LocalSkin.current
+    if (s.style == SurfaceStyle.Raised) return this
+        .background(s.tactile, shape)
+        .innerShadow(shape, s.shadowDark.copy(alpha = 0.75f), 3.dp, 3.dp, 7.dp)
+        .innerShadow(shape, s.shadowLight, (-3).dp, (-3).dp, 7.dp)
     return this
         .background(s.tactile, shape)
         .innerShadow(shape, Color.Black.copy(alpha = 0.25f), blur = 12.dp, spread = 2.dp)
@@ -105,6 +110,19 @@ private fun Modifier.tactileBase(shape: Shape): Modifier {
 @Composable
 private fun Modifier.tactileDome(shape: Shape, tint: Color, pressed: Boolean): Modifier {
     val s = LocalSkin.current
+    if (s.style == SurfaceStyle.Raised) {
+        // Moulded key: convex sheen when up, flips to a concave dip when pressed.
+        val light = androidx.compose.ui.graphics.lerp(tint, Color.White, if (s.dark) 0.06f else 0.35f)
+        val shade = androidx.compose.ui.graphics.lerp(tint, Color.Black, if (s.dark) 0.18f else 0.08f)
+        return if (pressed) this
+            .background(Brush.linearGradient(listOf(shade, light)), shape)
+            .innerShadow(shape, s.shadowDark, 4.dp, 4.dp, 9.dp)
+            .innerShadow(shape, s.shadowLight, (-4).dp, (-4).dp, 9.dp)
+        else this
+            .dropShadow(shape, s.shadowDark, 6.dp, 6.dp, 12.dp)
+            .dropShadow(shape, s.shadowLight, (-6).dp, (-6).dp, 12.dp)
+            .background(Brush.linearGradient(listOf(light, shade)), shape)
+    }
     val hi = if (s.dark) 0.25f else 1f
     val base = this
         .dropShadow(shape, Color.Black.copy(alpha = if (pressed) 0.35f else 0.45f), offsetY = 5.dp, blur = 9.dp, spread = (-2).dp)
@@ -131,8 +149,9 @@ private fun TactileButton(
     val haptic = rememberSkinHaptic()
     val source = remember { MutableInteractionSource() }
     val pressed by source.collectIsPressedAsState()
+    val pairHaptics = SkinPressHaptics(pressed)
     val press by animateFloatAsState(if (pressed) 0.97f else 1f, tween(300, easing = CubicBezierEasing(0.23f, 1f, 0.32f, 1f)), label = "key")
-    val baseShape = RoundedCornerShape(if (s.corner < 8.dp) 6.dp else 12.dp)
+    val baseShape = RoundedCornerShape(if (s.corner < 8.dp) 6.dp else if (s.style == SurfaceStyle.Raised) 18.dp else 12.dp)
     val tint = if (accent) s.tactileAccent else s.tactile
     val ink = if (accent) s.onTactileAccent else s.tactileInk
     Box(
@@ -140,7 +159,7 @@ private fun TactileButton(
             .defaultMinSize(minHeight = 52.dp)
             .alpha(if (enabled) 1f else 0.45f)
             .tactileBase(baseShape)
-            .clickable(source, indication = null, enabled = enabled, role = Role.Button) { haptic(); onClick() },
+            .clickable(source, indication = null, enabled = enabled, role = Role.Button) { if (!pairHaptics) haptic(); onClick() },
         contentAlignment = Alignment.Center,
     ) {
         Box(Modifier.matchParentSize().padding(5.dp).scale(press).tactileDome(pill, tint, pressed))
@@ -203,20 +222,29 @@ fun TactileIconButton(
     size: Dp = 54.dp,
     accent: Boolean = false,
     tint: Color? = null,
+    /** 0..1: a soft accent light around the key (Neumorphic play key while music plays). */
+    glow: Float = 0f,
 ) {
     val s = LocalSkin.current
     val haptic = rememberSkinHaptic()
     val source = remember { MutableInteractionSource() }
     val pressed by source.collectIsPressedAsState()
+    val pairHaptics = SkinPressHaptics(pressed)
     val press by animateFloatAsState(if (pressed) 0.94f else 1f, tween(300, easing = CubicBezierEasing(0.23f, 1f, 0.32f, 1f)), label = "key")
-    val baseShape = RoundedCornerShape(if (s.corner < 8.dp) 6.dp else size / 5)
+    val baseShape = RoundedCornerShape(if (s.corner < 8.dp) 6.dp else size / 3.2f)
+    val accentColor = MaterialTheme.colorScheme.primary
     Box(
         Modifier
             .size(size)
             .tactileBase(baseShape)
-            .clickable(source, indication = null, role = Role.Button) { haptic(); onClick() },
+            .clickable(source, indication = null, role = Role.Button) { if (!pairHaptics) haptic(); onClick() },
         contentAlignment = Alignment.Center,
     ) {
+        if (glow > 0f && !pressed) Box(
+            Modifier.size(size * 0.7f)
+                .dropShadow(CircleShape, accentColor.copy(alpha = 0.40f * glow), blur = 18.dp, spread = 2.dp)
+                .dropShadow(CircleShape, accentColor.copy(alpha = 0.18f * glow), spread = 3.dp),
+        )
         Box(Modifier.size(size * 0.7f).scale(press).tactileDome(CircleShape, if (accent) s.tactileAccent else s.tactile, pressed))
         Icon(
             icon, contentDescription,
@@ -366,5 +394,14 @@ fun ExpandFab(label: String, icon: ImageVector, onClick: () -> Unit, modifier: M
 /** Square-socket play/pause key for the Pro looks (the accent dome glows while playing). */
 @Composable
 fun TactilePlayButton(isPlaying: Boolean, size: Dp, playIcon: ImageVector, pauseIcon: ImageVector, description: String, onClick: () -> Unit) {
-    TactileIconButton(if (isPlaying) pauseIcon else playIcon, description, onClick, size = size, accent = true)
+    val s = LocalSkin.current
+    // Neumorphic: a rose light breathes around the key while music plays.
+    val glow = if (s.style == SurfaceStyle.Raised && isPlaying && !com.vikash.mp3player.ui.LocalLiteMode.current) {
+        androidx.compose.animation.core.rememberInfiniteTransition(label = "led").animateFloat(
+            0.45f, 1f,
+            androidx.compose.animation.core.infiniteRepeatable(tween(1200), androidx.compose.animation.core.RepeatMode.Reverse),
+            label = "ledGlow",
+        ).value
+    } else 0f
+    TactileIconButton(if (isPlaying) pauseIcon else playIcon, description, onClick, size = size, accent = true, glow = glow)
 }

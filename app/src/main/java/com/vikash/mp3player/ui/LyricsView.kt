@@ -93,7 +93,7 @@ fun LyricsView(
     Box(modifier, contentAlignment = Alignment.Center) {
         val current = lyrics
         when {
-            loading -> CircularProgressIndicator()
+            loading -> com.vikash.mp3player.ui.skin.SkinLoader()
             current == null -> Column(
                 Modifier.padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,

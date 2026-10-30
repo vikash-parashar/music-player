@@ -62,6 +62,8 @@ data class SkinSpec(
     val accentHue: Float,
     val haptic: Int,
     val hapticsOn: Boolean = true,
+    /** Two soft ticks per tap, one as a key goes down and one as it comes back up (Neumorphic). */
+    val pressHaptics: Boolean = false,
 ) {
     val isClassic get() = skin == UiSkin.Classic
     val shape: Shape get() = RoundedCornerShape(corner)
@@ -103,16 +105,22 @@ fun skinSpec(skin: UiSkin, dark: Boolean, hapticsOn: Boolean = true): SkinSpec =
         tactile = Color(0xFFE4DEF5), tactileInk = Color(0x8C1E1B4B), tactileAccent = Color(0xFF6D28D9),
         accentHue = 270f, haptic = TAP, hapticsOn = hapticsOn,
     )
+    // Lit from the top left: raised parts get a light edge up-left and a soft shade down-right, and
+    // every raised surface has a faint diagonal sheen so it reads as moulded, not flat.
     UiSkin.Neu -> if (dark) SkinSpec(
-        skin, true, SurfaceStyle.Raised, null, card = Color(0xFF2A2D34), edge = Color.Transparent, corner = 20.dp,
-        shadowDark = Color(0xFF1B1D22), shadowLight = Color(0xFF393D46),
-        tactile = Color(0xFF2E3138), tactileInk = Color(0xB3FFFFFF), tactileAccent = Color(0xFFFB7185),
-        accentHue = 350f, haptic = KEY, hapticsOn = hapticsOn,
+        skin, true, SurfaceStyle.Raised, null, card = Color(0xFF2A2D34),
+        cardBrush = Brush.linearGradient(listOf(Color(0xFF30333B), Color(0xFF25282E))),
+        edge = Color.Transparent, corner = 22.dp,
+        shadowDark = Color(0xFF1A1C21), shadowLight = Color(0xFF3A3E47),
+        tactile = Color(0xFF2A2D34), tactileInk = Color(0xB3E2E6EE), tactileAccent = Color(0xFF2E3138), onTactileAccent = Color(0xFFFB7185),
+        accentHue = 350f, haptic = TICK, hapticsOn = hapticsOn, pressHaptics = true,
     ) else SkinSpec(
-        skin, false, SurfaceStyle.Raised, null, card = Color(0xFFE0E5EC), edge = Color.Transparent, corner = 20.dp,
-        shadowDark = Color(0xFFA3B1C6), shadowLight = Color.White,
-        tactile = Color(0xFFE0E5EC), tactileInk = Color(0x8C3D4A5C), tactileAccent = Color(0xFFE11D48),
-        accentHue = 350f, haptic = KEY, hapticsOn = hapticsOn,
+        skin, false, SurfaceStyle.Raised, null, card = Color(0xFFE0E5EC),
+        cardBrush = Brush.linearGradient(listOf(Color(0xFFE9EEF5), Color(0xFFD4DAE2))),
+        edge = Color.Transparent, corner = 22.dp,
+        shadowDark = Color(0xFFB8C0CC), shadowLight = Color.White,
+        tactile = Color(0xFFE0E5EC), tactileInk = Color(0xFF5B6778), tactileAccent = Color(0xFFE6EBF1), onTactileAccent = Color(0xFFE11D48),
+        accentHue = 350f, haptic = TICK, hapticsOn = hapticsOn, pressHaptics = true,
     )
     UiSkin.Clay -> if (dark) SkinSpec(
         skin, true, SurfaceStyle.Clay, Brush.verticalGradient(listOf(Color(0xFF1E2A4A), Color(0xFF151D36))),
@@ -280,9 +288,9 @@ fun Modifier.skinSurface(shape: Shape = LocalSkin.current.shape): Modifier {
             .dropShadow(shape, Color.Black.copy(alpha = if (s.dark) 0.18f else 0.08f), offsetY = 8.dp, blur = 24.dp)
             .background(s.card, shape).border(1.dp, s.edge, shape)
         SurfaceStyle.Raised -> this
-            .dropShadow(shape, s.shadowDark, 6.dp, 6.dp, 12.dp)
-            .dropShadow(shape, s.shadowLight, (-6).dp, (-6).dp, 12.dp)
-            .background(s.card, shape)
+            .dropShadow(shape, s.shadowDark, 9.dp, 9.dp, 18.dp)
+            .dropShadow(shape, s.shadowLight, (-9).dp, (-9).dp, 18.dp)
+            .background(s.cardBrush ?: Brush.linearGradient(listOf(s.card, s.card)), shape)
         SurfaceStyle.Clay -> this
             .dropShadow(shape, s.shadowDark, offsetY = 12.dp, blur = 22.dp)
             .background(s.card, shape)
@@ -298,6 +306,29 @@ fun Modifier.skinSurface(shape: Shape = LocalSkin.current.shape): Modifier {
             .border(1.dp, s.edge, shape)
             .innerShadow(shape, Color.White.copy(alpha = if (s.dark) 0.12f else 0.8f), offsetY = 1.5.dp, blur = 1.dp)
     }
+}
+
+private val PRESS = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) HapticFeedbackConstants.KEYBOARD_PRESS else HapticFeedbackConstants.VIRTUAL_KEY
+private val RELEASE = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) HapticFeedbackConstants.KEYBOARD_RELEASE else -1
+
+/**
+ * Neumorphic keys: a soft tick when the finger presses the key down and a lighter one when it
+ * lets go, so it feels like a real button. Returns true when this look uses it (then skip the
+ * single tap buzz).
+ */
+@Composable
+fun SkinPressHaptics(pressed: Boolean): Boolean {
+    val s = LocalSkin.current
+    val view = LocalView.current
+    val on = s.hapticsOn && s.pressHaptics
+    val was = remember { booleanArrayOf(false) }
+    androidx.compose.runtime.LaunchedEffect(pressed, on) {
+        if (!on) return@LaunchedEffect
+        if (pressed) view.performHapticFeedback(PRESS)
+        else if (was[0] && RELEASE >= 0) view.performHapticFeedback(RELEASE)
+        was[0] = pressed
+    }
+    return s.pressHaptics
 }
 
 /** A tap buzz in the current look's feel; does nothing in Classic or when turned off. */

@@ -30,7 +30,7 @@ import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.SupportAgent
 import com.vikash.mp3player.ui.skin.SkinButton as Button
 import com.vikash.mp3player.ui.skin.SkinCard as Card
-import androidx.compose.material3.Checkbox
+import com.vikash.mp3player.ui.skin.SkinCheckbox as Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
