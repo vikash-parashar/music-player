@@ -30,6 +30,7 @@ import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material.icons.filled.DirectionsCar
+import androidx.compose.material.icons.filled.Equalizer
 import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.Cast
@@ -104,6 +105,7 @@ fun NowPlayingScreen(
     val casting by com.vikash.mp3player.cast.CastState.casting.collectAsState()
     var showQueue by remember { mutableStateOf(false) }
     var showSpeed by remember { mutableStateOf(false) }
+    var showSound by remember { mutableStateOf(false) }
     var showLyrics by rememberSaveable { mutableStateOf(false) }
     var showBookmarks by remember { mutableStateOf(false) }
     var showStyles by remember { mutableStateOf(false) }
@@ -340,6 +342,15 @@ fun NowPlayingScreen(
             // Extra tools: speed/pitch, lyrics and A-B repeat.
             Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.Center) {
                 val normal = state.speed == 1f && state.pitch == 1f
+                val eqOn by com.vikash.mp3player.playback.EqualizerController.state.collectAsState()
+                val proEqOn by com.vikash.mp3player.playback.ProSound.state.collectAsState()
+                FilterChip(
+                    selected = eqOn.enabled || proEqOn.eqEnabled,
+                    onClick = { showSound = true },
+                    leadingIcon = { Icon(Icons.Default.Equalizer, null, Modifier.size(18.dp)) },
+                    label = { Text(stringResource(R.string.settings_equalizer)) },
+                )
+                Spacer(Modifier.width(8.dp))
                 FilterChip(
                     selected = !normal,
                     onClick = { showSpeed = true },
@@ -417,6 +428,7 @@ fun NowPlayingScreen(
             if (StylePreview.tryUse(ctx, style)) { lockedStyle = null; previewStyle = style } else onGetPro()
         },
     )
+    if (showSound) SoundSheet(isPro, onGetPro) { showSound = false }
     if (showSpeed) SpeedPitchDialog(state.speed, state.pitch, player::setSpeedAndPitch) { showSpeed = false }
     if (showCast) CastDialog(isPro, onGetPro) { showCast = false }
     if (showBookmarks) BookmarksDialog(

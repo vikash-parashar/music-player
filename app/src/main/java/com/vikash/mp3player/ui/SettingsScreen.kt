@@ -274,7 +274,7 @@ private fun AppearanceCard(mode: ThemeMode, onMode: (ThemeMode) -> Unit) {
 }
 
 @Composable
-private fun SleepTimerCard() {
+internal fun SleepTimerCard() {
     val endsAt by SleepTimer.endsAtMillis.collectAsState()
     val afterSong by SleepTimer.stopAfterSong.collectAsState()
     var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
@@ -310,7 +310,7 @@ private fun SleepTimerCard() {
 }
 
 @Composable
-private fun EqualizerCard() {
+internal fun EqualizerCard() {
     val context = LocalContext.current
     val eq by EqualizerController.state.collectAsState()
     Card(Modifier.fillMaxWidth()) {
@@ -515,7 +515,7 @@ private fun PrivacyChoicesCard() {
 
 /** "Even volume": uses ReplayGain tags so every song plays at about the same loudness. */
 @Composable
-private fun EvenVolumeCard() {
+internal fun EvenVolumeCard() {
     val context = LocalContext.current
     val on by remember { com.vikash.mp3player.playback.EvenVolume.enabled(context) }.collectAsState()
     Card(Modifier.fillMaxWidth()) {
@@ -535,7 +535,7 @@ private fun EvenVolumeCard() {
 
 /** "Fade between songs": how many seconds the end and start of songs fade over. */
 @Composable
-private fun FadeCard() {
+internal fun FadeCard() {
     val context = LocalContext.current
     val seconds by remember { com.vikash.mp3player.playback.FadeSetting.seconds(context) }.collectAsState()
     Card(Modifier.fillMaxWidth()) {
