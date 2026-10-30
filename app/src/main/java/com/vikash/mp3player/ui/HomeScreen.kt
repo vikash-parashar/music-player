@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.runtime.LaunchedEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -73,8 +75,12 @@ fun HomeScreen(
     isPro: Boolean,
     onPlay: (songs: List<Song>, index: Int, label: String) -> Unit,
     onGetPro: () -> Unit,
+    /** Opens the Stories tab (Ampli Stories row). */
+    onOpenStories: () -> Unit = {},
 ) {
     val context = LocalContext.current
+    val stories by com.vikash.mp3player.data.StoriesRepository.series.collectAsStateWithLifecycle()
+    LaunchedEffect(Unit) { com.vikash.mp3player.data.StoriesRepository.load(context) }
     val labels = MixEngine.Labels(
         dailyMix = { context.getString(R.string.home_daily_mix, it) },
         andMore = { context.getString(R.string.home_and_more, it) },
@@ -130,6 +136,16 @@ fun HomeScreen(
             item {
                 LazyRow(contentPadding = PaddingValues(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     items(data.daily, key = { it.key }) { mix -> MixCard(mix, locked = mix.pro && !isPro) { open(mix) } }
+                }
+            }
+        }
+        if (stories.isNotEmpty()) {
+            item { SectionTitle(stringResource(R.string.home_stories_title)) }
+            item {
+                LazyRow(contentPadding = PaddingValues(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    items(stories, key = { "story-" + it.id }) { s ->
+                        StoryCover(s, Modifier.width(150.dp).height(200.dp), onClick = onOpenStories)
+                    }
                 }
             }
         }

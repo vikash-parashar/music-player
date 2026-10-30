@@ -18,12 +18,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LibraryMusic
-import androidx.compose.material.icons.filled.Public
+import androidx.compose.material.icons.filled.AutoStories
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.LibraryMusic
-import androidx.compose.material.icons.outlined.Public
+import androidx.compose.material.icons.outlined.AutoStories
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.VideoLibrary
 import androidx.compose.material3.AlertDialog
@@ -95,6 +95,8 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     val tipPrices by vm.billing.tipPrices.collectAsStateWithLifecycle()
     val tipsReceived by vm.billing.tipsReceived.collectAsStateWithLifecycle()
     val paymentPending by vm.billing.pending.collectAsStateWithLifecycle()
+    val storiesPass by vm.billing.storiesPass.collectAsStateWithLifecycle()
+    val passPrice by vm.billing.passPrice.collectAsStateWithLifecycle()
     var showVisualizer by rememberSaveable { mutableStateOf(false) }
     val discAnim by app.prefs.discAnimation.collectAsStateWithLifecycle()
     val playerStyle by app.prefs.playerStyle.collectAsStateWithLifecycle()
@@ -199,6 +201,15 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
             else -> Toast.makeText(context, context.getString(R.string.tip_unavailable), Toast.LENGTH_SHORT).show()
         }
     }
+    val onBuyPass: () -> Unit = {
+        val activity = context as? android.app.Activity
+        when (if (activity == null) null else vm.billing.purchaseStoriesPass(activity)) {
+            com.vikash.mp3player.monetization.BillingManager.Buy.OPENED -> Unit
+            com.vikash.mp3player.monetization.BillingManager.Buy.LOADING ->
+                Toast.makeText(context, context.getString(R.string.billing_loading), Toast.LENGTH_SHORT).show()
+            else -> Toast.makeText(context, context.getString(R.string.stories_pass_unavailable), Toast.LENGTH_SHORT).show()
+        }
+    }
     val snackbar = remember { SnackbarHostState() }
 
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
@@ -275,7 +286,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                         tabs = listOf(
                             NavTab(stringResource(R.string.nav_home), Icons.Outlined.Home, Icons.Filled.Home),
                             NavTab(stringResource(R.string.nav_library), Icons.Outlined.LibraryMusic, Icons.Filled.LibraryMusic),
-                            NavTab(stringResource(R.string.nav_online), Icons.Outlined.Public, Icons.Filled.Public),
+                            NavTab(stringResource(R.string.nav_stories), Icons.Outlined.AutoStories, Icons.Filled.AutoStories),
                             NavTab(stringResource(R.string.nav_videos), Icons.Outlined.VideoLibrary, Icons.Filled.VideoLibrary),
                             NavTab(stringResource(R.string.nav_settings), Icons.Outlined.Settings, Icons.Filled.Settings),
                         ),
@@ -294,6 +305,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                         isPro = proUnlocked,
                         onPlay = playWithDisc,
                         onGetPro = openPro,
+                        onOpenStories = { tab = 2 },
                     )
                     1 -> LibraryScreen(
                         state = library,
@@ -323,6 +335,15 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                         currentId = currentId,
                         actions = discoverActions,
                         showMusic = online.configured,
+                        stories = {
+                            StoriesSection(
+                                currentId = currentId,
+                                pass = storiesPass,
+                                passPrice = passPrice,
+                                onPlay = vm.player::play,
+                                onBuyPass = onBuyPass,
+                            )
+                        },
                     ) {
                         OnlineScreen(
                             state = online,

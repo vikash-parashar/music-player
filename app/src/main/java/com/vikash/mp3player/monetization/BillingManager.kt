@@ -49,6 +49,16 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
     val tipPrices: StateFlow<Map<String, String>> = _tipPrices.asStateFlow()
     private var tipDetails: Map<String, ProductDetails> = emptyMap()
 
+    /** Ampli Stories Pass, a monthly subscription that opens every Stories episode. */
+    private val _storiesPass = MutableStateFlow(prefs.getBoolean(KEY_STORIES_PASS, false))
+    val storiesPass: StateFlow<Boolean> = _storiesPass.asStateFlow()
+
+    /** Localised monthly price of the Stories Pass, such as "₹49.00", or null until Play answers. */
+    private val _passPrice = MutableStateFlow<String?>(null)
+    val passPrice: StateFlow<String?> = _passPrice.asStateFlow()
+    private var passDetails: ProductDetails? = null
+    private var passQueried = false
+
     /** True while a payment waits for the bank (common with UPI); the UI says "Payment pending". */
     private val _pending = MutableStateFlow(false)
     val pending: StateFlow<Boolean> = _pending.asStateFlow()
@@ -101,6 +111,27 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
     /** Opens Play's payment sheet for a "buy the developer a chai" tip. */
     fun purchaseTip(activity: Activity, productId: String): Buy =
         buy(activity, productId, tipDetails[productId], tipsQueried)
+
+    /** Opens Play's subscription sheet for the Stories Pass. */
+    fun purchaseStoriesPass(activity: Activity): Buy {
+        val details = passDetails
+        val offer = details?.subscriptionOfferDetails?.firstOrNull()?.offerToken
+        if (details != null && offer != null) {
+            val params = BillingFlowParams.newBuilder()
+                .setProductDetailsParamsList(
+                    listOf(
+                        BillingFlowParams.ProductDetailsParams.newBuilder()
+                            .setProductDetails(details).setOfferToken(offer).build()
+                    )
+                )
+                .build()
+            client.launchBillingFlow(activity, params)
+            return Buy.OPENED
+        }
+        if (passQueried && client.isReady) return Buy.UNAVAILABLE
+        if (client.isReady) queryProduct() else start()
+        return Buy.LOADING
+    }
 
     private fun buy(activity: Activity, id: String, details: ProductDetails?, queried: Boolean): Buy {
         if (details != null) { launch(activity, details); return Buy.OPENED }
@@ -196,6 +227,24 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
             }
             settleWaiting(forPro = true)
         }
+        val passParams = QueryProductDetailsParams.newBuilder()
+            .setProductList(
+                listOf(
+                    QueryProductDetailsParams.Product.newBuilder()
+                        .setProductId(STORIES_PASS_ID)
+                        .setProductType(ProductType.SUBS)
+                        .build()
+                )
+            )
+            .build()
+        client.queryProductDetailsAsync(passParams) { result, found ->
+            if (result.responseCode == BillingClient.BillingResponseCode.OK) {
+                passDetails = found.productDetailsList.firstOrNull()
+                passQueried = true
+                _passPrice.value = passDetails?.subscriptionOfferDetails?.firstOrNull()
+                    ?.pricingPhases?.pricingPhaseList?.lastOrNull()?.formattedPrice
+            }
+        }
         val tipParams = QueryProductDetailsParams.newBuilder()
             .setProductList(
                 TIP_IDS.map {
@@ -226,6 +275,14 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
             _pending.value = purchases.any { it.purchaseState == Purchase.PurchaseState.PENDING }
             purchases.forEach(::handlePurchase)
         }
+        client.queryPurchasesAsync(
+            QueryPurchasesParams.newBuilder().setProductType(ProductType.SUBS).build()
+        ) { result, purchases ->
+            if (result.responseCode != BillingClient.BillingResponseCode.OK) return@queryPurchasesAsync
+            // An expired or cancelled-and-lapsed subscription drops out of this list, so the Pass closes again.
+            setStoriesPass(purchases.any { it.ownsStoriesPass() } || (BuildConfig.DEBUG && prefs.getBoolean(KEY_TEST_PRO, false)))
+            purchases.forEach(::handlePurchase)
+        }
     }
 
     /** Tokens with an acknowledge or consume call still running. */
@@ -247,6 +304,17 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
                 if (result.responseCode == BillingClient.BillingResponseCode.OK) {
                     _tipsReceived.value += 1
                     report("tip", purchase)
+                }
+            }
+            return
+        }
+        if (purchase.ownsStoriesPass()) {
+            setStoriesPass(true)
+            if (!purchase.isAcknowledged && inFlight.add(purchase.purchaseToken)) {
+                val params = AcknowledgePurchaseParams.newBuilder().setPurchaseToken(purchase.purchaseToken).build()
+                client.acknowledgePurchase(params) { result ->
+                    inFlight.remove(purchase.purchaseToken)
+                    if (result.responseCode == BillingClient.BillingResponseCode.OK) report("stories_pass", purchase)
                 }
             }
             return
@@ -286,6 +354,9 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
         purchaseState == Purchase.PurchaseState.PURCHASED &&
             BuildConfig.REMOVE_ADS_PRODUCT_ID in products
 
+    private fun Purchase.ownsStoriesPass() =
+        purchaseState == Purchase.PurchaseState.PURCHASED && STORIES_PASS_ID in products
+
     private fun Purchase.isTip() =
         purchaseState == Purchase.PurchaseState.PURCHASED && products.any { it in TIP_IDS }
 
@@ -294,6 +365,7 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
         if (BuildConfig.DEBUG) {
             prefs.edit().putBoolean(KEY_TEST_PRO, value).apply()
             setAdsRemoved(value)
+            setStoriesPass(value)
         }
     }
 
@@ -302,7 +374,15 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
         prefs.edit().putBoolean(KEY_ADS_REMOVED, value).apply()
     }
 
+    private fun setStoriesPass(value: Boolean) {
+        _storiesPass.value = value
+        prefs.edit().putBoolean(KEY_STORIES_PASS, value).apply()
+    }
+
     companion object {
+        /** Monthly subscription in Play Console (Monetize > Subscriptions), ₹49 a month. */
+        const val STORIES_PASS_ID = "ampli_stories_pass"
+        private const val KEY_STORIES_PASS = "stories_pass"
         private const val KEY_ADS_REMOVED = "ads_removed"
         private const val KEY_REPORTED = "reported_tokens"
         private const val KEY_TEST_PRO = "test_pro"

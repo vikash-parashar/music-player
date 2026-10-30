@@ -1,0 +1,72 @@
+name: Narrate Stories
+# Narrates new or changed episodes in stories/ with the free Kokoro voice model,
+# uploads the audio to the "stories-media" release and refreshes the catalogue.
+on:
+  push:
+    paths:
+      - "stories/**"
+      - "tools/stories/**"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: stories-${{ github.ref }}
+  cancel-in-progress: false
+env:
+  TAG: stories-media
+jobs:
+  list:
+    runs-on: ubuntu-latest
+    outputs:
+      series: ${{ steps.s.outputs.series }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: s
+        run: echo "series=$(ls -d stories/*/ | xargs -n1 basename | jq -R . | jq -sc .)" >> "$GITHUB_OUTPUT"
+  narrate:
+    needs: list
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      matrix:
+        series: ${{ fromJson(needs.list.outputs.series) }}
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Create release once
+        run: gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 || gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --title "Ampli Stories audio" --notes "Narrated episodes for the Stories tab." --prerelease || true
+      - name: Install voice model
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq espeak-ng ffmpeg
+          pip install -q "kokoro>=0.9.4" soundfile numpy
+      - name: Narrate
+        run: python tools/stories/narrate.py "stories/${{ matrix.series }}" "$TAG" "$GITHUB_REPOSITORY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: series-${{ matrix.series }}
+          path: build/stories/${{ matrix.series }}.json
+  catalog:
+    needs: narrate
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: series-*
+          path: build/stories
+          merge-multiple: true
+      - name: Build catalogue
+        run: python3 tools/stories/make_catalog.py
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git add docs/stories/catalog.json app/src/main/assets/stories_catalog.json
+          git commit -m "Update Stories catalogue" || exit 0
+          for i in 1 2 3; do git pull --rebase -q && git push && break; sleep 5; done

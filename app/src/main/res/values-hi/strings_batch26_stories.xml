@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="nav_stories">कहानियाँ</string>
+    <string name="discover_stories">Ampli कहानियाँ</string>
+    <string name="stories_kicker">Ampli कहानियाँ</string>
+    <string name="stories_title">कहानियाँ</string>
+    <string name="stories_subtitle">छोटे एपिसोड वाली हिंदी ऑडियो सीरीज़। पहले एपिसोड मुफ़्त हैं।</string>
+    <string name="stories_genre_kids">परिवार</string>
+    <string name="stories_genre_fantasy">फ़ैंटेसी</string>
+    <string name="stories_genre_horror">हॉरर</string>
+    <string name="stories_cover_meta">%1$d एपिसोड · %2$d मुफ़्त</string>
+    <string name="stories_pass_title">स्टोरीज़ पास</string>
+    <string name="stories_pass_desc">हर सीरीज़ का हर एपिसोड, बिना इंतज़ार</string>
+    <string name="stories_pass_cta">लें</string>
+    <string name="stories_pass_per_month">%1$s/महीना</string>
+    <string name="stories_pass_buy">स्टोरीज़ पास लें</string>
+    <string name="stories_pass_buy_price">स्टोरीज़ पास लें, %1$s/महीना</string>
+    <string name="stories_pass_unavailable">स्टोरीज़ पास अभी उपलब्ध नहीं है। कृपया बाद में कोशिश करें।</string>
+    <string name="stories_locked_title">एपिसोड %1$d लॉक है</string>
+    <string name="stories_locked_body">पहले %1$d एपिसोड मुफ़्त हैं। एक छोटा विज्ञापन देखकर यह एपिसोड खोलें, या हर एपिसोड के लिए स्टोरीज़ पास लें।</string>
+    <string name="stories_watch_ad">विज्ञापन देखकर खोलें (आज %1$d बाकी)</string>
+    <string name="stories_unlocked">एपिसोड %1$d खुल गया</string>
+    <string name="stories_continue">एपिसोड %1$d जारी रखें</string>
+    <string name="stories_play_first">एपिसोड 1 चलाएँ</string>
+    <string name="stories_from_start">शुरू से</string>
+    <string name="stories_episodes">%1$d एपिसोड</string>
+    <string name="stories_minutes">%1$d मिनट</string>
+    <string name="stories_free">मुफ़्त</string>
+    <string name="stories_play">चलाएँ</string>
+    <string name="stories_locked">लॉक</string>
+    <string name="stories_ai_note">AI आवाज़ों में सुनाई गई। कहानियाँ Ampli की अपनी हैं या पुराने सार्वजनिक क्लासिक्स की नई प्रस्तुति।</string>
+    <string name="home_stories_title">Ampli कहानियाँ</string>
+    <string name="home_stories_more">सभी कहानियाँ</string>
+</resources>

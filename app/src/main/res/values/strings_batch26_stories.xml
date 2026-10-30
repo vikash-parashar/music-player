@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="nav_stories">Stories</string>
+    <string name="discover_stories">Ampli Stories</string>
+    <string name="stories_kicker">Ampli Stories</string>
+    <string name="stories_title">Stories</string>
+    <string name="stories_subtitle">Hindi audio series in short episodes. The first episodes are free.</string>
+    <string name="stories_genre_kids">Family</string>
+    <string name="stories_genre_fantasy">Fantasy</string>
+    <string name="stories_genre_horror">Horror</string>
+    <string name="stories_cover_meta">%1$d episodes · %2$d free</string>
+    <string name="stories_pass_title">Stories Pass</string>
+    <string name="stories_pass_desc">Every episode of every series, no waiting</string>
+    <string name="stories_pass_cta">Get it</string>
+    <string name="stories_pass_per_month">%1$s/month</string>
+    <string name="stories_pass_buy">Get Stories Pass</string>
+    <string name="stories_pass_buy_price">Get Stories Pass, %1$s/month</string>
+    <string name="stories_pass_unavailable">Stories Pass isn\'t available yet. Please try again later.</string>
+    <string name="stories_locked_title">Episode %1$d is locked</string>
+    <string name="stories_locked_body">The first %1$d episodes are free. Unlock this one by watching a short ad, or get the Stories Pass for every episode.</string>
+    <string name="stories_watch_ad">Watch an ad to unlock (%1$d left today)</string>
+    <string name="stories_unlocked">Episode %1$d unlocked</string>
+    <string name="stories_continue">Continue episode %1$d</string>
+    <string name="stories_play_first">Play episode 1</string>
+    <string name="stories_from_start">From the start</string>
+    <string name="stories_episodes">%1$d episodes</string>
+    <string name="stories_minutes">%1$d min</string>
+    <string name="stories_free">Free</string>
+    <string name="stories_play">Play</string>
+    <string name="stories_locked">Locked</string>
+    <string name="stories_ai_note">Narrated with AI voices. Stories are Ampli originals or new retellings of public-domain classics.</string>
+    <string name="home_stories_title">Ampli Stories</string>
+    <string name="home_stories_more">All stories</string>
+    <string name="car_headline_top" translatable="false">DRIVE</string>
+    <string name="car_headline_bottom" translatable="false">Differently</string>
+</resources>
