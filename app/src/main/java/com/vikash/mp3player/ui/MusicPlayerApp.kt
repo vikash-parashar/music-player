@@ -150,7 +150,21 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     val carLaunches by CarLaunch.requests.collectAsStateWithLifecycle()
     LaunchedEffect(carLaunches) { if (carLaunches > 0) showCarMode = true }
     LaunchedEffect(carLaunches, player.connected, library.songs.isNotEmpty()) {
-        if (carLaunches == 0 || !CarLaunch.autoplayPending || !player.connected) return@LaunchedEffect
+        if (carLaunches == 0 || !player.connected) return@LaunchedEffect
+        // "Hey Ampli, play <song>" from Car Hub: play the best match once the library is loaded.
+        val query = CarLaunch.queryPending
+        if (query != null) {
+            if (library.songs.isEmpty()) return@LaunchedEffect
+            CarLaunch.queryPending = null
+            val match = VoiceMatch.find(listOf(query), library.songs.filter { !it.isOnline })
+            if (match != null) {
+                vm.player.play(match.songs, 0, match.label)
+                CarLaunch.autoplayPending = false
+                return@LaunchedEffect
+            }
+            CarLaunch.autoplayPending = true // no match: start the music anyway
+        }
+        if (!CarLaunch.autoplayPending) return@LaunchedEffect
         when {
             player.current != null -> { if (!player.isPlaying) vm.player.togglePlay(); CarLaunch.autoplayPending = false }
             library.songs.isNotEmpty() -> {
