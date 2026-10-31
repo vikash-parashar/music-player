@@ -83,7 +83,7 @@ abstract class AmpliDriveWidget(private val palette: DrivePalette) : GlanceAppWi
     private fun Content(s: WidgetState, animate: Boolean) {
         val context = LocalContext.current
         val size = LocalSize.current
-        val openCar = actionStartActivity(
+        val openCar = startIntent(
             Intent(context, MainActivity::class.java)
                 .setAction(CarLaunch.ACTION_CAR_MODE)
                 .putExtra(CarLaunch.EXTRA_AUTOPLAY, false)
