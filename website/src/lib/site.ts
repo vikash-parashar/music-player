@@ -33,6 +33,7 @@ export const footerLinks = [
   { href: "/privacy/", label: "Privacy (MP3)" },
   { href: "/privacy/carhub/", label: "Privacy (Car Hub)" },
   { href: "/privacy/naukri/", label: "Privacy (Naukri)" },
+  { href: "/privacy/kavach/", label: "Privacy (Kavach)" },
 ];
 
 export type Product = {
