@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="library_hide_recordings_title">वॉइस नोट और कॉल रिकॉर्डिंग छिपाएं</string>
+    <string name="library_hide_recordings_desc">WhatsApp वॉइस नोट, कॉल रिकॉर्डिंग और वॉइस मेमो आपके गानों में नहीं दिखेंगे।</string>
+    <string name="library_min_length_title">इससे छोटी क्लिप छिपाएं</string>
+    <string name="library_min_length_secs">%1$d सेकंड</string>
+    <string name="shake_skip_title">हिलाकर अगला गाना</string>
+    <string name="shake_skip_desc">अगला गाना चलाने के लिए फ़ोन को दो बार हिलाएं। सिर्फ़ गाना चलते समय काम करता है।</string>
+</resources>

@@ -87,6 +87,8 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     val online by vm.online.collectAsStateWithLifecycle()
     val player by vm.player.state.collectAsStateWithLifecycle()
     val adsRemoved by vm.billing.adsRemoved.collectAsStateWithLifecycle()
+    // Pro features without the ad removal: bought Pro, or a closed-test tester (ads stay on for testers).
+    val featurePro = adsRemoved || vm.billing.testerPro
     val price by vm.billing.price.collectAsStateWithLifecycle()
     val adsReady by Ads.ready.collectAsStateWithLifecycle()
     val app = context.applicationContext as com.vikash.mp3player.MusicApp
@@ -121,7 +123,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     val abLoop by vm.abLoop.collectAsStateWithLifecycle()
     // Pro styles fall back to Classic if Pro is turned off.
     val seekStyle = SeekStyle.entries.firstOrNull { it.name == seekStyleName }
-        ?.takeIf { !it.pro || adsRemoved } ?: SeekStyle.Classic
+        ?.takeIf { !it.pro || featurePro } ?: SeekStyle.Classic
 
     var hasPermission by remember { mutableStateOf(context.hasAudioPermission()) }
     var tab by rememberSaveable { mutableIntStateOf(0) }
@@ -356,7 +358,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                             onDownload = { vm.download(it) },
                         )
                     }
-                    3 -> if (adsRemoved) VideosScreen(videos, onLoad = vm::loadVideos)
+                    3 -> if (featurePro) VideosScreen(videos, onLoad = vm::loadVideos)
                          else LockedVideos(price = price, onGetPro = openPro)
                     else -> SettingsScreen(
                         adsRemoved = adsRemoved, price = price, onRemoveAds = openPro,
@@ -398,7 +400,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                 abLoop = abLoop,
                 onCycleAb = vm::cycleAbRepeat,
                 onCarMode = { showCarMode = true },
-                isPro = adsRemoved,
+                isPro = featurePro,
                 onGetPro = openPro,
                 onClose = { showPlayer = false },
                 onVisualizer = { if (proUnlocked) showVisualizer = true else openPro() },
@@ -515,10 +517,10 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
             enter = screenEnter(),
             exit = screenExit(),
         ) {
-            HelpScreen(isPro = adsRemoved, onClose = { showHelp = false })
+            HelpScreen(isPro = featurePro, onClose = { showHelp = false })
         }
 
-        if (showRecognize) RecognizeDialog(isPro = adsRemoved, onGetPro = openPro, onDismiss = { showRecognize = false })
+        if (showRecognize) RecognizeDialog(isPro = featurePro, onGetPro = openPro, onDismiss = { showRecognize = false })
 
         deleteSongs?.let { songs ->
             key(songs.map { it.id }) {

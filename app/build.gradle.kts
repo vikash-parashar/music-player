@@ -38,6 +38,12 @@ android {
         buildConfigField("String", "TIP_SMALL_ID", "\"${prop("TIP_SMALL_ID").ifBlank { "ampli_tip_49" }}\"")
         buildConfigField("String", "TIP_LARGE_ID", "\"${prop("TIP_LARGE_ID").ifBlank { "ampli_tip_99" }}\"")
         buildConfigField("String", "TIP_XL_ID", "\"${prop("TIP_XL_ID").ifBlank { "ampli_tip_199" }}\"")
+        // Closed-test period: every build unlocks Pro for testers, with no purchase. Set the repo
+        // variable TESTER_PRO=false before a production release; CI refuses a production upload
+        // while it is on. It also switches itself off after TESTER_PRO_UNTIL (1 Dec 2026, 00:00 IST)
+        // in case an old tester build is ever promoted.
+        buildConfigField("boolean", "TESTER_PRO", prop("TESTER_PRO", "true").ifBlank { "true" })
+        buildConfigField("long", "TESTER_PRO_UNTIL", "1796063400000L")
     }
 
     // One fixed key for test APKs. Without it every CI machine signs with a new random key,

@@ -35,6 +35,13 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
 
     private val prefs = context.getSharedPreferences("billing", Context.MODE_PRIVATE)
 
+    /**
+     * Closed-test builds give testers every Pro feature without a purchase (see TESTER_PRO in
+     * build.gradle.kts). Ads stay on for them: only a real purchase removes ads.
+     */
+    val testerPro: Boolean
+        get() = BuildConfig.TESTER_PRO && System.currentTimeMillis() < BuildConfig.TESTER_PRO_UNTIL
+
     private val _adsRemoved = MutableStateFlow(prefs.getBoolean(KEY_ADS_REMOVED, false))
     val adsRemoved: StateFlow<Boolean> = _adsRemoved.asStateFlow()
 
@@ -50,7 +57,7 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
     private var tipDetails: Map<String, ProductDetails> = emptyMap()
 
     /** Ampli Stories Pass, a monthly subscription that opens every Stories episode. */
-    private val _storiesPass = MutableStateFlow(prefs.getBoolean(KEY_STORIES_PASS, false))
+    private val _storiesPass = MutableStateFlow(prefs.getBoolean(KEY_STORIES_PASS, false) || testerPro)
     val storiesPass: StateFlow<Boolean> = _storiesPass.asStateFlow()
 
     /** Localised monthly price of the Stories Pass, such as "₹49.00", or null until Play answers. */
@@ -181,6 +188,8 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
                 val msg = when {
                     !forPro -> R.string.tip_unavailable
                     BuildConfig.DEBUG -> R.string.pro_purchase_test_build
+                    // Play answered but has no active "ampli_pro" product for this app and account.
+                    proQueried && details == null -> R.string.pro_not_on_play
                     else -> R.string.pro_purchase_failed
                 }
                 android.widget.Toast.makeText(activity, msg, android.widget.Toast.LENGTH_LONG).show()
@@ -280,7 +289,7 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
         ) { result, purchases ->
             if (result.responseCode != BillingClient.BillingResponseCode.OK) return@queryPurchasesAsync
             // An expired or cancelled-and-lapsed subscription drops out of this list, so the Pass closes again.
-            setStoriesPass(purchases.any { it.ownsStoriesPass() } || (BuildConfig.DEBUG && prefs.getBoolean(KEY_TEST_PRO, false)))
+            setStoriesPass(purchases.any { it.ownsStoriesPass() } || testerPro || (BuildConfig.DEBUG && prefs.getBoolean(KEY_TEST_PRO, false)))
             purchases.forEach(::handlePurchase)
         }
     }
@@ -365,7 +374,7 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
         if (BuildConfig.DEBUG) {
             prefs.edit().putBoolean(KEY_TEST_PRO, value).apply()
             setAdsRemoved(value)
-            setStoriesPass(value)
+            setStoriesPass(value || testerPro)
         }
     }
 

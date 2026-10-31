@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="library_hide_recordings_title">Hide voice notes &amp; call recordings</string>
+    <string name="library_hide_recordings_desc">Keeps WhatsApp voice notes, call recordings and voice memos out of your songs.</string>
+    <string name="library_min_length_title">Hide clips shorter than</string>
+    <string name="library_min_length_secs">%1$d sec</string>
+    <string name="shake_skip_title">Shake to skip</string>
+    <string name="shake_skip_desc">Shake your phone twice to play the next song. Works only while music is playing.</string>
+</resources>
