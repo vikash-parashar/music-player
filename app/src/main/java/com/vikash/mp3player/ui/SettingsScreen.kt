@@ -110,6 +110,8 @@ fun SettingsScreen(
         com.vikash.mp3player.ui.skin.SkinPickerCard(proUnlocked, onRemoveAds)
         AppearanceCard(themeMode, onThemeMode)
         LiteModeCard()
+        LibraryCleanCard(onLibraryChanged)
+        ShakeToSkipCard()
         ProLookCard(proUnlocked, onRemoveAds)
         SeekStyleCard(seekStyle, isPro = proUnlocked, onPick = onSeekStyle, onGetPro = onRemoveAds)
         SleepTimerCard()

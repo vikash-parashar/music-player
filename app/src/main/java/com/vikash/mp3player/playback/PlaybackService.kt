@@ -56,6 +56,7 @@ class PlaybackService : MediaLibraryService() {
     private lateinit var library: LocalMusicRepository
     private val resume by lazy { ResumePositions(this) }
     private var cast: CastSwitcher? = null
+    private var shake: ShakeToSkip? = null
     private var phonePlayer: ExoPlayer? = null
     private val clicks = HeadsetClicks { session?.player ?: phonePlayer!! }
 
@@ -107,6 +108,7 @@ class PlaybackService : MediaLibraryService() {
             .build()
         session = librarySession
         cast = CastSwitcher(this, player, librarySession, scope)
+        shake = ShakeToSkip(this, player)
 
         // Keep the Shuffle/Repeat icons in sync wherever they are shown.
         player.addListener(object : Player.Listener {
@@ -125,6 +127,7 @@ class PlaybackService : MediaLibraryService() {
             }
 
             override fun onIsPlayingChanged(isPlaying: Boolean) {
+                shake?.update()
                 if (!isPlaying) resume.save(player)
                 refreshWidget(player)
                 if (isPlaying) {
@@ -271,6 +274,8 @@ class PlaybackService : MediaLibraryService() {
             }
         }
         clicks.release()
+        shake?.release()
+        shake = null
         cast?.release()
         cast = null
         scope.cancel()

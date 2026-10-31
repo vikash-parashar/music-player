@@ -36,9 +36,10 @@ class LocalMusicRepository(private val context: Context) {
             folderColumn,
             genreColumn,
         ).toTypedArray()
-        // Skip ringtones, notification sounds and tiny clips.
+        // Skip ringtones, notification sounds and clips shorter than the user's minimum (Settings).
         val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0 AND ${MediaStore.Audio.Media.DURATION} >= ?"
-        val args = arrayOf("10000")
+        val args = arrayOf((LibraryFilter.minSeconds(context) * 1000L).toString())
+        val hideRecordings = LibraryFilter.hideRecordings(context)
         val sort = "${MediaStore.Audio.Media.TITLE} COLLATE NOCASE ASC"
 
         val unknownTitle = context.getString(R.string.library_unknown_title)
@@ -59,13 +60,16 @@ class LocalMusicRepository(private val context: Context) {
             val genreCol = genreColumn?.let { c.getColumnIndex(it) } ?: -1
             while (c.moveToNext()) {
                 val id = c.getLong(idCol)
+                val folder = folderOf(c.getString(folderCol).orEmpty())
+                // Voice notes and call recordings: audio files, but not music.
+                if (hideRecordings && LibraryFilter.isRecordingFolder(folder)) continue
                 songs += Song(
                     id = "local:$id",
                     uri = ContentUris.withAppendedId(collection, id),
                     title = c.getString(titleCol) ?: unknownTitle,
                     artist = c.getString(artistCol)?.takeUnless { it == "<unknown>" } ?: unknownArtist,
                     album = c.getString(albumCol) ?: "",
-                    folder = folderOf(c.getString(folderCol).orEmpty()),
+                    folder = folder,
                     durationMs = c.getLong(durationCol),
                     artworkUri = ContentUris.withAppendedId(ALBUM_ART, c.getLong(albumIdCol)),
                     dateAddedSec = c.getLong(addedCol),
