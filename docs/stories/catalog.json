@@ -1,6 +1,60 @@
 {
- "version": 1793407272,
+ "version": 1793483377,
  "series": [
+  {
+   "id": "ramayan",
+   "title": "रामायण",
+   "titleEn": "Ramayan",
+   "genre": "epic",
+   "lang": "hi",
+   "author": "महर्षि वाल्मीकि की रामायण पर आधारित, Ampli द्वारा पुनर्कथन",
+   "source": "Valmiki Ramayana (ancient, public domain), original retelling by Ampli",
+   "description": "सरयू के किनारे बसी अयोध्या से लेकर सागर पार की सोने की लंका तक, सुनिए श्रीराम की वो अमर कथा जिसमें प्रेम है, त्याग है, दोस्ती है और सच्चाई की जीत है। दादा-दादी से लेकर नन्हे बच्चों तक, पूरा परिवार साथ बैठकर सुने ऐसी दस कड़ियों की यह कहानी, जो आख़िर में दीयों की जगमगाहट तक ले जाती है।",
+   "descriptionEn": "From Ayodhya on the banks of the Saryu to the golden city of Lanka across the sea, hear the timeless tale of Shri Ram, a story of love, sacrifice, friendship and the victory of truth. A ten-part story for the whole family, from grandparents to little ones, that ends in the glow of a thousand lamps.",
+   "freeEpisodes": 5,
+   "cover": {
+    "bg": "#5B4632",
+    "fg": "#F4D9A0",
+    "accent": "#C8792C"
+   },
+   "voice": "hm_omega",
+   "episodes": [
+    {
+     "n": 1,
+     "title": "अयोध्या के चार राजकुमार",
+     "file": "ramayan-01-dad79ae33e.m4a",
+     "url": "https://github.com/vikash-parashar/music-player/releases/download/stories-media/ramayan-01-dad79ae33e.m4a",
+     "durationSec": 367
+    }
+   ]
+  },
+  {
+   "id": "mahabharat",
+   "title": "महाभारत",
+   "titleEn": "Mahabharat",
+   "genre": "epic",
+   "lang": "hi",
+   "author": "महर्षि वेदव्यास के महाभारत पर आधारित, Ampli द्वारा पुनर्कथन",
+   "source": "Mahabharata by Vyasa (ancient, public domain), original retelling by Ampli",
+   "description": "हस्तिनापुर के राजमहल से कुरुक्षेत्र के मैदान तक फैली वह महागाथा, जिसमें एक ही परिवार के भाई आमने सामने खड़े हुए और धर्म की सबसे बड़ी परीक्षा हुई। सुनिए भीष्म की प्रतिज्ञा, अर्जुन का निशाना, कर्ण का दर्द और श्रीकृष्ण का वह संदेश, जो हज़ारों साल बाद भी हर दिल को राह दिखाता है।",
+   "descriptionEn": "From the royal palace of Hastinapur to the battlefield of Kurukshetra, this is the great saga in which brothers of one family stood face to face and dharma met its greatest test. Hear Bhishma's vow, Arjun's aim, Karna's pain and Krishna's message, which still lights the way for every heart thousands of years later.",
+   "freeEpisodes": 5,
+   "cover": {
+    "bg": "#171717",
+    "fg": "#F4D9A0",
+    "accent": "#A31C1B"
+   },
+   "voice": "hm_omega",
+   "episodes": [
+    {
+     "n": 1,
+     "title": "भीष्म की प्रतिज्ञा",
+     "file": "mahabharat-01-cc4c43de1f.m4a",
+     "url": "https://github.com/vikash-parashar/music-player/releases/download/stories-media/mahabharat-01-cc4c43de1f.m4a",
+     "durationSec": 398
+    }
+   ]
+  },
   {
    "id": "haveli-13",
    "title": "हवेली नंबर तेरह",
@@ -267,6 +321,25 @@
      "durationSec": 342
     }
    ]
+  },
+  {
+   "id": "bible-stories",
+   "title": "Stories from the Bible",
+   "titleEn": "Stories from the Bible",
+   "genre": "faith",
+   "lang": "en",
+   "author": "Retold by Ampli from the King James Bible",
+   "source": "King James Version (1611, public domain), original retelling by Ampli",
+   "description": "From the first light of creation to a brave young queen who risked everything for her people, these are the stories that have been told around fires and at bedsides for thousands of years. Settle in and hear ten of the Bible's greatest adventures, retold warmly for listeners of every age.",
+   "descriptionEn": "From the first light of creation to a brave young queen who risked everything for her people, these are the stories that have been told around fires and at bedsides for thousands of years. Settle in and hear ten of the Bible's greatest adventures, retold warmly for listeners of every age.",
+   "freeEpisodes": 5,
+   "cover": {
+    "bg": "#171717",
+    "fg": "#FFF21A",
+    "accent": "#A66BFF"
+   },
+   "voice": "af_heart",
+   "episodes": []
   }
  ]
 }
