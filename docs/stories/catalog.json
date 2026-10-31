@@ -1,5 +1,5 @@
 {
- "version": 1793483377,
+ "version": 1793485853,
  "series": [
   {
    "id": "ramayan",
@@ -25,6 +25,69 @@
      "file": "ramayan-01-dad79ae33e.m4a",
      "url": "https://github.com/vikash-parashar/music-player/releases/download/stories-media/ramayan-01-dad79ae33e.m4a",
      "durationSec": 367
+    },
+    {
+     "n": 2,
+     "title": "विश्वामित्र और ताड़का वन",
+     "file": "ramayan-02-224107ed70.m4a",
+     "url": "https://github.com/vikash-parashar/music-player/releases/download/stories-media/ramayan-02-224107ed70.m4a",
+     "durationSec": 365
+    },
+    {
+     "n": 3,
+     "title": "शिव धनुष और सीता स्वयंवर",
+     "file": "ramayan-03-d90e623e71.m4a",
+     "url": "https://github.com/vikash-parashar/music-player/releases/download/stories-media/ramayan-03-d90e623e71.m4a",
+     "durationSec": 364
+    },
+    {
+     "n": 4,
+     "title": "कैकेयी के दो वरदान",
+     "file": "ramayan-04-542b13ab16.m4a",
+     "url": "https://github.com/vikash-parashar/music-player/releases/download/stories-media/ramayan-04-542b13ab16.m4a",
+     "durationSec": 362
+    },
+    {
+     "n": 5,
+     "title": "भरत की चरण पादुकाएं",
+     "file": "ramayan-05-cac6be67f9.m4a",
+     "url": "https://github.com/vikash-parashar/music-player/releases/download/stories-media/ramayan-05-cac6be67f9.m4a",
+     "durationSec": 356
+    },
+    {
+     "n": 6,
+     "title": "पंचवटी और शूर्पणखा",
+     "file": "ramayan-06-b143ba513e.m4a",
+     "url": "https://github.com/vikash-parashar/music-player/releases/download/stories-media/ramayan-06-b143ba513e.m4a",
+     "durationSec": 370
+    },
+    {
+     "n": 7,
+     "title": "सोने का हिरण और जटायु का बलिदान",
+     "file": "ramayan-07-8026e36c12.m4a",
+     "url": "https://github.com/vikash-parashar/music-player/releases/download/stories-media/ramayan-07-8026e36c12.m4a",
+     "durationSec": 370
+    },
+    {
+     "n": 8,
+     "title": "हनुमान से भेंट और सुग्रीव की मित्रता",
+     "file": "ramayan-08-e2e3fbd8b1.m4a",
+     "url": "https://github.com/vikash-parashar/music-player/releases/download/stories-media/ramayan-08-e2e3fbd8b1.m4a",
+     "durationSec": 367
+    },
+    {
+     "n": 9,
+     "title": "हनुमान लंका में",
+     "file": "ramayan-09-8f84a9c0d7.m4a",
+     "url": "https://github.com/vikash-parashar/music-player/releases/download/stories-media/ramayan-09-8f84a9c0d7.m4a",
+     "durationSec": 373
+    },
+    {
+     "n": 10,
+     "title": "लंका का युद्ध और दीयों वाली रात",
+     "file": "ramayan-10-6d335303fc.m4a",
+     "url": "https://github.com/vikash-parashar/music-player/releases/download/stories-media/ramayan-10-6d335303fc.m4a",
+     "durationSec": 375
     }
    ]
   },
@@ -49,9 +112,72 @@
     {
      "n": 1,
      "title": "भीष्म की प्रतिज्ञा",
-     "file": "mahabharat-01-cc4c43de1f.m4a",
-     "url": "https://github.com/vikash-parashar/music-player/releases/download/stories-media/mahabharat-01-cc4c43de1f.m4a",
-     "durationSec": 398
+     "file": "mahabharat-01-8b42e24034.m4a",
+     "url": "https://github.com/vikash-parashar/music-player/releases/download/stories-media/mahabharat-01-8b42e24034.m4a",
+     "durationSec": 373
+    },
+    {
+     "n": 2,
+     "title": "सौ भाई और पांच भाई",
+     "file": "mahabharat-02-bcd9dae9aa.m4a",
+     "url": "https://github.com/vikash-parashar/music-player/releases/download/stories-media/mahabharat-02-bcd9dae9aa.m4a",
+     "durationSec": 375
+    },
+    {
+     "n": 3,
+     "title": "गुरु द्रोण और चिड़िया की आंख",
+     "file": "mahabharat-03-809c05833f.m4a",
+     "url": "https://github.com/vikash-parashar/music-player/releases/download/stories-media/mahabharat-03-809c05833f.m4a",
+     "durationSec": 376
+    },
+    {
+     "n": 4,
+     "title": "सूर्यपुत्र कर्ण",
+     "file": "mahabharat-04-14b3e02285.m4a",
+     "url": "https://github.com/vikash-parashar/music-player/releases/download/stories-media/mahabharat-04-14b3e02285.m4a",
+     "durationSec": 365
+    },
+    {
+     "n": 5,
+     "title": "लाख का महल",
+     "file": "mahabharat-05-62fe87357b.m4a",
+     "url": "https://github.com/vikash-parashar/music-player/releases/download/stories-media/mahabharat-05-62fe87357b.m4a",
+     "durationSec": 366
+    },
+    {
+     "n": 6,
+     "title": "द्रौपदी का स्वयंवर",
+     "file": "mahabharat-06-2dfc52686d.m4a",
+     "url": "https://github.com/vikash-parashar/music-player/releases/download/stories-media/mahabharat-06-2dfc52686d.m4a",
+     "durationSec": 375
+    },
+    {
+     "n": 7,
+     "title": "चौसर का खेल और द्रौपदी की लाज",
+     "file": "mahabharat-07-60909280d5.m4a",
+     "url": "https://github.com/vikash-parashar/music-player/releases/download/stories-media/mahabharat-07-60909280d5.m4a",
+     "durationSec": 379
+    },
+    {
+     "n": 8,
+     "title": "वनवास और अज्ञातवास",
+     "file": "mahabharat-08-e54654c232.m4a",
+     "url": "https://github.com/vikash-parashar/music-player/releases/download/stories-media/mahabharat-08-e54654c232.m4a",
+     "durationSec": 379
+    },
+    {
+     "n": 9,
+     "title": "श्रीकृष्ण का शांति संदेश",
+     "file": "mahabharat-09-bebcd6c298.m4a",
+     "url": "https://github.com/vikash-parashar/music-player/releases/download/stories-media/mahabharat-09-bebcd6c298.m4a",
+     "durationSec": 372
+    },
+    {
+     "n": 10,
+     "title": "कुरुक्षेत्र और गीता का संदेश",
+     "file": "mahabharat-10-5ebc9299a9.m4a",
+     "url": "https://github.com/vikash-parashar/music-player/releases/download/stories-media/mahabharat-10-5ebc9299a9.m4a",
+     "durationSec": 350
     }
    ]
   },
@@ -339,7 +465,78 @@
     "accent": "#A66BFF"
    },
    "voice": "af_heart",
-   "episodes": []
+   "episodes": [
+    {
+     "n": 1,
+     "title": "In the Beginning: Creation and the Garden",
+     "file": "bible-stories-01-290e3e9bc9.m4a",
+     "url": "https://github.com/vikash-parashar/music-player/releases/download/stories-media/bible-stories-01-290e3e9bc9.m4a",
+     "durationSec": 302
+    },
+    {
+     "n": 2,
+     "title": "Noah and the Great Flood",
+     "file": "bible-stories-02-3da2f24aca.m4a",
+     "url": "https://github.com/vikash-parashar/music-player/releases/download/stories-media/bible-stories-02-3da2f24aca.m4a",
+     "durationSec": 313
+    },
+    {
+     "n": 3,
+     "title": "Abraham and the Promise of the Stars",
+     "file": "bible-stories-03-044eaf9905.m4a",
+     "url": "https://github.com/vikash-parashar/music-player/releases/download/stories-media/bible-stories-03-044eaf9905.m4a",
+     "durationSec": 291
+    },
+    {
+     "n": 4,
+     "title": "Joseph and the Coat of Many Colors",
+     "file": "bible-stories-04-4205ec1e33.m4a",
+     "url": "https://github.com/vikash-parashar/music-player/releases/download/stories-media/bible-stories-04-4205ec1e33.m4a",
+     "durationSec": 314
+    },
+    {
+     "n": 5,
+     "title": "Moses and the Burning Bush",
+     "file": "bible-stories-05-93318c642c.m4a",
+     "url": "https://github.com/vikash-parashar/music-player/releases/download/stories-media/bible-stories-05-93318c642c.m4a",
+     "durationSec": 295
+    },
+    {
+     "n": 6,
+     "title": "The Exodus and the Parting of the Red Sea",
+     "file": "bible-stories-06-c33618ecb1.m4a",
+     "url": "https://github.com/vikash-parashar/music-player/releases/download/stories-media/bible-stories-06-c33618ecb1.m4a",
+     "durationSec": 297
+    },
+    {
+     "n": 7,
+     "title": "David and Goliath",
+     "file": "bible-stories-07-5748110ae8.m4a",
+     "url": "https://github.com/vikash-parashar/music-player/releases/download/stories-media/bible-stories-07-5748110ae8.m4a",
+     "durationSec": 301
+    },
+    {
+     "n": 8,
+     "title": "Daniel in the Lions' Den",
+     "file": "bible-stories-08-35f205f574.m4a",
+     "url": "https://github.com/vikash-parashar/music-player/releases/download/stories-media/bible-stories-08-35f205f574.m4a",
+     "durationSec": 303
+    },
+    {
+     "n": 9,
+     "title": "Jonah and the Great Fish",
+     "file": "bible-stories-09-d9ca59a2c8.m4a",
+     "url": "https://github.com/vikash-parashar/music-player/releases/download/stories-media/bible-stories-09-d9ca59a2c8.m4a",
+     "durationSec": 300
+    },
+    {
+     "n": 10,
+     "title": "Queen Esther: For Such a Time as This",
+     "file": "bible-stories-10-64dba1b260.m4a",
+     "url": "https://github.com/vikash-parashar/music-player/releases/download/stories-media/bible-stories-10-64dba1b260.m4a",
+     "durationSec": 304
+    }
+   ]
   }
  ]
 }
