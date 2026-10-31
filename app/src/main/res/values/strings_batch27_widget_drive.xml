@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_drive_crimson">Ampli Drive · Crimson</string>
+    <string name="widget_drive_orange">Ampli Drive · Orange</string>
+    <string name="widget_drive_description">Car mode look on your home screen: play, pause and skip, tap the car to open Car mode</string>
+    <string name="widget_drive_open_car">Open Car mode</string>
+</resources>

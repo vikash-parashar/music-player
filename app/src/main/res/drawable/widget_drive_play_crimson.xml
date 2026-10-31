@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Crimson play chip with a dark rim. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item><shape android:shape="oval"><solid android:color="#4A0B0B" /></shape></item>
+    <item android:top="2dp" android:left="2dp" android:right="2dp" android:bottom="2dp">
+        <shape android:shape="oval"><gradient android:type="radial" android:gradientRadius="40dp" android:centerX="0.35" android:centerY="0.3" android:startColor="#E0473A" android:endColor="#7A1211" /></shape>
+    </item>
+</layer-list>

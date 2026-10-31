@@ -667,6 +667,7 @@ data class WidgetState(
         suspend fun redraw(context: Context) {
             _changes.update { it + 1 }
             runCatching { AmpliWidget().updateAll(context) }
+            AmpliDriveWidget.redrawAll(context)
         }
     }
 }

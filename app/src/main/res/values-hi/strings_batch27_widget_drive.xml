@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_drive_crimson">Ampli Drive · क्रिमसन</string>
+    <string name="widget_drive_orange">Ampli Drive · ऑरेंज</string>
+    <string name="widget_drive_description">होम स्क्रीन पर कार मोड का लुक: गाने चलाएं, रोकें, बदलें; कार दबाकर कार मोड खोलें</string>
+    <string name="widget_drive_open_car">कार मोड खोलें</string>
+</resources>
