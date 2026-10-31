@@ -183,6 +183,17 @@ fun ProSoundCard(unlocked: Boolean, onGetPro: () -> Unit) {
                         )
                     }
                 }
+                var pickHeadphone by remember { mutableStateOf(false) }
+                OutlinedButton(onClick = { pickHeadphone = true }, modifier = Modifier.padding(top = 4.dp)) {
+                    Text(s.headphone?.let { stringResource(R.string.autoeq_using, it) } ?: stringResource(R.string.autoeq_button))
+                }
+                if (pickHeadphone) {
+                    AutoEqDialog(
+                        current = s.headphone,
+                        onPick = { ProSound.useHeadphone(context, it.name, it.gains); pickHeadphone = false },
+                        onDismiss = { pickHeadphone = false },
+                    )
+                }
                 ProSound.FREQUENCIES.forEachIndexed { i, hz ->
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(if (hz >= 1000) "${hz / 1000}k" else "$hz", Modifier.width(44.dp), style = MaterialTheme.typography.bodySmall)

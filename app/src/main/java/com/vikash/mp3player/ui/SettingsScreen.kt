@@ -121,6 +121,7 @@ fun SettingsScreen(
         FadeCard()
         EvenVolumeCard()
         EqualizerCard()
+        LastFmCard()
         ProSoundCard(proUnlocked, onRemoveAds)
         KeepGoingCard()
         AutoPlayCard()

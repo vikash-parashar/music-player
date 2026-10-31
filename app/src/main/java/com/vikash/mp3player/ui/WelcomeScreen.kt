@@ -204,6 +204,8 @@ private fun IntroPage() {
         Title(stringResource(R.string.welcome_1_title))
         Spacer(Modifier.height(14.dp))
         Body(stringResource(R.string.welcome_1_body))
+        Spacer(Modifier.height(22.dp))
+        PromiseBadges()
     }
 }
 

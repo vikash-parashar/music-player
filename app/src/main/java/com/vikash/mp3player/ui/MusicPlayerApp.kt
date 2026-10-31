@@ -91,6 +91,8 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     val featurePro = adsRemoved || vm.billing.testerPro
     val price by vm.billing.price.collectAsStateWithLifecycle()
     val adsReady by Ads.ready.collectAsStateWithLifecycle()
+    // US/UK/EU and similar: no bottom banner (see AdRegion).
+    val fewerAds = remember { com.vikash.mp3player.monetization.AdRegion.fewerAds(context) }
     val app = context.applicationContext as com.vikash.mp3player.MusicApp
     val proUnlocked by app.proUnlocked.collectAsStateWithLifecycle()
     val trialUntil by com.vikash.mp3player.monetization.ProTrial.until.collectAsStateWithLifecycle()
@@ -274,7 +276,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                 Column {
                     // Banner sits above the mini player with clear space, never touching playback buttons
                     // or the nav bar (AdMob's accidental-click guidance).
-                    if (!adsRemoved && adsReady) {
+                    if (!adsRemoved && adsReady && !fewerAds) {
                         androidx.compose.material3.HorizontalDivider(color = androidx.compose.material3.MaterialTheme.colorScheme.outlineVariant)
                         BannerAd(Modifier.padding(top = 8.dp, bottom = 10.dp))
                     }

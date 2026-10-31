@@ -1,0 +1,33 @@
+Ampli plays the music already on your phone. No account, no sign-up, no subscription. Your library and what you listen to stay on your device.
+
+★ Your whole library, offline
+• Finds every song automatically: MP3, FLAC, M4A, OGG, WAV, OPUS and more
+• Songs, albums, artists, folders and playlists, with SD card support
+• Gapless playback, smooth crossfades, ReplayGain and a sleep timer
+• Synced lyrics from your own .lrc files, plus a tag editor
+
+★ Sound tuned to your headphones
+• 10-band equalizer with presets, bass boost and 3D surround
+• Headphone presets for 800+ models, measured by AutoEq: pick yours and Ampli corrects its sound
+• Even volume, so loud and quiet songs play at the same level
+• Hi-Res output on supported phones (Pro)
+
+★ Made for the road
+• Android Auto: browse your library or just say "Hey Google, play Coldplay on Ampli"
+• Car mode with big buttons and a spinning record
+
+★ Last.fm scrobbling
+• Every song you finish is added to your Last.fm profile
+• Plays made offline are sent when you are back online
+
+★ Share and move music
+• Send songs from your computer over Wi-Fi, no cable needed
+• Ringtone maker, Chromecast (Pro) and a built-in video player (Pro)
+• Back up and restore playlists, favorites and settings
+
+★ Pay once, play forever
+Every core feature is free. In the US, UK and Europe there is no bottom banner: just one small ad card on the player screen and optional rewarded ads. Ampli Pro removes all ads and unlocks the visualizer, extra themes and player styles, Chromecast and more. One payment, no monthly fee, ever.
+
+Ampli never downloads music from YouTube or other sites. It plays the music you already own.
+
+Made by Ampli Studio. Questions: support@ampliapps.in

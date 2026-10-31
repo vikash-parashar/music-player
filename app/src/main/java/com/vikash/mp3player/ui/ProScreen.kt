@@ -99,6 +99,8 @@ fun ProScreen(
                     Text(stringResource(R.string.pro_name), color = Color.White, fontSize = 30.sp, fontWeight = FontWeight.Bold)
                     Spacer(Modifier.height(4.dp))
                     Text(stringResource(R.string.pro_tagline), color = Color.White.copy(alpha = 0.92f), textAlign = TextAlign.Center)
+                    Spacer(Modifier.height(16.dp))
+                    PromiseBadges()
                 }
             }
 
