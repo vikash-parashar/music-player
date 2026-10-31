@@ -11,13 +11,20 @@ sleep 5
 adb shell pm grant $PKG android.permission.READ_MEDIA_AUDIO || true
 adb shell pm grant $PKG android.permission.POST_NOTIFICATIONS || true
 adb logcat -c
+# Stream the log as it happens, so it survives even if the emulator stops answering.
+adb logcat -v time > logcat_live.txt 2>&1 &
 adb shell am start -W -n $PKG/com.vikash.mp3player.MainActivity
 sleep 12
 adb shell am start -W -a com.vikash.ampli.action.CAR_MODE -p $PKG
 sleep 15
-adb logcat -d > logcat.txt || true
-adb shell dumpsys media_session > session.txt || true
-adb exec-out screencap -p > screen.png || true
+# Every adb call below has a time limit: a frozen emulator fails the job with logs, not a 30-minute hang.
+if ! timeout 60 adb logcat -d > logcat.txt; then
+  echo "::error::Emulator stopped answering after Car mode opened"
+  tail -300 logcat_live.txt
+  exit 1
+fi
+timeout 60 adb shell dumpsys media_session > session.txt || true
+timeout 60 adb exec-out screencap -p > screen.png || true
 if grep -q "FATAL EXCEPTION" logcat.txt; then
   echo "::error::App crashed"; grep -A40 "FATAL EXCEPTION" logcat.txt; exit 1
 fi

@@ -209,6 +209,7 @@ jobs:
           name: r8-smoke-logs
           path: |
             logcat.txt
+            logcat_live.txt
             session.txt
             screen.png
           if-no-files-found: ignore
