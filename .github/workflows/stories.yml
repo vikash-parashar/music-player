@@ -69,9 +69,20 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
-          git add docs/stories/catalog.json app/src/main/assets/stories_catalog.json
-          git commit -m "Update Stories catalogue" || exit 0
-          for i in 1 2 3; do git pull --rebase -q && git push && break; sleep 5; done
+          # Rebuild the commit on the newest branch tip each try, so a catalogue written by an
+          # earlier run never conflicts with this one (this run's catalogue is the complete one).
+          mkdir -p /tmp/cat && cp docs/stories/catalog.json /tmp/cat/docs.json && cp app/src/main/assets/stories_catalog.json /tmp/cat/app.json
+          pushed=""
+          for i in 1 2 3 4; do
+            git fetch -q origin "$GITHUB_REF_NAME" && git reset -q --hard "origin/$GITHUB_REF_NAME"
+            cp /tmp/cat/docs.json docs/stories/catalog.json && cp /tmp/cat/app.json app/src/main/assets/stories_catalog.json
+            git add docs/stories/catalog.json app/src/main/assets/stories_catalog.json
+            git diff --cached --quiet && { echo "Catalogue unchanged"; exit 0; }
+            git commit -q -m "Update Stories catalogue"
+            git push origin "HEAD:$GITHUB_REF_NAME" && { pushed=1; break; }
+            sleep 5
+          done
+          [ -n "$pushed" ] || { echo "Could not push the catalogue"; exit 1; }
           # Pushes made with the workflow token don't start other workflows, so ask for the APK
           # build directly; it then ships the new catalogue inside the app.
           gh workflow run build-apk.yml --ref "$GITHUB_REF_NAME"
