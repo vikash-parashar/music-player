@@ -4,6 +4,8 @@
     <exclude domain="sharedpref" path="billing.xml" />
     <exclude domain="sharedpref" path="pro_trial.xml" />
     <exclude domain="sharedpref" path="owner_hooks.xml" />
+    <!-- Network folder logins (passwords) stay on this phone. -->
+    <exclude domain="sharedpref" path="network_shares.xml" />
     <!-- Found covers are named by album id, which changes on a new phone. -->
     <exclude domain="file" path="albumart/" />
 </full-backup-content>

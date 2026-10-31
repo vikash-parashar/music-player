@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Internet radio (Discover > Radio) -->
+    <string name="discover_radio">Radio</string>
+    <string name="radio_search_hint">Search stations, e.g. Radio Mirchi, BBC</string>
+    <string name="radio_top_in">Top in %1$s</string>
+    <string name="radio_favourites">Favourites</string>
+    <string name="radio_no_favourites">Tap the heart on a station to keep it here.</string>
+    <string name="radio_no_results">No stations found.</string>
+    <string name="radio_credit">Station list from radio-browser.info. Streams come straight from each broadcaster.</string>
+    <string name="radio_favourite">Add to favourites</string>
+    <string name="radio_unfavourite">Remove from favourites</string>
+
+    <!-- Network folders (SMB) -->
+    <string name="net_title">Network folders</string>
+    <string name="net_card_desc">Play music from a PC, laptop or NAS on your Wi-Fi without copying it</string>
+    <string name="net_hero_title">Your PC\'s music, on your phone</string>
+    <string name="net_hero_desc">Works with Windows and Mac file sharing, Samba and NAS drives such as Synology or WD. Phone and computer must be on the same Wi-Fi.</string>
+    <string name="net_how">On Windows: right-click your music folder, then Properties, Sharing, Share. Then tap Add network folder and type the address shown there, such as \\\\192.168.1.5\\Music.</string>
+    <string name="net_add">Add network folder</string>
+    <string name="net_address">Folder address</string>
+    <string name="net_name">Name (optional)</string>
+    <string name="net_user">Username (optional)</string>
+    <string name="net_password">Password</string>
+    <string name="net_guest_hint">Leave the username empty for folders shared with everyone. The password stays on this phone.</string>
+    <string name="net_bad_address">Type the computer and the shared folder, for example \\\\192.168.1.5\\Music</string>
+    <string name="net_connect">Connect</string>
+    <string name="net_failed">Couldn\'t open the folder: %1$s</string>
+    <string name="net_remove">Remove</string>
+    <string name="net_play_all">Play all (%1$d)</string>
+    <string name="net_empty">No folders or songs here.</string>
+
+    <!-- Hi-Res output -->
+    <string name="hires_title">Hi-Res audio output</string>
+    <string name="hires_device">Playing on: %1$s</string>
+    <string name="hires_path">File %1$s → phone %2$s</string>
+    <string name="hires_bit_perfect_on">Bit-perfect: the DAC gets the file untouched</string>
+    <string name="hires_switch">Hi-Res output (24-bit / 32-bit)</string>
+    <string name="hires_switch_desc">Keeps 24-bit and 32-bit files at full depth. While on, speed, pitch and the visualiser pause for those files.</string>
+    <string name="hires_restart">Applies after you close Ampli and open it again.</string>
+    <string name="usb_bit_perfect">USB DAC bit-perfect</string>
+    <string name="usb_bit_perfect_desc">With a USB DAC plugged in, sends the file\'s own sample rate to the DAC without Android resampling it. Use the DAC\'s volume.</string>
+    <string name="usb_bit_perfect_old">Needs Android 14 or newer.</string>
+    <string name="hires_get_pro">Unlock with Pro</string>
+</resources>

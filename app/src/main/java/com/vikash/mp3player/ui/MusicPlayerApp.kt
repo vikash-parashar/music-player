@@ -151,6 +151,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     var showStatus by remember { mutableStateOf(false) }
     var showStats by rememberSaveable { mutableStateOf(false) }
     var showTransfer by rememberSaveable { mutableStateOf(false) }
+    var showNetwork by rememberSaveable { mutableStateOf(false) }
     var showCarMode by rememberSaveable { mutableStateOf(false) }
     // Opened from Ampli Car Hub: go straight to Car mode and get the music going.
     val carLaunches by CarLaunch.requests.collectAsStateWithLifecycle()
@@ -367,6 +368,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                         themeMode = themeMode, onThemeMode = vm.prefs::setThemeMode,
                         onBackup = vm::exportBackup, onRestore = vm::restoreBackup,
                         onOpenTransfer = { showTransfer = true },
+                        onOpenNetwork = { showNetwork = true },
                         onOpenCarMode = { showCarMode = true },
                         onOpenDuplicates = { showDuplicates = true },
                         folders = folders,
@@ -440,6 +442,14 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
         ) {
             // New songs show up in the Library as soon as the screen closes.
             WifiTransferScreen(onClose = { showTransfer = false; vm.loadLibrary() })
+        }
+
+        AnimatedVisibility(
+            visible = showNetwork,
+            enter = screenEnter(),
+            exit = screenExit(),
+        ) {
+            NetworkFoldersScreen(onPlay = playWithDisc, onClose = { showNetwork = false })
         }
 
         AnimatedVisibility(

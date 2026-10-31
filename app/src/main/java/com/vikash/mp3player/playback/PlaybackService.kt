@@ -11,6 +11,7 @@ import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.session.CommandButton
 import androidx.media3.session.DefaultMediaNotificationProvider
 import androidx.media3.session.LibraryResult
@@ -29,6 +30,8 @@ import com.vikash.mp3player.MusicApp
 import com.vikash.mp3player.R
 import com.vikash.mp3player.cast.CastSwitcher
 import com.vikash.mp3player.data.LocalMusicRepository
+import com.vikash.mp3player.data.RADIO_HLS_PREFIX
+import com.vikash.mp3player.data.RADIO_PREFIX
 import com.vikash.mp3player.data.Song
 import com.vikash.mp3player.widget.WidgetState
 import kotlinx.coroutines.CoroutineScope
@@ -75,7 +78,10 @@ class PlaybackService : MediaLibraryService() {
         super.onCreate()
         library = LocalMusicRepository(this)
         // The renderers factory adds a pass-through tap that feeds the Pro visualiser.
-        val player = ExoPlayer.Builder(this, VisualizerTap.renderersFactory(this))
+        // Hi-Res (Pro) changes the audio pipeline, so it is read once when the player is built.
+        val player = ExoPlayer.Builder(this, VisualizerTap.renderersFactory(this, hiRes = AudioOutput.hiResEnabled(this)))
+            // Network-folder (smb://) songs and internet radio need their own byte sources.
+            .setMediaSourceFactory(DefaultMediaSourceFactory(StreamSourceFactory(this)))
             .setAudioAttributes(
                 AudioAttributes.Builder()
                     .setUsage(C.USAGE_MEDIA)
@@ -88,6 +94,7 @@ class PlaybackService : MediaLibraryService() {
             .build()
 
         phonePlayer = player
+        player.addAnalyticsListener(AudioOutput.attach(this) { (application as MusicApp).proUnlocked.value })
         EqualizerController.attach(this, player.audioSessionId)
         ProSound.attach(this, player.audioSessionId)
         scope.launch { (application as MusicApp).proUnlocked.collect { ProSound.setUnlocked(it) } }
@@ -124,6 +131,21 @@ class PlaybackService : MediaLibraryService() {
 
             override fun onTimelineChanged(timeline: Timeline, reason: Int) {
                 refreshWidget(player) // queue edited: the next song may have changed
+            }
+
+            // Internet radio sends the song now on air (ICY "StreamTitle"); show it under the station name.
+            override fun onMetadata(metadata: androidx.media3.common.Metadata) {
+                val item = player.currentMediaItem ?: return
+                if (!item.mediaId.startsWith(RADIO_PREFIX)) return
+                val onAir = (0 until metadata.length()).asSequence()
+                    .mapNotNull { metadata.get(it) as? androidx.media3.extractor.metadata.icy.IcyInfo }
+                    .mapNotNull { it.title?.trim()?.takeIf { t -> t.isNotEmpty() && t != "-" } }
+                    .firstOrNull() ?: return
+                if (item.mediaMetadata.artist?.toString() == onAir) return
+                player.replaceMediaItem(
+                    player.currentMediaItemIndex,
+                    item.buildUpon().setMediaMetadata(item.mediaMetadata.buildUpon().setArtist(onAir).build()).build(),
+                )
             }
 
             override fun onIsPlayingChanged(isPlaying: Boolean) {
@@ -274,6 +296,7 @@ class PlaybackService : MediaLibraryService() {
             }
         }
         clicks.release()
+        AudioOutput.detach()
         shake?.release()
         shake = null
         cast?.release()
@@ -445,7 +468,12 @@ class PlaybackService : MediaLibraryService() {
         ): ListenableFuture<MutableList<MediaItem>> {
             val restored = mediaItems.map { item ->
                 val uri = item.requestMetadata.mediaUri
-                if (item.localConfiguration == null && uri != null) item.buildUpon().setUri(uri).build() else item
+                if (item.localConfiguration == null && uri != null) {
+                    item.buildUpon().setUri(uri)
+                        // HLS radio stations often have no .m3u8 in their address.
+                        .apply { if (item.mediaId.startsWith(RADIO_HLS_PREFIX)) setMimeType(androidx.media3.common.MimeTypes.APPLICATION_M3U8) }
+                        .build()
+                } else item
             }.toMutableList()
             val switcher = cast
             if (switcher == null || !switcher.isCasting) return Futures.immediateFuture(restored)

@@ -59,6 +59,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.foundation.background
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -285,6 +287,7 @@ fun NowPlayingScreen(
                     Column(Modifier.weight(1f)) {
                         Text(current.title, style = MaterialTheme.typography.headlineSmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
                         Text(current.artist, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        HiResBadge()
                     }
                     FavoriteButton(
                         isFavorite = current.mediaId in favorites,
@@ -492,3 +495,27 @@ private fun SpeedPitchDialog(speed: Float, pitch: Float, onChange: (Float, Float
 
 /** Round to 0.05 steps so values read cleanly (1.25x, not 1.2473x). */
 private fun snap(v: Float) = (Math.round(v * 20f) / 20f)
+
+
+/** "HI-RES · 24-bit · 96 kHz · FLAC" under the artist, only for files better than CD quality. */
+@Composable
+private fun HiResBadge() {
+    val info by com.vikash.mp3player.playback.AudioOutput.info.collectAsStateWithLifecycle()
+    if (!info.isHiRes) return
+    Row(
+        Modifier.padding(top = 6.dp)
+            .then(Modifier.background(MaterialTheme.colorScheme.primary.copy(alpha = 0.14f), androidx.compose.foundation.shape.RoundedCornerShape(6.dp)))
+            .padding(horizontal = 8.dp, vertical = 3.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            if (info.bitPerfect) "HI-RES · BIT-PERFECT" else "HI-RES",
+            style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary,
+            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+        )
+        Text(
+            "  " + info.sourceLabel(),
+            style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}

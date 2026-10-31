@@ -16,6 +16,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaSession
 import com.google.android.gms.cast.framework.CastContext
 import com.vikash.mp3player.R
+import com.vikash.mp3player.data.RADIO_HLS_PREFIX
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -124,11 +125,12 @@ class CastSwitcher(
     /** A queue item the Chromecast can play: files on the phone get a Wi-Fi address. */
     private fun toCast(item: MediaItem): MediaItem? {
         val uri = item.localConfiguration?.uri ?: item.requestMetadata.mediaUri ?: return null
+        if (uri.scheme == "smb") return null // network-folder songs are read by the phone only
         originals[item.mediaId] = item
         val isLocal = uri.scheme == "content" || uri.scheme == "file"
         val url = if (isLocal) server.urlFor(uri) ?: return null else uri.toString()
         val mime = (if (isLocal) runCatching { context.contentResolver.getType(uri) }.getOrNull() else null)
-            ?: MimeTypes.AUDIO_MPEG
+            ?: (if (item.mediaId.startsWith(RADIO_HLS_PREFIX)) MimeTypes.APPLICATION_M3U8 else MimeTypes.AUDIO_MPEG)
         val art = item.mediaMetadata.artworkUri?.let { a ->
             if (a.scheme != "content") a
             else if (runCatching { context.contentResolver.openInputStream(a)?.close() != null }.getOrDefault(false)) server.urlFor(a)?.let(Uri::parse)
