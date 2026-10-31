@@ -50,6 +50,7 @@
         android:label="@string/app_name"
         android:localeConfig="@xml/locales_config"
         android:supportsRtl="true"
+        android:usesCleartextTraffic="true"
         android:theme="@style/Theme.Mp3Player">
 
         <!-- Android Auto: show Ampli as a media app on the car screen. -->

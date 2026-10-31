@@ -57,10 +57,11 @@ object VisualizerTap : TeeAudioProcessor.AudioBufferSink {
     private val smooth = FloatArray(BARS)
     private val hann = FloatArray(N) { (0.5 - 0.5 * cos(2 * Math.PI * it / (N - 1))).toFloat() }
 
-    fun renderersFactory(context: Context): RenderersFactory = object : DefaultRenderersFactory(context) {
+    /** [hiRes] keeps 24/32-bit files at full depth (float output); see AudioOutput. */
+    fun renderersFactory(context: Context, hiRes: Boolean = false): RenderersFactory = object : DefaultRenderersFactory(context) {
         override fun buildAudioSink(context: Context, enableFloatOutput: Boolean, enableAudioTrackPlaybackParams: Boolean): AudioSink =
             DefaultAudioSink.Builder(context)
-                .setEnableFloatOutput(enableFloatOutput)
+                .setEnableFloatOutput(enableFloatOutput || hiRes)
                 .setEnableAudioTrackPlaybackParams(enableAudioTrackPlaybackParams)
                 .setAudioProcessors(arrayOf(TeeAudioProcessor(this@VisualizerTap)))
                 .build()

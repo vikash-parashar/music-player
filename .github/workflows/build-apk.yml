@@ -138,8 +138,24 @@ jobs:
             exit 1
           fi
 
+      # Release notes ("What's new") come from distribution/whatsnew/whatsnew-<lang>.
+      # If Play rejects the notes (e.g. a language not on the listing), upload again without them.
       - name: Upload to Play closed test
+        id: playupload
         if: steps.play.outputs.ready == 'true'
+        continue-on-error: true
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.vikash.ampli
+          releaseFiles: Ampli-${{ github.run_number }}.aab
+          mappingFile: Ampli-${{ github.run_number }}-mapping.txt
+          track: ${{ vars.PLAY_TRACK || 'alpha' }}
+          status: completed
+          whatsNewDirectory: distribution/whatsnew
+
+      - name: Upload to Play closed test (without release notes)
+        if: steps.play.outputs.ready == 'true' && steps.playupload.outcome == 'failure'
         uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}

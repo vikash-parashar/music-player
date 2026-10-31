@@ -97,6 +97,7 @@ fun SettingsScreen(
     tipsReceived: Int = 0,
     onTip: (String) -> Unit = {},
     songs: List<com.vikash.mp3player.data.Song> = emptyList(),
+    onOpenNetwork: () -> Unit = {},
 ) {
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
@@ -112,6 +113,8 @@ fun SettingsScreen(
         LiteModeCard()
         LibraryCleanCard(onLibraryChanged)
         ShakeToSkipCard()
+        AudioOutputCard(isPro = proUnlocked, onGetPro = onRemoveAds)
+        NetworkFoldersCard(isPro = proUnlocked, onOpen = onOpenNetwork, onGetPro = onRemoveAds)
         ProLookCard(proUnlocked, onRemoveAds)
         SeekStyleCard(seekStyle, isPro = proUnlocked, onPick = onSeekStyle, onGetPro = onRemoveAds)
         SleepTimerCard()

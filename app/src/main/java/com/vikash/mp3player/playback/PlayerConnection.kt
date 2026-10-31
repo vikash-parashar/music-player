@@ -419,6 +419,7 @@ private fun buildMediaItem(
 ): MediaItem = MediaItem.Builder()
     .setMediaId(id)
     .setUri(uri)
+    .apply { if (id.startsWith(com.vikash.mp3player.data.RADIO_HLS_PREFIX)) setMimeType(androidx.media3.common.MimeTypes.APPLICATION_M3U8) }
     // PlaybackService restores the URI from here; see its onAddMediaItems.
     .setRequestMetadata(MediaItem.RequestMetadata.Builder().setMediaUri(uri).build())
     .setMediaMetadata(

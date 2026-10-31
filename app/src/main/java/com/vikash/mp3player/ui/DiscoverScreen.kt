@@ -33,7 +33,7 @@ import androidx.compose.material3.MaterialTheme
 import com.vikash.mp3player.ui.skin.SkinOutlinedButton as OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
+import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -76,15 +76,16 @@ fun DiscoverScreen(
     stories: @Composable () -> Unit,
     music: @Composable () -> Unit,
 ) {
-    // Sections in tab order: Stories, Music (when licensed), Audiobooks, Podcasts.
-    val order = buildList { add(3); if (showMusic) add(0); add(1); add(2) }
+    // Sections in tab order: Stories, Radio, Music (when licensed), Audiobooks, Podcasts.
+    val order = buildList { add(3); add(4); if (showMusic) add(0); add(1); add(2) }
     var picked by rememberSaveable { mutableIntStateOf(3) }
     val section = if (picked in order) picked else 3
     Column(Modifier.fillMaxSize()) {
-        TabRow(selectedTabIndex = order.indexOf(section)) {
+        ScrollableTabRow(edgePadding = 8.dp, selectedTabIndex = order.indexOf(section)) {
             order.forEach { s ->
                 val label = when (s) {
                     3 -> R.string.discover_stories
+                    4 -> R.string.discover_radio
                     0 -> R.string.discover_music
                     1 -> R.string.discover_audiobooks
                     else -> R.string.discover_podcasts
@@ -94,6 +95,7 @@ fun DiscoverScreen(
         }
         when (section) {
             3 -> stories()
+            4 -> RadioSection(currentId, actions)
             0 -> music()
             1 -> AudiobooksSection(currentId, actions)
             else -> PodcastsSection(currentId, actions)

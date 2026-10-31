@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="discover_radio">रेडियो</string>
+    <string name="radio_search_hint">स्टेशन खोजें, जैसे Radio Mirchi, BBC</string>
+    <string name="radio_top_in">%1$s में टॉप</string>
+    <string name="radio_favourites">पसंदीदा</string>
+    <string name="radio_no_favourites">किसी स्टेशन पर दिल दबाएँ, वह यहाँ रहेगा।</string>
+    <string name="radio_no_results">कोई स्टेशन नहीं मिला।</string>
+    <string name="radio_credit">स्टेशन सूची radio-browser.info से। आवाज़ सीधे हर रेडियो स्टेशन से आती है।</string>
+    <string name="radio_favourite">पसंदीदा में जोड़ें</string>
+    <string name="radio_unfavourite">पसंदीदा से हटाएँ</string>
+
+    <string name="net_title">नेटवर्क फ़ोल्डर</string>
+    <string name="net_card_desc">Wi-Fi पर PC, लैपटॉप या NAS के गाने बिना कॉपी किए चलाएँ</string>
+    <string name="net_hero_title">आपके PC के गाने, आपके फ़ोन पर</string>
+    <string name="net_hero_desc">Windows और Mac फ़ाइल शेयरिंग, Samba और Synology या WD जैसे NAS के साथ चलता है। फ़ोन और कंप्यूटर एक ही Wi-Fi पर हों।</string>
+    <string name="net_how">Windows पर: गानों के फ़ोल्डर पर राइट-क्लिक करें, फिर Properties, Sharing, Share। फिर नेटवर्क फ़ोल्डर जोड़ें दबाएँ और वहाँ दिखा पता लिखें, जैसे \\\\192.168.1.5\\Music।</string>
+    <string name="net_add">नेटवर्क फ़ोल्डर जोड़ें</string>
+    <string name="net_address">फ़ोल्डर का पता</string>
+    <string name="net_name">नाम (ज़रूरी नहीं)</string>
+    <string name="net_user">यूज़रनेम (ज़रूरी नहीं)</string>
+    <string name="net_password">पासवर्ड</string>
+    <string name="net_guest_hint">सबके लिए शेयर किए फ़ोल्डर के लिए यूज़रनेम खाली छोड़ें। पासवर्ड इसी फ़ोन पर रहता है।</string>
+    <string name="net_bad_address">कंप्यूटर और शेयर किया फ़ोल्डर लिखें, जैसे \\\\192.168.1.5\\Music</string>
+    <string name="net_connect">कनेक्ट करें</string>
+    <string name="net_failed">फ़ोल्डर नहीं खुला: %1$s</string>
+    <string name="net_remove">हटाएँ</string>
+    <string name="net_play_all">सब चलाएँ (%1$d)</string>
+    <string name="net_empty">यहाँ कोई फ़ोल्डर या गाना नहीं है।</string>
+
+    <string name="hires_title">Hi-Res ऑडियो आउटपुट</string>
+    <string name="hires_device">चल रहा है: %1$s</string>
+    <string name="hires_path">फ़ाइल %1$s → फ़ोन %2$s</string>
+    <string name="hires_bit_perfect_on">बिट-परफ़ेक्ट: DAC को फ़ाइल बिना बदले मिल रही है</string>
+    <string name="hires_switch">Hi-Res आउटपुट (24-बिट / 32-बिट)</string>
+    <string name="hires_switch_desc">24-बिट और 32-बिट फ़ाइलें पूरी गुणवत्ता में चलती हैं। चालू रहने पर उन फ़ाइलों के लिए स्पीड, पिच और विज़ुअलाइज़र रुक जाते हैं।</string>
+    <string name="hires_restart">Ampli बंद करके दोबारा खोलने पर लागू होगा।</string>
+    <string name="usb_bit_perfect">USB DAC बिट-परफ़ेक्ट</string>
+    <string name="usb_bit_perfect_desc">USB DAC लगा हो तो फ़ाइल का असली सैंपल रेट बिना बदले DAC तक जाता है। आवाज़ DAC से कम-ज़्यादा करें।</string>
+    <string name="usb_bit_perfect_old">Android 14 या नया चाहिए।</string>
+    <string name="hires_get_pro">Pro से खोलें</string>
+</resources>
