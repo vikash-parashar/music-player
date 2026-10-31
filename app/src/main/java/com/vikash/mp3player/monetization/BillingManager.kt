@@ -185,6 +185,8 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
                 val msg = when {
                     !forPro -> R.string.tip_unavailable
                     BuildConfig.DEBUG -> R.string.pro_purchase_test_build
+                    // Play answered but has no active "ampli_pro" product for this app and account.
+                    proQueried && details == null -> R.string.pro_not_on_play
                     else -> R.string.pro_purchase_failed
                 }
                 android.widget.Toast.makeText(activity, msg, android.widget.Toast.LENGTH_LONG).show()
