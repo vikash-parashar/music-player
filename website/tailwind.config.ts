@@ -10,11 +10,16 @@ const config: Config = {
     container: { center: true, padding: { DEFAULT: "1.25rem", lg: "2rem" }, screens: { "2xl": "1120px" } },
     extend: {
       colors: {
-        night: { DEFAULT: "#0F0D14", 900: "#0B0A0F" },
-        raised: { DEFAULT: "#1C1820", hover: "#241F29" },
-        line: "#2A2430",
-        ink: { DEFAULT: "#F5F2F7", muted: "#B9B0C0", faint: "#8A8193" },
-        rose: { 300: "#FDA4AF", 400: "#FB7185", 500: "#F43F5E", 600: "#E11D48", 700: "#BE123C" },
+        // Theme tokens: values live in globals.css and switch with html[data-theme] (day / night).
+        night: { DEFAULT: "rgb(var(--c-night) / <alpha-value>)", 900: "rgb(var(--c-night-900) / <alpha-value>)" },
+        raised: { DEFAULT: "rgb(var(--c-raised) / <alpha-value>)", hover: "rgb(var(--c-raised-hover) / <alpha-value>)" },
+        line: "rgb(var(--c-line) / <alpha-value>)",
+        ink: {
+          DEFAULT: "rgb(var(--c-ink) / <alpha-value>)",
+          muted: "rgb(var(--c-ink-muted) / <alpha-value>)",
+          faint: "rgb(var(--c-ink-faint) / <alpha-value>)",
+        },
+        rose: { 300: "rgb(var(--c-rose-300) / <alpha-value>)", 400: "#FB7185", 500: "#F43F5E", 600: "#E11D48", 700: "#BE123C" },
         slate: { 700: "#334155", 800: "#1E293B" },
       },
       fontFamily: {

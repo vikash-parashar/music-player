@@ -20,13 +20,12 @@ export const shareText =
   "Ampli: desi apps from India. A music player with no monthly fee, a car system that talks in Haryanvi, a scam-call shield for families, and free govt job alerts. https://ampliapps.in";
 
 export const nav = [
-  { href: "/#apps", label: "Apps" },
-  { href: "/#music", label: "MP3 Player" },
+  { href: "/#music", label: "MP3" },
   { href: "/#carhub", label: "Car Hub" },
   { href: "/#kavach", label: "Kavach" },
   { href: "/#naukri", label: "Naukri" },
   { href: "/#pricing", label: "Pricing" },
-  { href: "/#support", label: "Support us" },
+  { href: "/#support", label: "Support" },
   { href: "/#faq", label: "FAQ" },
 ];
 

@@ -5,6 +5,7 @@ import { AnimatePresence, m, useMotionValueEvent, useScroll } from "framer-motio
 import { Menu, X } from "lucide-react";
 import { nav, site } from "@/lib/site";
 import { cn } from "@/lib/utils";
+import { ModeToggle } from "@/components/theme";
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -34,7 +35,7 @@ export function Navbar() {
               <li key={n.href}>
                 <Link
                   href={n.href}
-                  className="relative rounded-full px-3.5 py-2 text-sm text-ink-muted transition-colors hover:bg-white/5 hover:text-ink"
+                  className="relative rounded-full px-3.5 py-2 text-sm text-ink-muted transition-colors hover:bg-ink/5 hover:text-ink"
                 >
                   {n.label}
                 </Link>
@@ -43,6 +44,7 @@ export function Navbar() {
           </ul>
 
           <div className="flex items-center gap-2">
+            <ModeToggle className="hidden sm:inline-flex" />
             <a
               href="/#support"
               className="hidden rounded-full bg-brand px-4 py-2 text-sm font-semibold text-white transition-transform duration-200 hover:scale-105 lg:inline-flex"
@@ -54,7 +56,7 @@ export function Navbar() {
               aria-label={open ? "Close menu" : "Open menu"}
               aria-expanded={open}
               onClick={() => setOpen((v) => !v)}
-              className="grid size-10 place-items-center rounded-full text-ink hover:bg-white/5 lg:hidden"
+              className="grid size-10 place-items-center rounded-full text-ink hover:bg-ink/5 lg:hidden"
             >
               {open ? <X size={20} /> : <Menu size={20} />}
             </button>
@@ -77,6 +79,9 @@ export function Navbar() {
                   </Link>
                 </m.li>
               ))}
+              <li className="py-4 sm:hidden">
+                <ModeToggle />
+              </li>
             </m.ul>
           )}
         </AnimatePresence>
