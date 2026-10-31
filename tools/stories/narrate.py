@@ -100,7 +100,16 @@ def main():
             wav.unlink(); m4a.unlink()
             print(f"narrated {name} ({duration:.0f}s)")
         else:
-            print(f"kept {name}")
+            if not duration:
+                # Not in the published catalogue yet (an earlier run narrated it but its
+                # catalogue was lost): measure the uploaded file instead of reporting 0.
+                tmp = out_dir / name
+                sh("gh", "release", "download", tag, "--repo", repo, "--pattern", name,
+                   "--dir", str(out_dir), "--clobber")
+                duration = float(sh("ffprobe", "-v", "error", "-show_entries", "format=duration",
+                                    "-of", "csv=p=0", str(tmp)).strip() or 0)
+                tmp.unlink()
+            print(f"kept {name} ({duration:.0f}s)")
         episodes.append({"n": n, "title": title, "file": name,
                          "url": f"https://github.com/{repo}/releases/download/{tag}/{name}",
                          "durationSec": int(round(duration))})
