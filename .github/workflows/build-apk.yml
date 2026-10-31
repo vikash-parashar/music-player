@@ -65,11 +65,13 @@ jobs:
           ADMOB_BANNER_ID: ${{ vars.ADMOB_BANNER_ID }}
           ADMOB_REWARDED_ID: ${{ vars.ADMOB_REWARDED_ID }}
           ADMOB_NATIVE_ID: ${{ vars.ADMOB_NATIVE_ID }}
+          TESTER_PRO: ${{ vars.TESTER_PRO }}
         run: |
           if [ -n "$ADMOB_APP_ID" ]; then echo "ADMOB_APP_ID=${ADMOB_APP_ID}" >> local.properties; fi
           if [ -n "$ADMOB_BANNER_ID" ]; then echo "ADMOB_BANNER_ID=${ADMOB_BANNER_ID}" >> local.properties; fi
           if [ -n "$ADMOB_REWARDED_ID" ]; then echo "ADMOB_REWARDED_ID=${ADMOB_REWARDED_ID}" >> local.properties; fi
           if [ -n "$ADMOB_NATIVE_ID" ]; then echo "ADMOB_NATIVE_ID=${ADMOB_NATIVE_ID}" >> local.properties; fi
+          if [ -n "$TESTER_PRO" ]; then echo "TESTER_PRO=${TESTER_PRO}" >> local.properties; fi
           if [ -n "$UPLOAD_KEYSTORE_B64" ]; then
             echo "$UPLOAD_KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/upload.jks"
             {
@@ -121,6 +123,19 @@ jobs:
             echo "ready=true" >> "$GITHUB_OUTPUT"
           else
             echo "::notice::Play upload skipped: add the PLAY_SERVICE_ACCOUNT_JSON secret to upload automatically."
+          fi
+
+      # Closed-test builds unlock Pro for every tester (TESTER_PRO, on unless the repo variable says
+      # "false"). Such a bundle must never reach the production track.
+      - name: Block tester Pro on production
+        if: steps.play.outputs.ready == 'true'
+        env:
+          TRACK: ${{ vars.PLAY_TRACK || 'alpha' }}
+          TESTER_PRO: ${{ vars.TESTER_PRO }}
+        run: |
+          if [ "$TRACK" = "production" ] && [ "$TESTER_PRO" != "false" ]; then
+            echo "::error::This bundle gives every user Pro for free. Set the repo variable TESTER_PRO=false before a production upload."
+            exit 1
           fi
 
       - name: Upload to Play closed test
