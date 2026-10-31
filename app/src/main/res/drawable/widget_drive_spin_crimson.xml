@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Spins the Ampli Drive widget CD: a ProgressBar drives the level, which maps to 0..360 degrees. -->
+<rotate xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/widget_drive_disc_crimson"
+    android:fromDegrees="0" android:toDegrees="360"
+    android:pivotX="50%" android:pivotY="50%" />

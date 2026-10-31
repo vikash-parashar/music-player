@@ -113,6 +113,30 @@
                 android:resource="@xml/ampli_widget_info" />
         </receiver>
 
+        <!-- Ampli Drive widgets: the Car mode look in two colour sets, picked from the widget list. -->
+        <receiver
+            android:name=".widget.DriveCrimsonReceiver"
+            android:exported="true"
+            android:label="@string/widget_drive_crimson">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/ampli_drive_widget_crimson_info" />
+        </receiver>
+        <receiver
+            android:name=".widget.DriveOrangeReceiver"
+            android:exported="true"
+            android:label="@string/widget_drive_orange">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/ampli_drive_widget_orange_info" />
+        </receiver>
+
         <!-- Lyric cards: hands the picture to WhatsApp, Instagram or the share sheet. -->
         <provider
             android:name="androidx.core.content.FileProvider"
