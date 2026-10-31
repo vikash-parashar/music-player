@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="bar_style_title">Bar style</string>
+    <string name="bar_style_minimal">Minimal line</string>
+    <string name="bar_style_ruler">Tuner ruler</string>
+    <string name="bar_style_ember">Ember glow</string>
+    <string name="bar_style_steps">Steps</string>
+    <string name="bar_style_groove">Soft groove</string>
+    <string name="bar_style_knobs">Twin knobs</string>
+    <string name="bar_speed">Speed</string>
+    <string name="bar_pitch">Pitch</string>
+    <string name="pstyle_car">Car</string>
+    <string name="car_lights_eq">Equalizer wall</string>
+    <string name="car_lights_headlights">Headlight flare</string>
+    <string name="car_lights_hazard">Hazard blink</string>
+    <string name="car_lights_underglow">Neon underglow</string>
+    <string name="car_lights_bar">Red light bar</string>
+    <string name="car_lights_ripples">Wet floor ripples</string>
+    <string name="car_lights_beams">Night drive beams</string>
+    <string name="car_lights_bounce">Bass bounce</string>
+    <string name="car_lights_club">Club lights</string>
+    <string name="car_lights_calm">Calm breathing</string>
+</resources>

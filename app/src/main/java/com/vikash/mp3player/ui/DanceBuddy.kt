@@ -218,7 +218,7 @@ private fun beat(
 }
 
 /** Rough time from decoded audio to sound: about 150 ms on the phone, about 300 ms more over Bluetooth. */
-private fun outputDelayMs(context: Context): Long {
+internal fun outputDelayMs(context: Context): Long {
     val am = context.getSystemService(Context.AUDIO_SERVICE) as? android.media.AudioManager ?: return 150L
     val bluetooth = runCatching {
         am.getDevices(android.media.AudioManager.GET_DEVICES_OUTPUTS).any {

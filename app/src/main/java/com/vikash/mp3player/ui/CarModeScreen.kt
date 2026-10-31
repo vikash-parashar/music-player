@@ -198,28 +198,29 @@ fun CarModeScreen(
             }
         }
         val info: @Composable () -> Unit = {
+            // Left-aligned under the DRIVE headline; Oswald is narrow and bold, easy to read at a glance.
             Column {
                 if (activeMood != null) {
                     Text(
-                        stringResource(R.string.car_playing_from, activeLabel), color = Color.White.copy(alpha = 0.5f), fontSize = 12.sp,
-                        textAlign = TextAlign.Center, maxLines = 1, overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.fillMaxWidth().padding(bottom = 2.dp),
+                        stringResource(R.string.car_playing_from, activeLabel).uppercase(), color = Color.White.copy(alpha = 0.5f),
+                        fontSize = 11.sp, letterSpacing = 1.2.sp, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.padding(bottom = 2.dp),
                     )
                 }
                 Text(
                     current?.title ?: stringResource(R.string.car_nothing_playing),
-                    color = CarPale, fontSize = 28.sp, fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center, maxLines = 1, overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.fillMaxWidth(),
+                    color = CarPale, fontFamily = CarTitleFont, fontWeight = FontWeight.Bold,
+                    fontSize = 30.sp, lineHeight = 34.sp, maxLines = 2, overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    heard ?: current?.artist ?: stringResource(if (voiceAvailable) R.string.car_tap_mic else R.string.car_swipe_short),
-                    color = if (heard != null) Color(0xFFE57373) else CarPale.copy(alpha = 0.65f), fontSize = 17.sp,
-                    textAlign = TextAlign.Center, maxLines = 1, overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.fillMaxWidth().padding(top = 2.dp),
+                    (heard ?: current?.artist ?: stringResource(if (voiceAvailable) R.string.car_tap_mic else R.string.car_swipe_short)).uppercase(),
+                    color = if (heard != null) Color(0xFFE57373) else CarPale.copy(alpha = 0.65f),
+                    fontFamily = CarTitleFont, fontWeight = FontWeight.Medium, fontSize = 14.sp, letterSpacing = 1.5.sp,
+                    maxLines = 1, overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(top = 4.dp),
                 )
                 Box(
-                    Modifier.fillMaxWidth().padding(start = 6.dp, end = 6.dp, top = 14.dp).height(4.dp)
+                    Modifier.fillMaxWidth().padding(top = 12.dp).height(4.dp)
                         .clip(CircleShape).background(CarGreen.copy(alpha = 0.45f)),
                 ) {
                     Box(Modifier.fillMaxWidth(progress).fillMaxHeight().clip(CircleShape).background(CarRed))
@@ -274,19 +275,21 @@ fun CarModeScreen(
         BoxWithConstraints(Modifier.fillMaxSize()) {
             val landscape = maxWidth > maxHeight * 1.15f
             // A green coupe under a red light beam; the controls sit on the dark side of the picture.
-            Image(
-                painterResource(R.drawable.car_hero), null,
-                contentScale = ContentScale.Crop,
-                alignment = if (landscape) Alignment.CenterStart else Alignment.TopCenter,
-                modifier = if (landscape) Modifier.fillMaxHeight().fillMaxWidth(0.72f)
-                    else Modifier.fillMaxWidth().fillMaxHeight(0.42f),
-            )
-            Box(
-                Modifier.fillMaxSize().background(
-                    if (landscape) Brush.horizontalGradient(0f to Color.Transparent, 0.42f to CarBg.copy(alpha = 0.55f), 0.62f to CarBg.copy(alpha = 0.92f), 1f to CarBg)
-                    else Brush.verticalGradient(0f to CarBg.copy(alpha = 0.35f), 0.3f to Color.Transparent, 0.42f to CarBg.copy(alpha = 0.85f), 0.5f to CarBg),
-                ),
-            )
+            // Landscape: the car fills the left side behind everything. Portrait draws it in its own
+            // clear area at the top instead (below), so no cards ever sit on top of it.
+            if (landscape) {
+                Image(
+                    painterResource(R.drawable.car_hero), null,
+                    contentScale = ContentScale.Crop,
+                    alignment = Alignment.CenterStart,
+                    modifier = Modifier.fillMaxHeight().fillMaxWidth(0.72f),
+                )
+                Box(
+                    Modifier.fillMaxSize().background(
+                        Brush.horizontalGradient(0f to Color.Transparent, 0.42f to CarBg.copy(alpha = 0.55f), 0.62f to CarBg.copy(alpha = 0.92f), 1f to CarBg),
+                    ),
+                )
+            }
         }
         BoxWithConstraints(Modifier.fillMaxSize().systemBarsPadding()) {
             val shortScreen = maxHeight < 480.dp
@@ -315,31 +318,51 @@ fun CarModeScreen(
                 }
             } else {
                 Column(Modifier.fillMaxSize().padding(horizontal = 20.dp, vertical = 12.dp)) {
-                    topBar()
+                    // The car gets the whole top of the screen, edge to edge, with only the clock,
+                    // the close button and the headline on it.
+                    Box(Modifier.fillMaxWidth().weight(1f).bleed(20.dp).clip(RoundedCornerShape(bottomStart = 28.dp, bottomEnd = 28.dp))) {
+                        Image(
+                            painterResource(R.drawable.car_hero), null,
+                            contentScale = ContentScale.Crop,
+                            // The car sits left of centre in the picture; keep its nose in frame on narrow phones.
+                            alignment = androidx.compose.ui.BiasAlignment(-0.55f, 0.2f),
+                            modifier = Modifier.matchParentSize(),
+                        )
+                        Box(
+                            Modifier.matchParentSize().background(
+                                Brush.verticalGradient(
+                                    0f to CarBg.copy(alpha = 0.6f), 0.2f to Color.Transparent,
+                                    0.62f to Color.Transparent, 1f to CarBg,
+                                ),
+                            ),
+                        )
+                        Column(Modifier.fillMaxSize().padding(horizontal = 20.dp)) {
+                            topBar()
+                            Spacer(Modifier.weight(1f))
+                            headline(1f)
+                        }
+                    }
+                    if (moods.isNotEmpty()) {
+                        Spacer(Modifier.height(14.dp))
+                        CarMoodRow(moods, activeMood, bleed = 20.dp, onPick = pickMood)
+                    }
+                    Spacer(Modifier.height(16.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        stage(Modifier.size(96.dp))
+                        Spacer(Modifier.width(16.dp))
+                        Box(Modifier.weight(1f)) { info() }
+                    }
+                    Spacer(Modifier.height(16.dp))
+                    dock(88.dp)
+                    if (voiceAvailable) Spacer(Modifier.height(12.dp))
+                    mic()
                     if (!promoClosed) {
-                        Spacer(Modifier.height(10.dp))
+                        Spacer(Modifier.height(12.dp))
                         CarHubPromoCard(
                             onOpen = { CarHubPromo.open(context) },
                             onClose = { promoClosed = true; CarHubPromo.close(context) },
                         )
-                    }
-                    if (moods.isNotEmpty()) {
-                        Spacer(Modifier.height(12.dp))
-                        CarMoodRow(moods, activeMood, bleed = 20.dp, onPick = pickMood)
-                    }
-                    // The car shows through here; the headline sits at its foot.
-                    Box(Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.BottomStart) { headline(1f) }
-                    Spacer(Modifier.height(10.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        stage(Modifier.size(104.dp))
-                        Spacer(Modifier.width(12.dp))
-                        Box(Modifier.weight(1f)) { info() }
-                    }
-                    Spacer(Modifier.height(18.dp))
-                    dock(96.dp)
-                    if (voiceAvailable) Spacer(Modifier.height(14.dp))
-                    mic()
-                    Text(
+                    } else Text(
                         stringResource(R.string.car_swipe_short), color = Color.White.copy(alpha = 0.35f), fontSize = 12.sp,
                         textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
                     )
@@ -348,6 +371,12 @@ fun CarModeScreen(
         }
     }
 }
+
+/** Narrow, bold display face for the song in Car mode (Oswald, SIL Open Font License). */
+internal val CarTitleFont = androidx.compose.ui.text.font.FontFamily(
+    androidx.compose.ui.text.font.Font(R.font.oswald_medium, FontWeight.Medium),
+    androidx.compose.ui.text.font.Font(R.font.oswald_bold, FontWeight.Bold),
+)
 
 /** Round dark key in the top bar (buddy, close). */
 @Composable

@@ -87,9 +87,12 @@ fun PlayerPicture(
     onPrevious: () -> Unit,
     modifier: Modifier = Modifier,
     intro: () -> Float = { 1f },
+    isPro: Boolean = false,
+    onGetPro: () -> Unit = {},
 ) {
     val progress = { positionMs.toFloat() / durationMs.coerceAtLeast(1) }
     when (style) {
+        PlayerStyle.Car -> CarBeatView(isPlaying, isPro, onGetPro, modifier)
         PlayerStyle.Record -> RecordPlayerView(artworkUri, title, artist, isPlaying, progress, modifier, intro)
         PlayerStyle.Cassette -> CassetteView(artworkUri, title, artist, isPlaying, progress, modifier)
         PlayerStyle.Boombox -> BoomboxView(artworkUri, title, isPlaying, modifier)
