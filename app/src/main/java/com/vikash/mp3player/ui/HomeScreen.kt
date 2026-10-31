@@ -31,6 +31,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -79,7 +80,8 @@ fun HomeScreen(
     onOpenStories: () -> Unit = {},
 ) {
     val context = LocalContext.current
-    val stories by com.vikash.mp3player.data.StoriesRepository.series.collectAsStateWithLifecycle()
+    val allStories by com.vikash.mp3player.data.StoriesRepository.series.collectAsStateWithLifecycle()
+    val stories = remember(allStories) { com.vikash.mp3player.data.StoriesRepository.orderedFor(context, allStories) }
     LaunchedEffect(Unit) { com.vikash.mp3player.data.StoriesRepository.load(context) }
     val labels = MixEngine.Labels(
         dailyMix = { context.getString(R.string.home_daily_mix, it) },

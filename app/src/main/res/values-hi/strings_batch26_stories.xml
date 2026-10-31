@@ -4,7 +4,7 @@
     <string name="discover_stories">Ampli कहानियाँ</string>
     <string name="stories_kicker">Ampli कहानियाँ</string>
     <string name="stories_title">कहानियाँ</string>
-    <string name="stories_subtitle">छोटे एपिसोड वाली हिंदी ऑडियो सीरीज़। पहले एपिसोड मुफ़्त हैं।</string>
+    <string name="stories_subtitle">रामायण, महाभारत और कई ऑडियो सीरीज़, छोटे एपिसोड में। पहले एपिसोड मुफ़्त हैं।</string>
     <string name="stories_genre_kids">परिवार</string>
     <string name="stories_genre_fantasy">फ़ैंटेसी</string>
     <string name="stories_genre_horror">हॉरर</string>
@@ -31,4 +31,6 @@
     <string name="stories_ai_note">AI आवाज़ों में सुनाई गई। कहानियाँ Ampli की अपनी हैं या पुराने सार्वजनिक क्लासिक्स की नई प्रस्तुति।</string>
     <string name="home_stories_title">Ampli कहानियाँ</string>
     <string name="home_stories_more">सभी कहानियाँ</string>
+    <string name="stories_genre_epic">महाकाव्य</string>
+    <string name="stories_genre_faith">आस्था</string>
 </resources>

@@ -82,6 +82,8 @@ private fun genreLabel(genre: String) = when (genre) {
     "kids" -> stringResource(R.string.stories_genre_kids)
     "fantasy" -> stringResource(R.string.stories_genre_fantasy)
     "horror" -> stringResource(R.string.stories_genre_horror)
+    "epic" -> stringResource(R.string.stories_genre_epic)
+    "faith" -> stringResource(R.string.stories_genre_faith)
     else -> genre.replaceFirstChar { it.uppercase() }
 }
 
@@ -98,7 +100,8 @@ fun StoriesSection(
     onBuyPass: () -> Unit,
 ) {
     val context = LocalContext.current
-    val series by StoriesRepository.series.collectAsStateWithLifecycle()
+    val allSeries by StoriesRepository.series.collectAsStateWithLifecycle()
+    val series = remember(allSeries) { StoriesRepository.orderedFor(context, allSeries) }
     LaunchedEffect(Unit) { StoriesRepository.load(context) }
     val access = remember { StoryAccess(context) }
     val unlocked by access.unlocked.collectAsStateWithLifecycle()
