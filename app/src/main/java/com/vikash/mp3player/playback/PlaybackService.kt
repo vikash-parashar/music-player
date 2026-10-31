@@ -148,6 +148,10 @@ class PlaybackService : MediaLibraryService() {
                 )
             }
 
+            override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+                shake?.update()
+            }
+
             override fun onIsPlayingChanged(isPlaying: Boolean) {
                 shake?.update()
                 if (!isPlaying) resume.save(player)
@@ -162,6 +166,7 @@ class PlaybackService : MediaLibraryService() {
             }
 
             override fun onPlaybackStateChanged(playbackState: Int) {
+                shake?.update()
                 if (playbackState == Player.STATE_READY && player.duration > 0) trackedDurationMs = player.duration
                 // The length is often unknown at the song change; the widget's "/ 4:28" needs it.
                 if (playbackState == Player.STATE_READY) refreshWidget(player)
