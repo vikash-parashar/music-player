@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="bar_style_title">बार स्टाइल</string>
+    <string name="bar_style_minimal">मिनिमल लाइन</string>
+    <string name="bar_style_ruler">ट्यूनर रूलर</string>
+    <string name="bar_style_ember">एम्बर ग्लो</string>
+    <string name="bar_style_steps">स्टेप्स</string>
+    <string name="bar_style_groove">सॉफ्ट ग्रूव</string>
+    <string name="bar_style_knobs">ट्विन नॉब्स</string>
+    <string name="bar_speed">स्पीड</string>
+    <string name="bar_pitch">पिच</string>
+    <string name="pstyle_car">कार</string>
+    <string name="car_lights_eq">इक्वलाइज़र वॉल</string>
+    <string name="car_lights_headlights">हेडलाइट फ्लेयर</string>
+    <string name="car_lights_hazard">हैज़र्ड ब्लिंक</string>
+    <string name="car_lights_underglow">नियॉन अंडरग्लो</string>
+    <string name="car_lights_bar">रेड लाइट बार</string>
+    <string name="car_lights_ripples">गीली ज़मीन की लहरें</string>
+    <string name="car_lights_beams">नाइट ड्राइव बीम</string>
+    <string name="car_lights_bounce">बेस बाउंस</string>
+    <string name="car_lights_club">क्लब लाइट्स</string>
+    <string name="car_lights_calm">शांत साँस</string>
+</resources>

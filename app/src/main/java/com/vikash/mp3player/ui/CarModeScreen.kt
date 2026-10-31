@@ -373,7 +373,7 @@ fun CarModeScreen(
 }
 
 /** Narrow, bold display face for the song in Car mode (Oswald, SIL Open Font License). */
-private val CarTitleFont = androidx.compose.ui.text.font.FontFamily(
+internal val CarTitleFont = androidx.compose.ui.text.font.FontFamily(
     androidx.compose.ui.text.font.Font(R.font.oswald_medium, FontWeight.Medium),
     androidx.compose.ui.text.font.Font(R.font.oswald_bold, FontWeight.Bold),
 )

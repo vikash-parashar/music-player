@@ -1,7 +1,11 @@
 package com.vikash.mp3player.data
 
-/** The picture at the top of Now Playing. Record is free; the rest need Pro (free users get a short preview). */
+/**
+ * The picture at the top of Now Playing. Car (the default) and Record are free; the rest need Pro
+ * (free users get a short preview).
+ */
 enum class PlayerStyle(val id: String, val pro: Boolean) {
+    Car("car", false),
     Record("record", false),
     Cassette("cassette", true),
     Boombox("boombox", true),
@@ -13,6 +17,6 @@ enum class PlayerStyle(val id: String, val pro: Boolean) {
     ClickWheel("wheel", true);
 
     companion object {
-        fun from(id: String?): PlayerStyle = entries.firstOrNull { it.id == id } ?: Record
+        fun from(id: String?): PlayerStyle = entries.firstOrNull { it.id == id } ?: Car
     }
 }

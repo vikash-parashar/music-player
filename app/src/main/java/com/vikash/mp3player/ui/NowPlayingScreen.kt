@@ -4,6 +4,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -98,7 +99,7 @@ fun NowPlayingScreen(
     introToken: Int = 0,
     introShown: Int = 0,
     onIntroShown: (Int) -> Unit = {},
-    playerStyle: com.vikash.mp3player.data.PlayerStyle = com.vikash.mp3player.data.PlayerStyle.Record,
+    playerStyle: com.vikash.mp3player.data.PlayerStyle = com.vikash.mp3player.data.PlayerStyle.Car,
     stylesUnlocked: Boolean = false,
     onPickStyle: (com.vikash.mp3player.data.PlayerStyle) -> Unit = {},
     /** Free users: a native ad card under the controls. */
@@ -254,7 +255,7 @@ fun NowPlayingScreen(
                 } else {
                     // The chosen player style; Pro styles show the record when Pro isn't active,
                     // except during a free user's short Pro preview (or its unlock card that follows).
-                    val chosen = if (!playerStyle.pro || stylesUnlocked) playerStyle else com.vikash.mp3player.data.PlayerStyle.Record
+                    val chosen = if (!playerStyle.pro || stylesUnlocked) playerStyle else com.vikash.mp3player.data.PlayerStyle.Car
                     val style = previewStyle ?: lockedStyle ?: chosen
                     androidx.compose.foundation.layout.Box(Modifier.fillMaxWidth().weight(1f).padding(vertical = 8.dp)) {
                     PlayerPicture(
@@ -272,6 +273,8 @@ fun NowPlayingScreen(
                         onPrevious = { player.previous() },
                         modifier = Modifier.fillMaxSize(),
                         intro = { intro.value },
+                        isPro = isPro,
+                        onGetPro = onGetPro,
                     )
                     if (previewStyle != null) StylePreviewBadge(previewLeft, Modifier.align(Alignment.TopStart))
                     lockedStyle?.let { locked ->
@@ -387,7 +390,7 @@ fun NowPlayingScreen(
                 )
                 Spacer(Modifier.width(8.dp))
                 FilterChip(
-                    selected = playerStyle != com.vikash.mp3player.data.PlayerStyle.Record,
+                    selected = playerStyle != com.vikash.mp3player.data.PlayerStyle.Car,
                     onClick = { showLyrics = false; showStyles = true },
                     leadingIcon = { Icon(Icons.Default.Palette, null, Modifier.size(18.dp)) },
                     label = { Text(stringResource(R.string.pstyle_chip)) },
@@ -457,7 +460,7 @@ fun NowPlayingScreen(
         },
     )
     if (showSound) SoundSheet(isPro, onGetPro) { showSound = false }
-    if (showSpeed) SpeedPitchDialog(state.speed, state.pitch, player::setSpeedAndPitch) { showSpeed = false }
+    if (showSpeed) SpeedPitchDialog(state.speed, state.pitch, isPro, { showSpeed = false; onGetPro() }, player::setSpeedAndPitch) { showSpeed = false }
     if (showCast) CastDialog(isPro, onGetPro) { showCast = false }
     if (showBookmarks) BookmarksDialog(
         positionMs = position,
@@ -470,22 +473,66 @@ fun NowPlayingScreen(
 }
 
 @Composable
-private fun SpeedPitchDialog(speed: Float, pitch: Float, onChange: (Float, Float) -> Unit, onDismiss: () -> Unit) {
+private fun SpeedPitchDialog(
+    speed: Float,
+    pitch: Float,
+    isPro: Boolean,
+    onGetPro: () -> Unit,
+    onChange: (Float, Float) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    var barStyle by remember { mutableStateOf(SpeedBarStyle.current(context, isPro)) }
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.player_speed_pitch)) },
         text = {
-            Column {
-                Text(stringResource(R.string.player_speed_value, "%.2f".format(speed)))
-                Slider(value = speed, onValueChange = { onChange(snap(it), pitch) }, valueRange = 0.5f..2f)
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            Column(Modifier.verticalScroll(rememberScrollState())) {
+                if (barStyle == SpeedBarStyle.KNOBS) {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+                        Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
+                            SpeedBar(barStyle, speed, { onChange(it, pitch) })
+                            Text(stringResource(R.string.bar_speed), style = MaterialTheme.typography.labelMedium)
+                        }
+                        Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
+                            SpeedBar(barStyle, pitch, { onChange(speed, it) })
+                            Text(stringResource(R.string.bar_pitch), style = MaterialTheme.typography.labelMedium)
+                        }
+                    }
+                } else {
+                    Text(stringResource(R.string.player_speed_value, "%.2f".format(speed)))
+                    SpeedBar(barStyle, speed, { onChange(it, pitch) })
+                }
+                Row(
+                    Modifier.horizontalScroll(rememberScrollState()).padding(top = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
                     listOf(0.75f, 1f, 1.25f, 1.5f).forEach { v ->
                         FilterChip(selected = speed == v, onClick = { onChange(v, pitch) }, label = { Text("${v}x") })
                     }
                 }
-                Spacer(Modifier.height(12.dp))
-                Text(stringResource(R.string.player_pitch_value, "%.2f".format(pitch)))
-                Slider(value = pitch, onValueChange = { onChange(speed, snap(it)) }, valueRange = 0.5f..2f)
+                if (barStyle != SpeedBarStyle.KNOBS) {
+                    Spacer(Modifier.height(12.dp))
+                    Text(stringResource(R.string.player_pitch_value, "%.2f".format(pitch)))
+                    SpeedBar(barStyle, pitch, { onChange(speed, it) })
+                }
+                Spacer(Modifier.height(14.dp))
+                Text(stringResource(R.string.bar_style_title), style = MaterialTheme.typography.labelLarge)
+                Row(
+                    Modifier.horizontalScroll(rememberScrollState()).padding(top = 6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    SpeedBarStyle.entries.forEach { st ->
+                        val locked = !isPro && st != SpeedBarStyle.MINIMAL
+                        FilterChip(
+                            selected = barStyle == st,
+                            onClick = {
+                                if (locked) onGetPro() else { barStyle = st; SpeedBarStyle.save(context, st) }
+                            },
+                            label = { Text(stringResource(st.label) + if (locked) " · Pro" else "") },
+                        )
+                    }
+                }
             }
         },
         confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.common_done)) } },

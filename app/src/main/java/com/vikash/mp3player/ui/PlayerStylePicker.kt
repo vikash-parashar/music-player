@@ -30,6 +30,7 @@ import com.vikash.mp3player.data.PlayerStyle
 
 @StringRes
 fun playerStyleLabel(style: PlayerStyle): Int = when (style) {
+    PlayerStyle.Car -> R.string.pstyle_car
     PlayerStyle.Record -> R.string.pstyle_record
     PlayerStyle.Cassette -> R.string.pstyle_cassette
     PlayerStyle.Boombox -> R.string.pstyle_boombox
@@ -42,6 +43,7 @@ fun playerStyleLabel(style: PlayerStyle): Int = when (style) {
 }
 
 private fun styleIcon(style: PlayerStyle): String = when (style) {
+    PlayerStyle.Car -> "🏎"
     PlayerStyle.Record -> "💿"
     PlayerStyle.Cassette -> "📼"
     PlayerStyle.Boombox -> "📻"
