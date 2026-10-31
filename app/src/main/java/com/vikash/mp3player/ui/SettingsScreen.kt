@@ -111,7 +111,7 @@ fun SettingsScreen(
         AppearanceCard(themeMode, onThemeMode)
         LiteModeCard()
         ProLookCard(proUnlocked, onRemoveAds)
-        SeekStyleCard(seekStyle, isPro = adsRemoved, onPick = onSeekStyle, onGetPro = onRemoveAds)
+        SeekStyleCard(seekStyle, isPro = proUnlocked, onPick = onSeekStyle, onGetPro = onRemoveAds)
         SleepTimerCard()
         FadeCard()
         EvenVolumeCard()

@@ -35,11 +35,14 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
 
     private val prefs = context.getSharedPreferences("billing", Context.MODE_PRIVATE)
 
-    /** Closed-test builds give testers Pro without a purchase (see TESTER_PRO in build.gradle.kts). */
-    private val testerPro: Boolean
+    /**
+     * Closed-test builds give testers every Pro feature without a purchase (see TESTER_PRO in
+     * build.gradle.kts). Ads stay on for them: only a real purchase removes ads.
+     */
+    val testerPro: Boolean
         get() = BuildConfig.TESTER_PRO && System.currentTimeMillis() < BuildConfig.TESTER_PRO_UNTIL
 
-    private val _adsRemoved = MutableStateFlow(prefs.getBoolean(KEY_ADS_REMOVED, false) || testerPro)
+    private val _adsRemoved = MutableStateFlow(prefs.getBoolean(KEY_ADS_REMOVED, false))
     val adsRemoved: StateFlow<Boolean> = _adsRemoved.asStateFlow()
 
     /** Localised price such as "₹149.00", or null until Play answers. */
@@ -276,7 +279,7 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
             if (result.responseCode != BillingClient.BillingResponseCode.OK) return@queryPurchasesAsync
             val owned = purchases.any { it.ownsRemoveAds() }
             // Debug builds keep the test switch on; Play never knows about it.
-            setAdsRemoved(owned || testerPro || (BuildConfig.DEBUG && prefs.getBoolean(KEY_TEST_PRO, false)))
+            setAdsRemoved(owned || (BuildConfig.DEBUG && prefs.getBoolean(KEY_TEST_PRO, false)))
             // Play drops a cancelled or failed UPI payment from this list, so "Payment pending" clears here.
             _pending.value = purchases.any { it.purchaseState == Purchase.PurchaseState.PENDING }
             purchases.forEach(::handlePurchase)
@@ -370,7 +373,7 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
     fun setTestPro(value: Boolean) {
         if (BuildConfig.DEBUG) {
             prefs.edit().putBoolean(KEY_TEST_PRO, value).apply()
-            setAdsRemoved(value || testerPro)
+            setAdsRemoved(value)
             setStoriesPass(value || testerPro)
         }
     }

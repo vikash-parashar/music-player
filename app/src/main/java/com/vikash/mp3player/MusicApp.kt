@@ -35,10 +35,10 @@ class MusicApp : Application(), SingletonImageLoader.Factory {
 
     private val appScope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.SupervisorJob() + kotlinx.coroutines.Dispatchers.Main)
 
-    /** Pro sound and themes: bought, or inside the 24-hour trial. Ad removal still needs the purchase. */
+    /** Pro features: bought, inside the 24-hour trial, or a closed-test tester. Ad removal still needs the purchase. */
     val proUnlocked: kotlinx.coroutines.flow.StateFlow<Boolean> by lazy {
-        kotlinx.coroutines.flow.combine(billing.adsRemoved, com.vikash.mp3player.monetization.ProTrial.active) { bought, trial -> bought || trial }
-            .stateIn(appScope, kotlinx.coroutines.flow.SharingStarted.Eagerly, billing.adsRemoved.value || com.vikash.mp3player.monetization.ProTrial.isActive())
+        kotlinx.coroutines.flow.combine(billing.adsRemoved, com.vikash.mp3player.monetization.ProTrial.active) { bought, trial -> bought || trial || billing.testerPro }
+            .stateIn(appScope, kotlinx.coroutines.flow.SharingStarted.Eagerly, billing.adsRemoved.value || billing.testerPro || com.vikash.mp3player.monetization.ProTrial.isActive())
     }
 
     override fun onCreate() {
