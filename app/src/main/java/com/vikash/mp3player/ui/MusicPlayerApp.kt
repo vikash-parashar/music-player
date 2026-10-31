@@ -16,12 +16,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LibraryMusic
-import androidx.compose.material.icons.filled.Public
+import androidx.compose.material.icons.filled.AutoStories
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.VideoLibrary
+import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.LibraryMusic
-import androidx.compose.material.icons.outlined.Public
+import androidx.compose.material.icons.outlined.AutoStories
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.VideoLibrary
 import androidx.compose.material3.AlertDialog
@@ -93,6 +95,8 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     val tipPrices by vm.billing.tipPrices.collectAsStateWithLifecycle()
     val tipsReceived by vm.billing.tipsReceived.collectAsStateWithLifecycle()
     val paymentPending by vm.billing.pending.collectAsStateWithLifecycle()
+    val storiesPass by vm.billing.storiesPass.collectAsStateWithLifecycle()
+    val passPrice by vm.billing.passPrice.collectAsStateWithLifecycle()
     var showVisualizer by rememberSaveable { mutableStateOf(false) }
     val discAnim by app.prefs.discAnimation.collectAsStateWithLifecycle()
     val playerStyle by app.prefs.playerStyle.collectAsStateWithLifecycle()
@@ -197,6 +201,15 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
             else -> Toast.makeText(context, context.getString(R.string.tip_unavailable), Toast.LENGTH_SHORT).show()
         }
     }
+    val onBuyPass: () -> Unit = {
+        val activity = context as? android.app.Activity
+        when (if (activity == null) null else vm.billing.purchaseStoriesPass(activity)) {
+            com.vikash.mp3player.monetization.BillingManager.Buy.OPENED -> Unit
+            com.vikash.mp3player.monetization.BillingManager.Buy.LOADING ->
+                Toast.makeText(context, context.getString(R.string.billing_loading), Toast.LENGTH_SHORT).show()
+            else -> Toast.makeText(context, context.getString(R.string.stories_pass_unavailable), Toast.LENGTH_SHORT).show()
+        }
+    }
     val snackbar = remember { SnackbarHostState() }
 
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
@@ -248,7 +261,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
 
     // Lite mode: the CDs stand still, so no frame loop runs while music plays.
     val discAngle: State<Float> = if (liteMode) remember { mutableFloatStateOf(0f) } else rememberDiscSpin(vm.player)
-    CompositionLocalProvider(LocalIsPlaying provides player.isPlaying, LocalDiscAngle provides discAngle) {
+    CompositionLocalProvider(LocalIsPlaying provides player.isPlaying, LocalDiscAngle provides discAngle, LocalStartRadio provides { s: Song -> vm.startRadio(s); vm.notify(context.getString(R.string.radio_started, s.title)) }) {
     Box(Modifier.fillMaxSize().skinBackdrop()) {
         Scaffold(
             containerColor = skinScreenColor(),
@@ -271,8 +284,9 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                     )
                     CompactNavBar(
                         tabs = listOf(
+                            NavTab(stringResource(R.string.nav_home), Icons.Outlined.Home, Icons.Filled.Home),
                             NavTab(stringResource(R.string.nav_library), Icons.Outlined.LibraryMusic, Icons.Filled.LibraryMusic),
-                            NavTab(stringResource(R.string.nav_online), Icons.Outlined.Public, Icons.Filled.Public),
+                            NavTab(stringResource(R.string.nav_stories), Icons.Outlined.AutoStories, Icons.Filled.AutoStories),
                             NavTab(stringResource(R.string.nav_videos), Icons.Outlined.VideoLibrary, Icons.Filled.VideoLibrary),
                             NavTab(stringResource(R.string.nav_settings), Icons.Outlined.Settings, Icons.Filled.Settings),
                         ),
@@ -284,7 +298,16 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
         ) { padding ->
             Box(Modifier.padding(padding)) {
                 when (tab) {
-                    0 -> LibraryScreen(
+                    0 -> HomeScreen(
+                        songs = library.songs,
+                        stats = stats,
+                        favorites = favorites,
+                        isPro = proUnlocked,
+                        onPlay = playWithDisc,
+                        onGetPro = openPro,
+                        onOpenStories = { tab = 2 },
+                    )
+                    1 -> LibraryScreen(
                         state = library,
                         hasPermission = hasPermission,
                         currentId = currentId,
@@ -308,10 +331,19 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                         sort = songSort,
                         onSort = vm.prefs::setSongSort,
                     )
-                    1 -> DiscoverScreen(
+                    2 -> DiscoverScreen(
                         currentId = currentId,
                         actions = discoverActions,
                         showMusic = online.configured,
+                        stories = {
+                            StoriesSection(
+                                currentId = currentId,
+                                pass = storiesPass,
+                                passPrice = passPrice,
+                                onPlay = vm.player::play,
+                                onBuyPass = onBuyPass,
+                            )
+                        },
                     ) {
                         OnlineScreen(
                             state = online,
@@ -324,7 +356,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                             onDownload = { vm.download(it) },
                         )
                     }
-                    2 -> if (adsRemoved) VideosScreen(videos, onLoad = vm::loadVideos)
+                    3 -> if (adsRemoved) VideosScreen(videos, onLoad = vm::loadVideos)
                          else LockedVideos(price = price, onGetPro = openPro)
                     else -> SettingsScreen(
                         adsRemoved = adsRemoved, price = price, onRemoveAds = openPro,
@@ -382,6 +414,12 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                 stylesUnlocked = proUnlocked,
                 onPickStyle = app.prefs::setPlayerStyle,
                 showAd = !adsRemoved && adsReady,
+                onStartRadio = {
+                    val song = library.songs.firstOrNull { it.id == player.current?.mediaId }
+                    if (song != null) { vm.startRadio(song); vm.notify(context.getString(R.string.radio_started, song.title)) }
+                    else Toast.makeText(context, context.getString(R.string.radio_needs_local), Toast.LENGTH_SHORT).show()
+                },
+                onSmartShuffle = { on -> if (proUnlocked) vm.setSmartShuffle(on) else openPro() },
             )
         }
 

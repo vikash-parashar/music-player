@@ -15,7 +15,7 @@ class ResumePositions(context: Context) {
         val id = player.currentMediaItem?.mediaId ?: return
         val duration = player.duration
         // Audiobook chapters and podcast episodes always resume, even short ones.
-        val spoken = id.startsWith("librivox:") || id.startsWith("podcast:")
+        val spoken = id.startsWith("librivox:") || id.startsWith("podcast:") || id.startsWith("story:")
         if (duration < if (spoken) MIN_SPOKEN_MS else MIN_LENGTH_MS) return
         val pos = player.currentPosition
         // Near the start or the end there's nothing worth resuming.

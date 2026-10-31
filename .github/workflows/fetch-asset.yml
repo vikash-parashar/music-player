@@ -1,0 +1,31 @@
+name: Fetch design asset
+# Downloads images (for example AI-generated hero pictures) into the repo on the branch
+# where design/fetch-request.txt changes. Each line of that file is: <repo path> <https url>
+on:
+  push:
+    paths:
+      - design/fetch-request.txt
+permissions:
+  contents: write
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download
+        run: |
+          while read -r DEST URL; do
+            [ -z "$DEST" ] && continue
+            case "$DEST" in \#*) continue;; *..*|/*) echo "bad path $DEST"; exit 1;; esac
+            case "$URL" in https://*) ;; *) echo "bad url"; exit 1;; esac
+            mkdir -p "$(dirname "$DEST")"
+            curl -fsSL --max-filesize 20000000 -o "$DEST" "$URL"
+            file "$DEST"
+            git add "$DEST"
+          done < design/fetch-request.txt
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Add fetched design assets" || exit 0
+          git push

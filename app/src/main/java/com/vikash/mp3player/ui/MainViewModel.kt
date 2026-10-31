@@ -145,6 +145,32 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     val stats = musicApp.playStats.data
 
+    init {
+        // Keep the music going: song radio from the last song when a queue runs out.
+        player.radioSource = radio@{ seedId, exclude ->
+            if (!prefs.keepGoing.value) return@radio emptyList()
+            val all = library.value.songs
+            val seed = all.firstOrNull { it.id == seedId } ?: return@radio emptyList()
+            com.vikash.mp3player.data.MixEngine.radio(seed, all, stats.value, exclude)
+        }
+    }
+
+    /** "Start radio" from a song: the song, then similar songs, as its own queue. */
+    fun startRadio(song: Song) {
+        val all = library.value.songs
+        val rest = com.vikash.mp3player.data.MixEngine.radio(song, all, stats.value, setOf(song.id), 40)
+        player.startRadio(listOf(song) + rest, str(R.string.radio_queue_name, song.title))
+    }
+
+    /** Pro: Smart shuffle mixes suggested songs into the current queue. */
+    fun setSmartShuffle(on: Boolean) {
+        player.setSmartShuffle(on) { ids ->
+            val all = library.value.songs
+            val byId = all.associateBy { it.id }
+            com.vikash.mp3player.data.MixEngine.recommendFor(ids.mapNotNull { byId[it] }, all, stats.value, 15)
+        }
+    }
+
     fun clearStats() {
         musicApp.playStats.clear()
         _messages.tryEmit(str(R.string.msg_history_cleared))

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="nav_home">Home</string>
+    <string name="tab_genres">Genres</string>
+    <string name="genre_unknown">Unknown genre</string>
+    <string name="home_good_morning">Good morning</string>
+    <string name="home_good_afternoon">Good afternoon</string>
+    <string name="home_good_evening">Good evening</string>
+    <string name="home_good_night">Late night vibes</string>
+    <string name="home_greeting_sub">Made from your music, right on your phone</string>
+    <string name="home_made_for_you">Made for you</string>
+    <string name="home_daily_mix">Daily Mix %d</string>
+    <string name="home_and_more">%s and more</string>
+    <string name="home_jump_back">Jump back in</string>
+    <string name="home_your_lists">Your top lists</string>
+    <string name="home_on_repeat">On repeat</string>
+    <string name="home_on_repeat_sub">Songs you can\'t stop playing</string>
+    <string name="home_discover">Discover on your phone</string>
+    <string name="home_discover_sub">Songs you have never played, picked for your taste</string>
+    <string name="home_forgotten">Forgotten favourites</string>
+    <string name="home_forgotten_sub">Songs you loved, not heard lately</string>
+    <string name="home_new">New on your phone</string>
+    <string name="home_new_sub">Added in the last 30 days</string>
+    <string name="home_time_capsule">Time capsule</string>
+    <string name="home_decade">%ds</string>
+    <string name="home_unlock_pro">Unlock with Pro</string>
+    <string name="home_empty">Add songs to your phone and Home fills up with mixes made for you.</string>
+    <string name="song_start_radio">Start radio</string>
+    <string name="radio_queue_name">Radio: %s</string>
+    <string name="radio_started">Radio started from %s</string>
+    <string name="radio_needs_local">Radio works with songs on your phone</string>
+    <string name="smart_shuffle">Smart shuffle</string>
+    <string name="smart_shuffle_pick">Suggested for you</string>
+    <string name="keep_going_title">Keep the music going</string>
+    <string name="keep_going_desc">When your queue ends, similar songs from your phone keep playing.</string>
+</resources>

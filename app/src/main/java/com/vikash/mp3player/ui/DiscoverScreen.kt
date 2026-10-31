@@ -72,20 +72,28 @@ fun DiscoverScreen(
     actions: DiscoverActions,
     /** False hides the Music tab (no music licence in this build). */
     showMusic: Boolean,
+    /** Ampli Stories, the first section. */
+    stories: @Composable () -> Unit,
     music: @Composable () -> Unit,
 ) {
-    val first = if (showMusic) 0 else 1
-    var picked by rememberSaveable { mutableIntStateOf(first) }
-    val section = picked.coerceAtLeast(first)
+    // Sections in tab order: Stories, Music (when licensed), Audiobooks, Podcasts.
+    val order = buildList { add(3); if (showMusic) add(0); add(1); add(2) }
+    var picked by rememberSaveable { mutableIntStateOf(3) }
+    val section = if (picked in order) picked else 3
     Column(Modifier.fillMaxSize()) {
-        TabRow(selectedTabIndex = section - first) {
-            if (showMusic) {
-                Tab(selected = section == 0, onClick = { picked = 0 }, text = { Text(stringResource(R.string.discover_music)) })
+        TabRow(selectedTabIndex = order.indexOf(section)) {
+            order.forEach { s ->
+                val label = when (s) {
+                    3 -> R.string.discover_stories
+                    0 -> R.string.discover_music
+                    1 -> R.string.discover_audiobooks
+                    else -> R.string.discover_podcasts
+                }
+                Tab(selected = section == s, onClick = { picked = s }, text = { Text(stringResource(label), maxLines = 1) })
             }
-            Tab(selected = section == 1, onClick = { picked = 1 }, text = { Text(stringResource(R.string.discover_audiobooks)) })
-            Tab(selected = section == 2, onClick = { picked = 2 }, text = { Text(stringResource(R.string.discover_podcasts)) })
         }
         when (section) {
+            3 -> stories()
             0 -> music()
             1 -> AudiobooksSection(currentId, actions)
             else -> PodcastsSection(currentId, actions)

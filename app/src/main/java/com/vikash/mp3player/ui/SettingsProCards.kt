@@ -88,6 +88,25 @@ fun AutoPlayCard() {
     }
 }
 
+/** Free: when a queue ends, song radio keeps the music going (Spotify's Autoplay). */
+@Composable
+fun KeepGoingCard() {
+    val prefs = (LocalContext.current.applicationContext as com.vikash.mp3player.MusicApp).prefs
+    val on by prefs.keepGoing.collectAsState()
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(16.dp)) {
+            CardTitle(stringResource(R.string.keep_going_title), pro = false, unlocked = true) {
+                Switch(checked = on, onCheckedChange = { prefs.setKeepGoing(it) })
+            }
+            Text(
+                stringResource(R.string.keep_going_desc),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
 /** Free: robot arm CD change animation when a song is tapped. */
 @Composable
 fun DiscAnimationCard() {

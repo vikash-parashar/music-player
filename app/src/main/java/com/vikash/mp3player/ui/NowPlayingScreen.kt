@@ -30,7 +30,9 @@ import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material.icons.filled.DirectionsCar
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Equalizer
+import androidx.compose.material.icons.filled.Radio
 import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.Cast
@@ -99,6 +101,10 @@ fun NowPlayingScreen(
     onPickStyle: (com.vikash.mp3player.data.PlayerStyle) -> Unit = {},
     /** Free users: a native ad card under the controls. */
     showAd: Boolean = false,
+    /** Song radio from the current song. */
+    onStartRadio: () -> Unit = {},
+    /** Pro: Smart shuffle on/off (free users get the Pro screen). */
+    onSmartShuffle: (Boolean) -> Unit = {},
 ) {
     androidx.compose.runtime.LaunchedEffect(Unit) { com.vikash.mp3player.data.OwnerHooks.event("feature_record_player") }
     var showCast by remember { mutableStateOf(false) }
@@ -214,6 +220,11 @@ fun NowPlayingScreen(
                             Artwork(item.artworkUri, 40.dp)
                             Spacer(Modifier.width(12.dp))
                             Column(Modifier.weight(1f)) {
+                                if (item.mediaId in state.smartIds) Text(
+                                    "✦ " + stringResource(R.string.smart_shuffle_pick),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.primary,
+                                )
                                 Text(
                                     item.title, maxLines = 1, overflow = TextOverflow.Ellipsis,
                                     fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Normal,
@@ -356,6 +367,20 @@ fun NowPlayingScreen(
                     onClick = { showSpeed = true },
                     leadingIcon = { Icon(Icons.Default.Speed, null, Modifier.size(18.dp)) },
                     label = { Text("%.2f".format(java.util.Locale.US, state.speed).trimEnd('0').trimEnd('.') + "x") },
+                )
+                Spacer(Modifier.width(8.dp))
+                FilterChip(
+                    selected = state.smartShuffle,
+                    onClick = { onSmartShuffle(!state.smartShuffle) },
+                    leadingIcon = { Icon(Icons.Default.AutoAwesome, null, Modifier.size(18.dp)) },
+                    label = { Text(stringResource(R.string.smart_shuffle)) },
+                )
+                Spacer(Modifier.width(8.dp))
+                FilterChip(
+                    selected = false,
+                    onClick = onStartRadio,
+                    leadingIcon = { Icon(Icons.Default.Radio, null, Modifier.size(18.dp)) },
+                    label = { Text(stringResource(R.string.song_start_radio)) },
                 )
                 Spacer(Modifier.width(8.dp))
                 FilterChip(

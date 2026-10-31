@@ -21,7 +21,8 @@ class LocalMusicRepository(private val context: Context) {
         } else {
             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
         }
-        val projection = arrayOf(
+        val genreColumn = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) MediaStore.Audio.Media.GENRE else null
+        val projection = listOfNotNull(
             MediaStore.Audio.Media._ID,
             MediaStore.Audio.Media.TITLE,
             MediaStore.Audio.Media.ARTIST,
@@ -33,7 +34,8 @@ class LocalMusicRepository(private val context: Context) {
             MediaStore.Audio.Media.DISPLAY_NAME,
             MediaStore.Audio.Media.YEAR,
             folderColumn,
-        )
+            genreColumn,
+        ).toTypedArray()
         // Skip ringtones, notification sounds and tiny clips.
         val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0 AND ${MediaStore.Audio.Media.DURATION} >= ?"
         val args = arrayOf("10000")
@@ -54,6 +56,7 @@ class LocalMusicRepository(private val context: Context) {
             val sizeCol = c.getColumnIndexOrThrow(MediaStore.Audio.Media.SIZE)
             val nameCol = c.getColumnIndexOrThrow(MediaStore.Audio.Media.DISPLAY_NAME)
             val yearCol = c.getColumnIndexOrThrow(MediaStore.Audio.Media.YEAR)
+            val genreCol = genreColumn?.let { c.getColumnIndex(it) } ?: -1
             while (c.moveToNext()) {
                 val id = c.getLong(idCol)
                 songs += Song(
@@ -69,6 +72,7 @@ class LocalMusicRepository(private val context: Context) {
                     sizeBytes = c.getLong(sizeCol),
                     fileName = c.getString(nameCol).orEmpty(),
                     year = c.getInt(yearCol),
+                    genre = if (genreCol >= 0) c.getString(genreCol)?.trim().orEmpty() else "",
                 )
             }
         }
