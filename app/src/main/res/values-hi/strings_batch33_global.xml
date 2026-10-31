@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="autoeq_button">मेरे हेडफ़ोन के लिए ट्यून करें</string>
+    <string name="autoeq_using">हेडफ़ोन: %s</string>
+    <string name="autoeq_title">आपके हेडफ़ोन</string>
+    <string name="autoeq_desc">AutoEq से मापे गए %d मॉडल। अपना चुनें, Ampli उसकी आवाज़ ठीक कर देगा।</string>
+    <string name="autoeq_search">खोजें: Sony, AirPods, boAt…</string>
+    <string name="autoeq_none">कुछ नहीं मिला। सिर्फ़ ब्रांड का नाम लिखकर देखें।</string>
+    <string name="autoeq_credit">माप: AutoEq, Jaakko Pasanen (MIT लाइसेंस)</string>
+    <string name="autoeq_close">बंद करें</string>
+
+    <string name="lastfm_title">Last.fm स्क्रॉबलिंग</string>
+    <string name="lastfm_soon">जल्द ही अपडेट में आ रहा है।</string>
+    <string name="lastfm_signed_in">%1$s के रूप में साइन इन · आज %2$d गाने भेजे</string>
+    <string name="lastfm_pending">%d गाने ऑनलाइन होने पर भेजे जाएँगे</string>
+    <string name="lastfm_sign_out">साइन आउट</string>
+    <string name="lastfm_desc">आप जो भी सुनते हैं, उसका रिकॉर्ड अपनी Last.fm प्रोफ़ाइल पर रखें। पासवर्ड सिर्फ़ साइन इन के लिए है, सेव नहीं होता।</string>
+    <string name="lastfm_user">Last.fm यूज़रनेम</string>
+    <string name="lastfm_password">पासवर्ड</string>
+    <string name="lastfm_signing_in">साइन इन हो रहा है…</string>
+    <string name="lastfm_sign_in">साइन इन</string>
+
+    <string name="promise_no_account">कोई अकाउंट नहीं</string>
+    <string name="promise_offline">ऑफ़लाइन चलता है</string>
+    <string name="promise_private">आप क्या सुनते हैं, यह निजी रहता है</string>
+</resources>

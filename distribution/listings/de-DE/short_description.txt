@@ -1,0 +1,1 @@
+Lokaler Musikplayer mit 10-Band-EQ und Kopfhörer-Presets. Ohne Konto, ohne Abo.

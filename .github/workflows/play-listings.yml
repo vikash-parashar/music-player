@@ -1,0 +1,47 @@
+name: Update Play listings
+
+# Sends the store text in distribution/listings (en-US, de-DE, fr-FR, es-ES) to Play Console.
+# Manual only. Never uploads a build; screenshots only when asked.
+on:
+  workflow_dispatch:
+    inputs:
+      screenshots:
+        description: "Also upload screenshots from distribution/listings/<lang>/images"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  listings:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+
+      - name: Install fastlane
+        run: gem install fastlane --no-document
+
+      - name: Upload store text
+        env:
+          PLAY_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          SHOTS: ${{ inputs.screenshots }}
+        run: |
+          if [ -z "$PLAY_JSON" ]; then echo "::error::Add the PLAY_SERVICE_ACCOUNT_JSON secret first."; exit 1; fi
+          printf '%s' "$PLAY_JSON" > "$RUNNER_TEMP/play.json"
+          skip_images=true
+          if [ "$SHOTS" = "true" ]; then skip_images=false; fi
+          fastlane supply \
+            --package_name com.vikash.ampli \
+            --json_key "$RUNNER_TEMP/play.json" \
+            --metadata_path distribution/listings \
+            --skip_upload_apk true \
+            --skip_upload_aab true \
+            --skip_upload_changelogs true \
+            --skip_upload_images "$skip_images" \
+            --skip_upload_screenshots "$skip_images"
+          rm -f "$RUNNER_TEMP/play.json"

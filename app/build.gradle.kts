@@ -30,6 +30,8 @@ android {
 
         buildConfigField("String", "JAMENDO_CLIENT_ID", "\"${prop("JAMENDO_CLIENT_ID")}\"")
         buildConfigField("String", "AUDD_API_TOKEN", "\"${prop("AUDD_API_TOKEN")}\"")
+        buildConfigField("String", "LASTFM_API_KEY", "\"${prop("LASTFM_API_KEY")}\"")
+        buildConfigField("String", "LASTFM_API_SECRET", "\"${prop("LASTFM_API_SECRET")}\"")
         // Help & feedback: the Ampli Owner server (empty = send by email to SUPPORT_EMAIL instead; defaults to support@ampliapps.in, repo variable overrides).
         buildConfigField("String", "OWNER_API_URL", "\"${prop("OWNER_API_URL")}\"")
         buildConfigField("String", "SUPPORT_EMAIL", "\"${prop("SUPPORT_EMAIL").ifBlank { "support@ampliapps.in" }}\"")

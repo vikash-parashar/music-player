@@ -159,6 +159,7 @@ class PlaybackService : MediaLibraryService() {
                 if (isPlaying) {
                     if (trackedItem == null) trackedItem = player.currentMediaItem
                     playingSince = SystemClock.elapsedRealtime()
+                    tellLastFm(player)
                 } else {
                     addHeardTime()
                     playingSince = 0L
@@ -193,6 +194,8 @@ class PlaybackService : MediaLibraryService() {
                 reportListening()
                 trackedItem = mediaItem
                 trackedDurationMs = if (player.duration > 0) player.duration else 0L
+                lastFmNowPlaying = null
+                if (player.isPlaying) tellLastFm(player)
                 if (playingSince != 0L) playingSince = SystemClock.elapsedRealtime()
             }
         })
@@ -274,10 +277,35 @@ class PlaybackService : MediaLibraryService() {
         }
     }
 
+    private var lastFmNowPlaying: String? = null
+
+    /** Shows the current song on the person's Last.fm profile, once per song. */
+    private fun tellLastFm(player: Player) {
+        val item = player.currentMediaItem ?: return
+        if (item.mediaId.startsWith(RADIO_PREFIX) || item.mediaId == lastFmNowPlaying) return
+        lastFmNowPlaying = item.mediaId
+        val md = item.mediaMetadata
+        com.vikash.mp3player.data.LastFm.nowPlaying(
+            this, md.title?.toString().orEmpty(), md.artist?.toString().orEmpty(), md.albumTitle?.toString(),
+            if (player.duration > 0) player.duration else 0L,
+        )
+    }
+
     /** Hands the finished song's listening time to [com.vikash.mp3player.data.PlayStats]. */
     private fun reportListening() {
         addHeardTime()
         val item = trackedItem
+        if (item != null && heardMs > 0 && !item.mediaId.startsWith(RADIO_PREFIX)) {
+            val md = item.mediaMetadata
+            com.vikash.mp3player.data.LastFm.finished(
+                this,
+                title = md.title?.toString().orEmpty(),
+                artist = md.artist?.toString().orEmpty(),
+                album = md.albumTitle?.toString(),
+                heardMs = heardMs,
+                durationMs = trackedDurationMs,
+            )
+        }
         if (item != null && heardMs > 0) {
             (application as MusicApp).playStats.record(
                 id = item.mediaId,
@@ -366,6 +394,7 @@ class PlaybackService : MediaLibraryService() {
         parentId == NODE_SONGS -> songs
         parentId.startsWith(PREFIX_ALBUM) -> songs.filter { it.album == parentId.removePrefix(PREFIX_ALBUM) }
         parentId.startsWith(PREFIX_FOLDER) -> songs.filter { it.folder == parentId.removePrefix(PREFIX_FOLDER) }
+        parentId.startsWith(PREFIX_SEARCH) -> VoiceSearch.find(songs, parentId.removePrefix(PREFIX_SEARCH))
         else -> emptyList()
     }
 
@@ -464,6 +493,39 @@ class PlaybackService : MediaLibraryService() {
             return result
         }
 
+        // The search box in Android Auto: say how many results there are, then hand them over.
+        override fun onSearch(
+            session: MediaLibrarySession,
+            browser: MediaSession.ControllerInfo,
+            query: String,
+            params: LibraryParams?,
+        ): ListenableFuture<LibraryResult<Void>> {
+            scope.launch {
+                if (songs.isEmpty()) loadSongs()
+                session.notifySearchResultChanged(browser, query, VoiceSearch.find(songs, query).size, params)
+            }
+            return Futures.immediateFuture(LibraryResult.ofVoid())
+        }
+
+        override fun onGetSearchResult(
+            session: MediaLibrarySession,
+            browser: MediaSession.ControllerInfo,
+            query: String,
+            page: Int,
+            pageSize: Int,
+            params: LibraryParams?,
+        ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> {
+            val result = SettableFuture.create<LibraryResult<ImmutableList<MediaItem>>>()
+            scope.launch {
+                if (songs.isEmpty()) loadSongs()
+                val all = childrenOf(PREFIX_SEARCH + query)
+                val from = (page * pageSize).coerceIn(0, all.size)
+                val to = (from + pageSize).coerceIn(from, all.size)
+                result.set(LibraryResult.ofItemList(ImmutableList.copyOf(all.subList(from, to)), params))
+            }
+            return result
+        }
+
         // Media items arriving from a controller have their playback URI stripped for security,
         // so the phone UI also puts it in requestMetadata and we restore it here.
         override fun onAddMediaItems(
@@ -497,9 +559,31 @@ class PlaybackService : MediaLibraryService() {
             startPositionMs: Long,
         ): ListenableFuture<MediaSession.MediaItemsWithStartPosition> {
             val single = mediaItems.singleOrNull()
-            val parent = single?.mediaId?.substringBefore(SEP, missingDelimiterValue = "")
+            // "Hey Google, play Coldplay on Ampli": a single item that carries only a search query.
+            val query = single?.requestMetadata?.searchQuery
+            if (single != null && query != null && single.requestMetadata.mediaUri == null) {
+                val result = SettableFuture.create<MediaSession.MediaItemsWithStartPosition>()
+                scope.launch {
+                    if (songs.isEmpty()) loadSongs()
+                    val extras = single.requestMetadata.extras
+                    val found = VoiceSearch.find(
+                        songs, query,
+                        artistHint = extras?.getString(android.provider.MediaStore.EXTRA_MEDIA_ARTIST),
+                        albumHint = extras?.getString(android.provider.MediaStore.EXTRA_MEDIA_ALBUM),
+                    ).let { if (query.isBlank()) it.shuffled() else it }
+                    // Nothing matched: play everything shuffled rather than staying silent in the car.
+                    val list = found.ifEmpty { songs.shuffled() }
+                    result.set(
+                        MediaSession.MediaItemsWithStartPosition(
+                            list.map { it.toMediaItem() }, if (list.isEmpty()) C.INDEX_UNSET else 0, if (list.isEmpty()) C.TIME_UNSET else 0L,
+                        )
+                    )
+                }
+                return result
+            }
+            val parent = single?.mediaId?.substringBeforeLast(SEP, missingDelimiterValue = "")
             if (single != null && !parent.isNullOrEmpty() && single.requestMetadata.mediaUri == null) {
-                val songId = single.mediaId.substringAfter(SEP)
+                val songId = single.mediaId.substringAfterLast(SEP)
                 val list = songsUnder(parent)
                 val index = list.indexOfFirst { it.id == songId }
                 if (index >= 0) {
@@ -524,6 +608,7 @@ class PlaybackService : MediaLibraryService() {
         const val NODE_FOLDERS = "folders"
         const val PREFIX_ALBUM = "album:"
         const val PREFIX_FOLDER = "folder:"
+        const val PREFIX_SEARCH = "search:"
         const val SEP = "|"
     }
 }

@@ -43,6 +43,8 @@ object ProSound {
         val gains: List<Float> = List(10) { 0f },
         val bass: Int = 0,
         val surround: Int = 0,
+        /** Name of the headphone curve in use (AutoEq), or null for a preset or hand-set curve. */
+        val headphone: String? = null,
     )
 
     private const val PREFS = "pro_sound"
@@ -70,6 +72,7 @@ object ProSound {
             gains = List(10) { p.getFloat("gain_$it", 0f) },
             bass = p.getInt("bass", 0),
             surround = p.getInt("surround", 0),
+            headphone = p.getString("headphone", null),
         )
         apply()
     }
@@ -89,16 +92,26 @@ object ProSound {
 
     fun setGain(context: Context, band: Int, db: Float) {
         val value = db.coerceIn(-MAX_DB, MAX_DB)
-        prefs(context).edit().putFloat("gain_$band", value).apply()
-        _state.value = _state.value.copy(gains = _state.value.gains.toMutableList().also { it[band] = value })
+        prefs(context).edit().putFloat("gain_$band", value).remove("headphone").apply()
+        _state.value = _state.value.copy(gains = _state.value.gains.toMutableList().also { it[band] = value }, headphone = null)
         apply()
     }
 
-    fun usePreset(context: Context, preset: Preset) {
+    fun usePreset(context: Context, preset: Preset) = useCurve(context, preset.gains, null)
+
+    /** Applies a headphone correction curve (AutoEq) and turns the equaliser on. */
+    fun useHeadphone(context: Context, name: String, gains: FloatArray) {
+        useCurve(context, gains, name)
+        if (!_state.value.eqEnabled) setEqEnabled(context, true)
+    }
+
+    private fun useCurve(context: Context, gains: FloatArray, headphone: String?) {
+        val values = List(10) { (gains.getOrNull(it) ?: 0f).coerceIn(-MAX_DB, MAX_DB) }
         val edit = prefs(context).edit()
-        preset.gains.forEachIndexed { i, g -> edit.putFloat("gain_$i", g) }
+        values.forEachIndexed { i, g -> edit.putFloat("gain_$i", g) }
+        if (headphone == null) edit.remove("headphone") else edit.putString("headphone", headphone)
         edit.apply()
-        _state.value = _state.value.copy(gains = preset.gains.toList())
+        _state.value = _state.value.copy(gains = values, headphone = headphone)
         apply()
     }
 
