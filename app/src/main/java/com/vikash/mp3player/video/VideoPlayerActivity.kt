@@ -8,7 +8,14 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Rational
+import android.graphics.Color
+import android.graphics.Typeface
+import android.graphics.drawable.GradientDrawable
+import android.view.Gravity
 import android.view.ViewGroup
+import android.widget.FrameLayout
+import android.widget.TextView
+import com.vikash.mp3player.R
 import androidx.activity.ComponentActivity
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -30,6 +37,14 @@ class VideoPlayerActivity : ComponentActivity() {
 
     private var player: ExoPlayer? = null
     private lateinit var view: PlayerView
+    private lateinit var zoom: ZoomLayout
+
+    private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()
+
+    override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
+        super.onConfigurationChanged(newConfig)
+        if (::zoom.isInitialized) zoom.reset() // the frame changed size; start again from 100%
+    }
 
     private val listener = object : Player.Listener {
         override fun onVideoSizeChanged(videoSize: VideoSize) {
@@ -39,6 +54,10 @@ class VideoPlayerActivity : ComponentActivity() {
                     ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
                 else ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT
             }
+        }
+
+        override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+            zoom.reset() // each video starts at normal size
         }
 
         override fun onPlaybackStateChanged(state: Int) {
@@ -54,7 +73,7 @@ class VideoPlayerActivity : ComponentActivity() {
             hide(WindowInsetsCompat.Type.systemBars())
             systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         }
-        view = PlayerView(this).apply {
+        view = (layoutInflater.inflate(R.layout.video_player_view, null) as PlayerView).apply {
             layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
             setShowNextButton(true)
             setShowPreviousButton(true)
@@ -62,7 +81,27 @@ class VideoPlayerActivity : ComponentActivity() {
             keepScreenOn = true
             setFullscreenButtonClickListener { toggleOrientation() }
         }
-        setContentView(view)
+        // Pinch to zoom: only the picture scales, the controls stay where they are.
+        val hint = TextView(this).apply {
+            setTextColor(Color.WHITE)
+            textSize = 16f
+            setTypeface(typeface, Typeface.BOLD)
+            setPadding(dp(14), dp(6), dp(14), dp(6))
+            background = GradientDrawable().apply { cornerRadius = dp(16).toFloat(); setColor(0x99000000.toInt()) }
+            alpha = 0f
+        }
+        zoom = ZoomLayout(this).apply {
+            addView(view)
+            addView(hint, FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.TOP or Gravity.CENTER_HORIZONTAL).apply { topMargin = dp(48) })
+            target = view.findViewById(androidx.media3.ui.R.id.exo_content_frame)
+            onZoom = { pct ->
+                hint.text = getString(R.string.video_zoom, pct)
+                hint.animate().cancel()
+                hint.alpha = 1f
+                hint.animate().alpha(0f).setStartDelay(700).setDuration(300).start()
+            }
+        }
+        setContentView(zoom)
         start(intent, savedInstanceState?.getLong(KEY_POSITION) ?: 0L, savedInstanceState?.getInt(KEY_INDEX) ?: -1)
     }
 
@@ -112,6 +151,7 @@ class VideoPlayerActivity : ComponentActivity() {
     override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean, newConfig: android.content.res.Configuration) {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
         view.useController = !isInPictureInPictureMode
+        if (isInPictureInPictureMode) zoom.reset()
     }
 
     override fun onStop() {
