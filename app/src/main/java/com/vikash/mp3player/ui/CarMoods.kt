@@ -183,7 +183,7 @@ private fun MoodCard(mood: CarMood, label: String, playing: Boolean, onClick: ()
 }
 
 /** Lets a child draw [h] wider on both sides than its parent's padding allows. */
-private fun Modifier.bleed(h: Dp) = layout { measurable, constraints ->
+internal fun Modifier.bleed(h: Dp) = layout { measurable, constraints ->
     val extra = h.roundToPx() * 2
     val w = constraints.maxWidth + extra
     val placeable = measurable.measure(constraints.copy(minWidth = w, maxWidth = w))
