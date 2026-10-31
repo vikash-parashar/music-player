@@ -4,7 +4,7 @@ export const site = {
   email: "support@ampliapps.in",
   tagline: "Apps made in India, for every Indian. Pay once or use free, never a monthly fee.",
   description:
-    "Ampli makes Android apps for India: Ampli MP3 Player, Ampli Car Hub (the car that talks in Haryanvi) and Ampli Naukri (free government job alerts). Made in India.",
+    "Ampli makes Android apps: Ampli MP3 Player, Ampli Car Hub (the car that talks in Haryanvi), Ampli Kavach (scam-call shield for families) and Ampli Naukri (free government job alerts). Made in India.",
   company: "Ampli Studio",
 };
 
@@ -17,13 +17,15 @@ export const notifyHref = (app: string) =>
 export const feedbackHref = `mailto:${site.email}?subject=${encodeURIComponent("Feedback for Ampli")}`;
 
 export const shareText =
-  "Ampli: desi apps from India. A music player with no monthly fee, a car system that talks in Haryanvi, and free govt job alerts. https://ampliapps.in";
+  "Ampli: desi apps from India. A music player with no monthly fee, a car system that talks in Haryanvi, a scam-call shield for families, and free govt job alerts. https://ampliapps.in";
 
 export const nav = [
   { href: "/#apps", label: "Apps" },
   { href: "/#music", label: "MP3 Player" },
   { href: "/#carhub", label: "Car Hub" },
+  { href: "/#kavach", label: "Kavach" },
   { href: "/#naukri", label: "Naukri" },
+  { href: "/#pricing", label: "Pricing" },
   { href: "/#support", label: "Support us" },
   { href: "/#faq", label: "FAQ" },
 ];
@@ -36,13 +38,21 @@ export const footerLinks = [
   { href: "/privacy/kavach/", label: "Privacy (Kavach)" },
 ];
 
+export type AppId = "mp3" | "carhub" | "kavach" | "naukri";
+
+/** When the status table was last checked; update with every status change. */
+export const statusUpdated = "31 October 2026";
+
 export type Product = {
   id: string;
   name: string;
   short: string;
   tagline: string;
-  icon: "mp3" | "carhub" | "naukri";
+  icon: AppId;
   price: string;
+  /** Short status label and its tone (test = in testing, dev = in development). */
+  status: string;
+  statusTone: "live" | "test" | "dev";
   accent: string;
   accentSoft: string;
   points: string[];
@@ -56,9 +66,16 @@ export const products: Product[] = [
     tagline: "Your music, no monthly fee. Pay once, play forever.",
     icon: "mp3",
     price: "Free · Pro ₹199 once",
+    status: "Testing on Google Play",
+    statusTone: "test",
     accent: "#E11D48",
     accentSoft: "#FDA4AF",
-    points: ["Offline player for your own songs", "Record-player look, equalizer, lyrics", "6 Indian languages"],
+    points: [
+      "Offline player for your own songs and videos",
+      "10 Now Playing looks, including a car whose lights follow the beat",
+      "Equalizer, lyrics, visualiser, internet radio",
+      "Car mode, Chromecast, Hi-Res and USB DAC output",
+    ],
   },
   {
     id: "carhub",
@@ -67,9 +84,34 @@ export const products: Product[] = [
     tagline: "The world's first car system that talks in Haryanvi.",
     icon: "carhub",
     price: "Free · Pro ₹1,499 once (launch price)",
+    status: "Testing in real cars",
+    statusTone: "test",
     accent: "#0891B2",
     accentSoft: "#67E8F9",
-    points: ["Human Haryanvi voices, fully offline", "“Hey Ampli” voice control", "SOS, FASTag, speed cameras"],
+    points: [
+      "Talks in Haryanvi, Hindi and about 20 more languages",
+      "“Hey Ampli” voice control that works offline",
+      "New: CNG, petrol and EV finder, 19,400 stations offline",
+      "533 speed camera alerts, SOS help, FASTag, trips",
+    ],
+  },
+  {
+    id: "kavach",
+    name: "Ampli Kavach",
+    short: "Kavach",
+    tagline: "Scam-call shield for your family. Your contacts never leave your phone.",
+    icon: "kavach",
+    price: "Free · Pro ₹149 once",
+    status: "In development",
+    statusTone: "dev",
+    accent: "#0D9488",
+    accentSoft: "#5EEAD4",
+    points: [
+      "Caller card that flags spam and scam calls",
+      "Scam-link check for SMS, on the phone only",
+      "Loan-app blackmail and “digital arrest” help",
+      "One tap to the official cybercrime complaint site",
+    ],
   },
   {
     id: "naukri",
@@ -78,24 +120,35 @@ export const products: Product[] = [
     tagline: "Free sarkari job alerts that match your eligibility.",
     icon: "naukri",
     price: "Free for job seekers",
+    status: "Built, launching soon",
+    statusTone: "test",
     accent: "#EA580C",
     accentSoft: "#FDBA74",
-    points: ["Jobs matched to your age and marks", "Admit card, exam and result alerts", "Hindi first, official links only"],
+    points: [
+      "Jobs matched to your age, marks and state",
+      "Admit card, exam and result alerts",
+      "Hindi first, official notice links only",
+      "Track every form from applied to result",
+    ],
   },
 ];
 
 export const faqs = [
   {
     q: "Are Ampli apps on Google Play?",
-    a: "Not yet. Google is reviewing our developer account. Tap “Notify me” on any app and we will email you the day it goes live.",
+    a: "Not publicly yet. Ampli MP3 Player is in closed testing on Google Play, Car Hub is being tested in real cars, Kavach is in development and Naukri launches soon. Tap “Notify me” on any app and we will email you the day it goes live.",
   },
   {
     q: "Is there a monthly fee for any Ampli app?",
-    a: "No. Every app is free to use. The MP3 Player and Car Hub have an optional Pro upgrade that you pay for once and keep for life. Ampli Naukri is free for job seekers.",
+    a: "No. Every app is free to use. The MP3 Player, Car Hub and Kavach have an optional Pro upgrade that you pay for once and keep for life. Ampli Naukri is free for job seekers.",
+  },
+  {
+    q: "Does Ampli Kavach upload my contacts?",
+    a: "No. Kavach does its work on your phone. It reads contacts only to show names and let their calls through, and never uploads your contact list or your SMS. Online protection is optional and off by default; it sends only the one unknown number being checked.",
   },
   {
     q: "What does Ampli MP3 Player Pro add?",
-    a: "No ads, a 10-band equalizer with bass boost and 3D surround, a music visualiser, AMOLED black and wallpaper colours, Chromecast and the video player. ₹199 once.",
+    a: "No ads, all 10 Now Playing styles and 10 car light shows, a 10-band equalizer with bass boost and 3D surround, network folders, Hi-Res output, Chromecast and the video player. ₹199 once.",
   },
   {
     q: "Does Car Hub really speak Haryanvi?",
@@ -103,7 +156,7 @@ export const faqs = [
   },
   {
     q: "What does Car Hub Pro add?",
-    a: "All 25 home-screen themes, live engine data and fault codes from an OBD-II adapter, Bluetooth tyre pressure alerts and CSV export of your car expenses. ₹1,499 once at launch, ₹2,500 after.",
+    a: "Red-light cameras, average-speed zones, the “Coming up on this road” list and road reports, plus live engine data from an OBD-II adapter and Bluetooth tyre pressure alerts. ₹1,499 once for the first 60 days after launch, ₹2,500 after.",
   },
   {
     q: "Is Ampli Naukri free?",

@@ -5,7 +5,7 @@ import type { LucideIcon } from "lucide-react";
 import { BlurFade } from "@/components/ui/blur-fade";
 import { BorderBeam } from "@/components/ui/border-beam";
 import { AppIcon } from "@/components/ui/app-icon";
-import { notifyHref } from "@/lib/site";
+import { notifyHref, type AppId } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 export type Feature = { icon: LucideIcon; title: string; body: string };
@@ -19,7 +19,7 @@ export function ProductHeading({
   sub,
   accent,
 }: {
-  app: "mp3" | "carhub" | "naukri";
+  app: AppId;
   eyebrow: string;
   title: React.ReactNode;
   sub: string;

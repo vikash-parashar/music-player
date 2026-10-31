@@ -8,12 +8,13 @@ import { products } from "@/lib/site";
 
 // Tile centres inside the square, in percent.
 const spots = [
-  { left: "20%", top: "64%", d: 0 },
-  { left: "50%", top: "20%", d: 0.6 },
-  { left: "80%", top: "64%", d: 1.2 },
+  { left: "22%", top: "30%", d: 0 },
+  { left: "78%", top: "30%", d: 0.6 },
+  { left: "22%", top: "72%", d: 1.2 },
+  { left: "78%", top: "72%", d: 1.8 },
 ];
 
-/** Three app tiles floating on a slowly turning ring, drawn in code (no heavy hero image). */
+/** Four app tiles floating on a slowly turning ring, drawn in code (no heavy hero image). */
 function AppCluster() {
   const reduce = useReducedMotion();
   return (
@@ -24,13 +25,13 @@ function AppCluster() {
         transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
       />
       <div className="absolute inset-[22%] rounded-full border border-white/5" />
-      <div className="absolute inset-[30%] rounded-full bg-[conic-gradient(from_0deg,#E11D48,#0891B2,#EA580C,#E11D48)] opacity-25 blur-2xl" />
+      <div className="absolute inset-[30%] rounded-full bg-[conic-gradient(from_0deg,#E11D48,#0891B2,#0D9488,#EA580C,#E11D48)] opacity-25 blur-2xl" />
       {products.map((p, i) => (
         <m.a
           key={p.id}
           href={`#${p.id}`}
           tabIndex={-1}
-          className="absolute flex w-[34%] flex-col items-center gap-2 rounded-3xl border border-white/10 bg-raised/80 p-3 text-center backdrop-blur sm:p-4"
+          className="absolute flex w-[32%] flex-col items-center gap-2 rounded-3xl border border-white/10 bg-raised/80 p-3 text-center backdrop-blur sm:p-4"
           style={{ left: spots[i].left, top: spots[i].top, x: "-50%", y: "-50%" }}
           initial={{ opacity: 0, scale: 0.8 }}
           animate={reduce ? { opacity: 1, scale: 1 } : { opacity: 1, scale: 1, y: ["-50%", "-56%", "-50%"] }}
@@ -60,7 +61,7 @@ export function Hero() {
         <div>
           <BlurFade inView={false} visibleFirst>
             <span className="inline-flex items-center gap-2 rounded-full border border-line bg-raised/60 px-3 py-1 text-xs text-ink-muted">
-              <span className="size-1.5 rounded-full bg-rose-400" /> Made in India · 3 apps, 0 monthly fees
+              <span className="size-1.5 rounded-full bg-rose-400" /> Made in India · 4 apps, 0 monthly fees
             </span>
           </BlurFade>
           <BlurFade inView={false} visibleFirst delay={0.08}>
@@ -72,8 +73,8 @@ export function Hero() {
           </BlurFade>
           <BlurFade inView={false} visibleFirst delay={0.16}>
             <p className="mx-auto mt-5 max-w-xl text-lg text-ink-muted sm:text-xl md:mx-0">
-              A music player with no monthly fee, a car system that talks in Haryanvi, and free sarkari job alerts. Three Android apps from one small Indian
-              studio.
+              A music player with no monthly fee, a car system that talks in Haryanvi, a scam-call shield for your family, and free sarkari job alerts. Four
+              Android apps from one small Indian studio.
             </p>
           </BlurFade>
           <BlurFade inView={false} visibleFirst delay={0.24}>
