@@ -526,6 +526,17 @@ class PlaybackService : MediaLibraryService() {
             return result
         }
 
+        // Earbuds, the car or the quick-settings media card pressed play after Android closed the
+        // app: hand back the last saved queue at the saved song and position.
+        override fun onPlaybackResumption(
+            mediaSession: MediaSession,
+            controller: MediaSession.ControllerInfo,
+        ): ListenableFuture<MediaSession.MediaItemsWithStartPosition> {
+            val saved = savedQueueForResumption(this@PlaybackService)
+                ?: return Futures.immediateFailedFuture(UnsupportedOperationException("No saved queue"))
+            return Futures.immediateFuture(saved)
+        }
+
         // Media items arriving from a controller have their playback URI stripped for security,
         // so the phone UI also puts it in requestMetadata and we restore it here.
         override fun onAddMediaItems(
