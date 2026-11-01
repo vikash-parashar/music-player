@@ -6,7 +6,7 @@ before the website updates)."""
 import json, time
 from pathlib import Path
 
-ORDER = ["haveli-13", "chandrakanta", "vikram-betal"]
+ORDER = ["ramayan", "mahabharat", "haveli-13", "chandrakanta", "vikram-betal", "bible-stories"]
 series = [json.loads(p.read_text(encoding="utf-8")) for p in Path("build/stories").glob("*.json")]
 series.sort(key=lambda s: (ORDER.index(s["id"]) if s["id"] in ORDER else 99, s["id"]))
 catalog = {"version": int(time.time()), "series": series}

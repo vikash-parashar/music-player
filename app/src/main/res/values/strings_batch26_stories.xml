@@ -4,7 +4,7 @@
     <string name="discover_stories">Ampli Stories</string>
     <string name="stories_kicker">Ampli Stories</string>
     <string name="stories_title">Stories</string>
-    <string name="stories_subtitle">Hindi audio series in short episodes. The first episodes are free.</string>
+    <string name="stories_subtitle">Audio series in short episodes, from Indian epics to Bible stories. The first episodes are free.</string>
     <string name="stories_genre_kids">Family</string>
     <string name="stories_genre_fantasy">Fantasy</string>
     <string name="stories_genre_horror">Horror</string>
@@ -33,4 +33,6 @@
     <string name="home_stories_more">All stories</string>
     <string name="car_headline_top" translatable="false">DRIVE</string>
     <string name="car_headline_bottom" translatable="false">Differently</string>
+    <string name="stories_genre_epic">Epic</string>
+    <string name="stories_genre_faith">Faith</string>
 </resources>

@@ -13,8 +13,11 @@ Usage: python narrate.py <series_dir> <release_tag> <repo>
 import hashlib, json, os, re, subprocess, sys
 from pathlib import Path
 
-VOICES = {"kids": "hm_omega", "fantasy": "hf_alpha", "horror": "hf_beta"}
+VOICES = {"kids": "hm_omega", "fantasy": "hf_alpha", "horror": "hf_beta", "epic": "hm_omega", "faith": "af_heart"}
 DEFAULT_VOICE = "hf_alpha"
+# Kokoro language codes: "h" Hindi, "a" American English.
+LANG_CODES = {"hi": "h", "en": "a"}
+DEFAULT_VOICE_BY_LANG = {"hi": "hf_alpha", "en": "af_heart"}
 SPEED = 0.95
 SR = 24000
 
@@ -69,7 +72,8 @@ def main():
     series_dir, tag, repo = Path(sys.argv[1]), sys.argv[2], sys.argv[3]
     meta = json.loads((series_dir / "series.json").read_text(encoding="utf-8"))
     sid = meta["id"]
-    voice = meta.get("voice") or VOICES.get(meta.get("genre"), DEFAULT_VOICE)
+    lang = meta.get("lang", "hi")
+    voice = meta.get("voice") or VOICES.get(meta.get("genre"), DEFAULT_VOICE_BY_LANG.get(lang, DEFAULT_VOICE))
     have = existing_assets(tag, repo)
     out_dir = Path("build/stories"); out_dir.mkdir(parents=True, exist_ok=True)
     prev = {}
@@ -90,7 +94,7 @@ def main():
         if name not in have:
             if pipeline is None:
                 from kokoro import KPipeline
-                pipeline = KPipeline(lang_code="h")
+                pipeline = KPipeline(lang_code=LANG_CODES.get(lang, "h"))
             wav = out_dir / f"{sid}-{n:02d}.wav"
             duration = narrate(pipeline, voice, title, body, wav)
             m4a = out_dir / name

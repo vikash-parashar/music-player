@@ -31,6 +31,8 @@ data class StorySeries(
     val fg: Long,
     val accent: Long,
     val episodes: List<StoryEpisode>,
+    /** Narration language: "hi" (default) or "en". */
+    val lang: String = "hi",
 ) {
     /** Media id used in the queue, so resume, stats and the unlock check can find the episode. */
     fun mediaId(n: Int) = "story:$id:$n"
@@ -124,8 +126,21 @@ object StoriesRepository {
                 fg = color(cover?.optString("fg"), 0xFFC9DDD0),
                 accent = color(cover?.optString("accent"), 0xFFA31C1B),
                 episodes = episodes,
+                lang = s.optString("lang", "hi").ifBlank { "hi" },
             )
         }
+    }
+
+    /**
+     * Series in the listener's language first: Hindi for India and Indian-language phones,
+     * English everywhere else. The catalogue order is kept within each group.
+     */
+    fun orderedFor(context: Context, list: List<StorySeries>): List<StorySeries> {
+        val language = java.util.Locale.getDefault().language
+        val indian = language in setOf("hi", "mr", "bn", "ta", "te", "gu", "kn", "ml", "pa") ||
+            com.vikash.mp3player.monetization.AdRegion.country(context) == "IN"
+        val first = if (indian) "hi" else "en"
+        return list.sortedBy { if (it.lang == first) 0 else 1 }
     }
 
     private fun color(hex: String?, fallback: Long): Long =
