@@ -112,7 +112,7 @@ class AppPrefs(context: Context) {
     }
 
     /** Whole-app look (Pro). Classic is today's free look. */
-    private val _uiSkin = MutableStateFlow(UiSkin.from(prefs.getString(KEY_UI_SKIN, null)))
+    private val _uiSkin = MutableStateFlow(prefs.getString(KEY_UI_SKIN, null)?.let { UiSkin.from(it) } ?: UiSkin.Default)
     val uiSkin: StateFlow<UiSkin> = _uiSkin.asStateFlow()
 
     fun setUiSkin(skin: UiSkin) {

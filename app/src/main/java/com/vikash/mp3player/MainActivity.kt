@@ -71,9 +71,9 @@ class MainActivity : ComponentActivity() {
             Mp3PlayerTheme(
                 themeMode, amoledBlack = pro && amoled, wallpaperColors = pro && wallpaper,
                 profile = if (pro) profile else ColorProfile.Ampli,
-                skin = skinTrial ?: if (pro) chosenSkin else com.vikash.mp3player.data.UiSkin.Classic,
+                skin = skinTrial ?: if (pro || chosenSkin.free) chosenSkin else com.vikash.mp3player.data.UiSkin.Default,
                 skinHaptics = haptics,
-                keyColor = keyColor,
+                keyColor = if (pro) keyColor else com.vikash.mp3player.data.KeyColor.Theme,
             ) {
                 CompositionLocalProvider(LocalLiteMode provides lite) {
                 MusicPlayerApp(vm, onRemoveAds = {

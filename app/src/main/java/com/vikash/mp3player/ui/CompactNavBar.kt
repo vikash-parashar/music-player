@@ -62,6 +62,8 @@ fun CompactNavBar(tabs: List<NavTab>, selected: Int, onSelect: (Int) -> Unit) {
     // Full themes: the open tab sits in a pill (a shiny jelly bubble, or a yellow sticker).
     val pill = !skin.isClassic && (look == com.vikash.mp3player.ui.skin.TactileLook.Jelly || look == com.vikash.mp3player.ui.skin.TactileLook.Sticker)
     val jelly = look == com.vikash.mp3player.ui.skin.TactileLook.Jelly
+    // Neumorphism: the open tab is pressed into the bar.
+    val neu = skin.skin == com.vikash.mp3player.data.UiSkin.Neu
     val shape = RoundedCornerShape(if (pill && jelly) 32.dp else 24.dp)
     Box(Modifier.fillMaxWidth().navigationBarsPadding().padding(start = 14.dp, end = 14.dp, top = 6.dp, bottom = 10.dp)) {
         BoxWithConstraints(Modifier.fillMaxWidth().height(64.dp).luxGlass(shape)) {
@@ -79,7 +81,12 @@ fun CompactNavBar(tabs: List<NavTab>, selected: Int, onSelect: (Int) -> Unit) {
                 label = "pill",
             )
             val pillShape = RoundedCornerShape(26.dp)
-            if (pill) Box(
+            if (neu) Box(
+                Modifier.offset(x = pillX, y = 6.dp).size(pillW, 52.dp)
+                    .background(skin.card, pillShape)
+                    .innerShadow(pillShape, skin.shadowDark, 4.dp, 4.dp, 8.dp)
+                    .innerShadow(pillShape, skin.shadowLight, (-4).dp, (-4).dp, 8.dp),
+            ) else if (pill) Box(
                 Modifier.offset(x = pillX, y = 6.dp).size(pillW, 52.dp).then(
                     if (jelly) Modifier
                         .dropShadow(pillShape, skin.tactileAccent.copy(alpha = 0.35f), offsetY = 5.dp, blur = 12.dp)
@@ -96,11 +103,11 @@ fun CompactNavBar(tabs: List<NavTab>, selected: Int, onSelect: (Int) -> Unit) {
                 tabs.forEachIndexed { i, tab ->
                     val on = i == selected
                     val tint by animateColorAsState(
-                        if (on && pill) onPill else if (on) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                        if (on && pill) onPill else if (on && neu) skin.tactileAccent else if (on) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                         label = "tint",
                     )
                     val labelColor by animateColorAsState(
-                        if (on && pill) onPill else if (on) Lux.GoldDeep else MaterialTheme.colorScheme.onSurfaceVariant, label = "label",
+                        if (on && pill) onPill else if (on && neu) skin.tactileAccent else if (on) Lux.GoldDeep else MaterialTheme.colorScheme.onSurfaceVariant, label = "label",
                     )
                     val pop by animateFloatAsState(if (on) 1.12f else 1f, spring(dampingRatio = 0.5f), label = "pop")
                     val dot by animateFloatAsState(if (on) 1f else 0f, spring(dampingRatio = 0.5f), label = "dot")
@@ -124,7 +131,7 @@ fun CompactNavBar(tabs: List<NavTab>, selected: Int, onSelect: (Int) -> Unit) {
                             maxLines = 1,
                         )
                         Spacer(Modifier.height(3.dp))
-                        Box(Modifier.size(4.dp).scale(if (pill) 0f else dot).background(Lux.GoldDeep, CircleShape))
+                        Box(Modifier.size(4.dp).scale(if (pill || neu) 0f else dot).background(Lux.GoldDeep, CircleShape))
                     }
                 }
             }
