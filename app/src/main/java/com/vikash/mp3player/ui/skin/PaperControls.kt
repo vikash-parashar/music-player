@@ -38,7 +38,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 /*
- * Now Playing transport as one sheet of paper (owner's ask, 2026-11-02): shuffle, previous,
+ * Now Playing transport as one sheet of paper (owner's ask, 2026-11-02; circle keys in a soft grey ring): shuffle, previous,
  * play/pause, next and repeat are not five separate buttons but bumps pressed up out of a single
  * card, the same colour as the card, lit from the top left. Pressing a key pushes it back into
  * the sheet.
@@ -73,7 +73,12 @@ internal fun Modifier.emboss(shape: Shape, face: Brush, down: Float, glow: Color
     val paper = LocalPaper.current.takeOrElse { paperColor() }
     val up = 1f - down
     val lift = depth * up
+    // A soft grey ring between the key and the card, so the key reads as rising out of it.
+    val ringFill = lerp(paper, if (s.dark) Color.White else Color.Black, if (s.dark) 0.06f else 0.05f)
+    val ringEdge = lerp(paper, if (s.dark) Color.White else Color.Black, if (s.dark) 0.14f else 0.17f)
     return this
+        .dropShadow(shape, ringEdge, spread = 5.dp)
+        .dropShadow(shape, ringFill, spread = 4.dp)
         .dropShadow(shape, paperShade(paper, s.dark).copy(alpha = up), lift, lift, depth * 2)
         .dropShadow(shape, paperLight(paper, s.dark).copy(alpha = up), -lift, -lift, depth * 2)
         .dropShadow(shape, glow.copy(alpha = glow.alpha * up), offsetY = depth - 1.dp, blur = depth * 2.2f)
@@ -122,7 +127,7 @@ fun PaperKey(
     contentDescription: String?,
     onClick: () -> Unit,
     size: Dp,
-    round: Boolean = false,
+    round: Boolean = true,
     accent: Boolean = false,
     active: Boolean = false,
     role: Role = Role.Button,

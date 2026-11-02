@@ -112,8 +112,8 @@ private fun TactileButton(
     // Sinks when pressed itself, and together with the card around it.
     val pressed = selfPressed || LocalCardPressed.current
     val down by animateFloatAsState(if (pressed) 1f else 0f, tween(260, easing = CubicBezierEasing(0.23f, 1f, 0.32f, 1f)), label = "key")
-    // Rises out of the paper like the Now Playing keys; rounded square (owner's pick).
-    val shape = RoundedCornerShape(if (s.corner < 8.dp) 6.dp else 14.dp)
+    // Rises out of the paper like the Now Playing keys; round-ended pill (owner picked circles).
+    val shape = if (s.corner < 8.dp) RoundedCornerShape(6.dp) else pill
     val ink = if (accent) s.onTactileAccent else s.tactileInk
     Box(
         modifier
@@ -193,7 +193,7 @@ fun TactileIconButton(
     val pressed = selfPressed || LocalCardPressed.current
     val down by animateFloatAsState(if (pressed) 1f else 0f, tween(260, easing = CubicBezierEasing(0.23f, 1f, 0.32f, 1f)), label = "key")
     // A key moulded out of the paper, same as the Now Playing keys.
-    val shape = RoundedCornerShape(if (s.corner < 8.dp) 6.dp else size / 3.2f)
+    val shape = if (s.corner < 8.dp) RoundedCornerShape(6.dp) else CircleShape
     val accentColor = MaterialTheme.colorScheme.primary
     Box(
         Modifier
