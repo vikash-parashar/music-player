@@ -122,6 +122,24 @@ fun Modifier.skinPressSurface(
             .dropShadow(shape, Color.Black.copy(alpha = 0.6f * up), offsetY = 8.dp * up, blur = 20.dp)
             .background(paper, shape)
             .border(1.dp, Color.White.copy(alpha = 0.05f), shape)
+        TactileLook.Jelly -> base
+            .dropShadow(shape, s.shadowDark.copy(alpha = s.shadowDark.alpha * up), offsetY = 10.dp * up, blur = 22.dp)
+            .background(paper, shape)
+            .innerShadow(shape, Color.White.copy(alpha = (if (s.dark) 0.10f else 0.95f) * up), offsetY = 3.dp, blur = 6.dp)
+        TactileLook.Sticker -> base
+            .graphicsLayer { translationX = 3.dp.toPx() * down; translationY = 3.dp.toPx() * down }
+            .dropShadow(shape, s.shadowDark.copy(alpha = up), 5.dp * up, 5.dp * up)
+            .background(paper, shape)
+            .border(2.5.dp, s.edge, shape)
+        TactileLook.Bubble -> base
+            .dropShadow(shape, Color(0xFF0C4A6E).copy(alpha = 0.14f * up), offsetY = 8.dp * up, blur = 22.dp)
+            .background(s.card, shape)
+            .border(1.dp, s.edge, shape)
+        TactileLook.Arcade -> base
+            .graphicsLayer { translationY = 4.dp.toPx() * down }
+            .dropShadow(shape, s.shadowDark.copy(alpha = up), offsetY = 5.dp * up)
+            .background(paper, shape)
+            .border(1.5.dp, s.edge, shape)
         TactileLook.Paper -> base
             .dropShadow(shape, Color.Black.copy(alpha = (if (s.dark) 0.45f else 0.14f) * up), offsetY = 8.dp * up, blur = 20.dp)
             .background(paper, shape)

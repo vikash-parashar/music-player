@@ -27,6 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
@@ -54,7 +55,7 @@ internal fun paperColor(): Color {
     val s = LocalSkin.current
     val surface = MaterialTheme.colorScheme.surface
     return when {
-        s.look == TactileLook.Frost -> s.card.compositeOver(MaterialTheme.colorScheme.background)
+        s.look == TactileLook.Frost || s.look == TactileLook.Bubble -> s.card.compositeOver(MaterialTheme.colorScheme.background)
         s.look != TactileLook.Paper -> s.card
         s.skin == com.vikash.mp3player.data.UiSkin.Paper -> s.card
         s.style == SurfaceStyle.Raised -> s.card
@@ -87,16 +88,29 @@ internal fun Modifier.emboss(shape: Shape, face: Brush, down: Float, glow: Color
     val ringFill = lerp(red, green0, green)
     val glowRing = s.look == TactileLook.Led
     val keysEdge = s.look == TactileLook.Keys
+    // Press motion per look: jelly squish, bubble squash, arcade drop, sticker slide onto its shadow.
     return this
+        .graphicsLayer {
+            when (s.look) {
+                TactileLook.Jelly -> { scaleX = 1f - 0.08f * down; scaleY = 1f - 0.14f * down }
+                TactileLook.Bubble -> { scaleX = 1f + 0.08f * down; scaleY = 1f - 0.12f * down }
+                TactileLook.Arcade -> translationY = 6.dp.toPx() * down
+                TactileLook.Sticker -> { translationX = 4.dp.toPx() * down; translationY = 4.dp.toPx() * down }
+                else -> Unit
+            }
+        }
         .dropShadow(shape, ringFill.copy(alpha = if (glowRing) 0.85f else ringFill.alpha), blur = if (glowRing) 12.dp else 7.dp, spread = if (glowRing) 4.dp else 6.dp)
         .dropShadow(shape, ringFill, spread = if (glowRing) 3.dp else 5.dp)
         .then(if (s.look == TactileLook.Metal) Modifier.dropShadow(shape, Color(0xFF8A8F98), spread = 1.5.dp) else Modifier)
+        .then(if (s.look == TactileLook.Sticker) Modifier.dropShadow(shape, s.edge.copy(alpha = up), 4.dp * up, 4.dp * up).dropShadow(shape, s.edge, spread = 2.5.dp) else Modifier)
+        .then(if (s.look == TactileLook.Arcade) Modifier.dropShadow(shape, lerp(if (glow.alpha > 0f) s.tactileAccent else s.tactile, Color.Black, 0.5f), offsetY = 6.dp * up + 1.dp) else Modifier)
         .then(if (keysEdge) Modifier.dropShadow(shape, paperShade(paper, s.dark).copy(alpha = up), offsetY = 4.dp * up) else Modifier)
         .dropShadow(shape, Color.Black.copy(alpha = (if (s.dark) 0.5f else 0.3f) * up), offsetY = 2.dp, blur = 3.dp)
         .dropShadow(shape, paperShade(paper, s.dark).copy(alpha = up), lift, lift, depth * 2)
         .dropShadow(shape, paperLight(paper, s.dark).copy(alpha = up), -lift, -lift, depth * 2)
         .dropShadow(shape, glow.copy(alpha = glow.alpha * up), offsetY = depth - 1.dp, blur = depth * 2.2f)
         .background(face, shape)
+        .then(if (s.look == TactileLook.Jelly) Modifier.innerShadow(shape, Color.White.copy(alpha = 0.55f * up), offsetY = 3.dp, blur = 4.dp) else Modifier)
         .innerShadow(shape, paperShade(paper, s.dark).copy(alpha = 0.9f * down), 4.dp, 4.dp, 8.dp)
         .innerShadow(shape, paperLight(paper, s.dark).copy(alpha = down), (-4).dp, (-4).dp, 8.dp)
 }
@@ -109,6 +123,10 @@ private fun ringColors(look: TactileLook): Pair<Color, Color> = when (look) {
     TactileLook.Metal -> Color(0xFFFF6B6B) to Color(0xFF3DDC84)
     TactileLook.Frost -> Color(0xB3FF8FA3) to Color(0xB37BE3AE)
     TactileLook.Keys -> Color(0xFFF49C8C) to Color(0xFF9FD8A8)
+    TactileLook.Jelly -> Color(0xFFF5B1BC) to Color(0xFFA6E3BE)
+    TactileLook.Sticker -> Color(0xFFFFB4BE) to Color(0xFFA6E3BE)
+    TactileLook.Bubble -> Color(0xAAF5B1BC) to Color(0xCCA6E3BE)
+    TactileLook.Arcade -> Color(0x99FF3B5C) to Color(0xCC2EE68A)
 }
 
 /** Face of a paper-coloured key, or of the purple accent key. */
@@ -116,13 +134,24 @@ private fun ringColors(look: TactileLook): Pair<Color, Color> = when (look) {
 internal fun keyFace(accent: Boolean): Brush {
     val s = LocalSkin.current
     val paper = LocalPaper.current.takeOrElse { paperColor() }
-    return if (accent) Brush.linearGradient(listOf(lerp(s.tactileAccent, Color.White, 0.22f), lerp(s.tactileAccent, Color.Black, 0.12f)))
+    return if (accent) when (s.look) {
+        TactileLook.Jelly, TactileLook.Arcade, TactileLook.Bubble ->
+            Brush.radialGradient(listOf(lerp(s.tactileAccent, Color.White, 0.45f), s.tactileAccent, lerp(s.tactileAccent, Color.Black, 0.25f)))
+        TactileLook.Sticker -> Brush.linearGradient(listOf(Color(0xFFFDE047), Color(0xFFFDE047)))
+        else -> Brush.linearGradient(listOf(lerp(s.tactileAccent, Color.White, 0.22f), lerp(s.tactileAccent, Color.Black, 0.12f)))
+    }
     else when (s.look) {
         // Brushed chrome knob.
         TactileLook.Metal -> if (s.dark) Brush.radialGradient(listOf(Color(0xFF6B6F78), Color(0xFF34373D)))
             else Brush.radialGradient(listOf(Color.White, Color(0xFFC9CDD3)))
         TactileLook.Frost -> Brush.linearGradient(listOf(Color.White.copy(alpha = if (s.dark) 0.30f else 0.85f), Color.White.copy(alpha = if (s.dark) 0.12f else 0.45f)))
         TactileLook.Led -> Brush.linearGradient(listOf(lerp(paper, Color.White, 0.08f), lerp(paper, Color.Black, 0.25f)))
+        // Candy: a light top fading into the key colour, with a gloss spot.
+        TactileLook.Jelly -> Brush.radialGradient(listOf(lerp(s.tactile, Color.White, 0.75f), s.tactile, lerp(s.tactile, Color.Black, 0.10f)))
+        TactileLook.Sticker -> Brush.linearGradient(listOf(s.tactile, s.tactile))
+        // Rainbow film on a clear bubble.
+        TactileLook.Bubble -> Brush.radialGradient(listOf(Color.White.copy(alpha = 0.15f), Color(0x55F0ABFC), Color(0x887DD3FC), Color(0x66FDE68A)))
+        TactileLook.Arcade -> Brush.radialGradient(listOf(lerp(s.tactile, Color.White, 0.18f), s.tactile))
         else -> Brush.linearGradient(listOf(lerp(paper, Color.White, if (s.dark) 0.05f else 0.5f), lerp(paper, Color.Black, if (s.dark) 0.08f else 0.04f)))
     }
 }

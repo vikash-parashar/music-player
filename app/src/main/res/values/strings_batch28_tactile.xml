@@ -6,4 +6,8 @@
     <string name="key_color_title">Button colour</string>
     <string name="key_color_desc">Colour of the main buttons, like Play, Open and Scan.</string>
     <string name="key_color_theme">Theme colour</string>
+    <string name="skin_jelly">Glossy Jelly</string>
+    <string name="skin_sticker">Cartoon Sticker</string>
+    <string name="skin_bubble">Soap Bubble</string>
+    <string name="skin_arcade">Arcade</string>
 </resources>

@@ -16,6 +16,11 @@ enum class UiSkin(val id: String, @StringRes val labelRes: Int) {
     HiFi("hifi", R.string.skin_hifi),
     Glass("glass", R.string.skin_glass),
     Keys("keys", R.string.skin_keys),
+    // Playful button themes (owner's picks, 2026-11-02).
+    Jelly("jelly", R.string.skin_jelly),
+    Sticker("sticker", R.string.skin_sticker),
+    Bubble("bubble", R.string.skin_bubble),
+    Arcade("arcade", R.string.skin_arcade),
     Minimal("minimal", R.string.skin_minimal),
     Neu("neu", R.string.skin_neu),
     Brutal("brutal", R.string.skin_brutal),

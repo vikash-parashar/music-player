@@ -35,7 +35,7 @@ import com.vikash.mp3player.data.UiSkin
  * How the tactile parts are drawn (paper cards, keys rising out of them with a red/green ring).
  * Older looks use [Paper] with their own colours.
  */
-enum class TactileLook { Paper, Clay, Led, Metal, Frost, Keys }
+enum class TactileLook { Paper, Clay, Led, Metal, Frost, Keys, Jelly, Sticker, Bubble, Arcade }
 
 /** How cards, the dock and the mini player are drawn in a look. */
 enum class SurfaceStyle { Material, Hairline, Glass, Raised, Clay, Brutal, Tile, Metal }
@@ -121,6 +121,51 @@ fun skinSpec(skin: UiSkin, dark: Boolean, hapticsOn: Boolean = true): SkinSpec =
         card = Color(0xFFFBF5E6), edge = Color(0xFFD8CBAE), corner = 14.dp, shadowDark = Color(0xFFC9BB9A),
         tactile = Color(0xFFF1E7CF), tactileInk = Color(0xFF4A4036), tactileAccent = Color(0xFFC2410C),
         accentHue = 25f, haptic = KEY, hapticsOn = hapticsOn, look = TactileLook.Keys,
+    )
+    // Glossy Jelly: shiny candy keys that squish when pressed.
+    UiSkin.Jelly -> if (dark) SkinSpec(
+        skin, true, SurfaceStyle.Raised, Brush.verticalGradient(listOf(Color(0xFF241523), Color(0xFF1A1020))),
+        card = Color(0xFF331F31), edge = Color.Transparent, corner = 28.dp,
+        shadowDark = Color(0xAA000000), shadowLight = Color(0x14FFFFFF),
+        tactile = Color(0xFF3D2639), tactileInk = Color(0xFFFBD5E5), tactileAccent = Color(0xFFE11D48),
+        accentHue = 345f, haptic = CONTEXT, hapticsOn = hapticsOn, pressHaptics = true, look = TactileLook.Jelly,
+    ) else SkinSpec(
+        skin, false, SurfaceStyle.Raised, Brush.verticalGradient(listOf(Color(0xFFFDF2F8), Color(0xFFFCE7F3))),
+        card = Color(0xFFFFF7FB), edge = Color.Transparent, corner = 28.dp,
+        shadowDark = Color(0x55BE123C), shadowLight = Color.White,
+        tactile = Color(0xFFFFE4EF), tactileInk = Color(0xFF881337), tactileAccent = Color(0xFFE11D48),
+        accentHue = 345f, haptic = CONTEXT, hapticsOn = hapticsOn, pressHaptics = true, look = TactileLook.Jelly,
+    )
+    // Cartoon Sticker: thick black outline and a hard offset shadow, like a comic.
+    UiSkin.Sticker -> if (dark) SkinSpec(
+        skin, true, SurfaceStyle.Brutal, Brush.verticalGradient(listOf(Color(0xFF1C1A16), Color(0xFF1C1A16))),
+        card = Color(0xFF2A2721), edge = Color(0xFFFDE047), corner = 22.dp, shadowDark = Color(0xFFFDE047),
+        tactile = Color(0xFF3A362E), tactileInk = Color(0xFFFFF7D6), tactileAccent = Color(0xFFFB7185), onTactileAccent = Color(0xFF111111),
+        accentHue = 350f, haptic = KEY, hapticsOn = hapticsOn, look = TactileLook.Sticker,
+    ) else SkinSpec(
+        skin, false, SurfaceStyle.Brutal, Brush.verticalGradient(listOf(Color(0xFFFEF3C7), Color(0xFFFEF3C7))),
+        card = Color.White, edge = Color(0xFF111111), corner = 22.dp, shadowDark = Color(0xFF111111),
+        tactile = Color(0xFFFFFBEB), tactileInk = Color(0xFF111111), tactileAccent = Color(0xFFFB7185), onTactileAccent = Color(0xFF111111),
+        accentHue = 350f, haptic = KEY, hapticsOn = hapticsOn, look = TactileLook.Sticker,
+    )
+    // Soap Bubble: see-through rainbow bubbles that squash sideways.
+    UiSkin.Bubble -> if (dark) SkinSpec(
+        skin, true, SurfaceStyle.Glass, Brush.verticalGradient(listOf(Color(0xFF0B1E2E), Color(0xFF1B1433))),
+        card = Color.White.copy(alpha = 0.10f), edge = Color.White.copy(alpha = 0.22f), corner = 26.dp,
+        tactile = Color(0xFF1A2A3C), tactileInk = Color(0xFFE0F2FE), tactileAccent = Color(0xFF0EA5E9),
+        accentHue = 200f, haptic = TAP, hapticsOn = hapticsOn, look = TactileLook.Bubble,
+    ) else SkinSpec(
+        skin, false, SurfaceStyle.Glass, Brush.verticalGradient(listOf(Color(0xFFE0F2FE), Color(0xFFFAE8FF))),
+        card = Color.White.copy(alpha = 0.55f), edge = Color.White.copy(alpha = 0.85f), corner = 26.dp,
+        tactile = Color(0xFFF0F9FF), tactileInk = Color(0xFF0C4A6E), tactileAccent = Color(0xFF0284C7),
+        accentHue = 200f, haptic = TAP, hapticsOn = hapticsOn, look = TactileLook.Bubble,
+    )
+    // Arcade: chunky game-machine buttons that drop down with a solid click. Always dark.
+    UiSkin.Arcade -> SkinSpec(
+        skin, true, SurfaceStyle.Tile, Brush.verticalGradient(listOf(Color(0xFF1A1033), Color(0xFF120A26))),
+        card = Color(0xFF241747), edge = Color(0xFF3B2A6B), corner = 18.dp, shadowDark = Color(0xFF0A0617),
+        tactile = Color(0xFF2B1B4F), tactileInk = Color(0xFFEDE9FE), tactileAccent = Color(0xFFE11D48),
+        accentHue = 345f, haptic = KEY, hapticsOn = hapticsOn, look = TactileLook.Arcade,
     )
     UiSkin.Minimal -> if (dark) SkinSpec(
         skin, true, SurfaceStyle.Hairline, null, card = Color.Transparent, edge = Color(0xFF2A2A2A), corner = 6.dp,
@@ -233,6 +278,13 @@ fun skinColorScheme(skin: UiSkin, dark: Boolean): ColorScheme? = when (skin) {
     UiSkin.Midnight -> scheme(true, Color(0xFFA78BFA), Color(0xFF16171C), Color(0xFF16171C), Color(0xFF1F2027), Color(0xFF22232B), Color(0xFFECEDF3), Color(0xFF9A9CAA), Color(0xFF2E3038))
     UiSkin.Keys -> if (dark) scheme(true, Color(0xFFFB923C), Color(0xFF24201A), Color(0xFF24201A), Color(0xFF332D24), Color(0xFF3B342A), Color(0xFFF1E7CF), Color(0xFFB3A68D), Color(0xFF4A4134))
         else scheme(false, Color(0xFFC2410C), Color.White, Color(0xFFEFE6D2), Color(0xFFFBF5E6), Color(0xFFFBF5E6), Color(0xFF2B2620), Color(0xFF6E6455), Color(0xFFD8CBAE))
+    UiSkin.Jelly -> if (dark) scheme(true, Color(0xFFFB7185), Color(0xFF1A1020), Color(0xFF1A1020), Color(0xFF331F31), Color(0xFF3A2438), Color(0xFFFCE7F3), Color(0xFFC9A3B8), Color(0xFF4A2F46))
+        else scheme(false, Color(0xFFE11D48), Color.White, Color(0xFFFDF2F8), Color(0xFFFFF7FB), Color(0xFFFFF7FB), Color(0xFF4C0519), Color(0xFF9F5A75), Color(0xFFF9C9DC))
+    UiSkin.Sticker -> if (dark) scheme(true, Color(0xFFFDE047), Color(0xFF111111), Color(0xFF1C1A16), Color(0xFF2A2721), Color(0xFF2A2721), Color(0xFFFFF7D6), Color(0xFFD6CFB3), Color(0xFFFDE047))
+        else scheme(false, Color(0xFFE11D48), Color.White, Color(0xFFFEF3C7), Color.White, Color.White, Color(0xFF111111), Color(0xFF44403C), Color(0xFF111111))
+    UiSkin.Bubble -> if (dark) scheme(true, Color(0xFF7DD3FC), Color(0xFF0B1E2E), Color(0xFF0B1E2E), Color(0x1AFFFFFF), Color(0xFF16263A), Color(0xFFE0F2FE), Color(0xFF9CC3DA), Color(0x38FFFFFF))
+        else scheme(false, Color(0xFF0284C7), Color.White, Color(0xFFE0F2FE), Color(0x8CFFFFFF), Color(0xFFF5FBFF), Color(0xFF0C4A6E), Color(0xFF4B6B80), Color(0x330C4A6E))
+    UiSkin.Arcade -> scheme(true, Color(0xFFFF4D6D), Color.White, Color(0xFF1A1033), Color(0xFF241747), Color(0xFF2B1B4F), Color(0xFFEDE9FE), Color(0xFFA99BD1), Color(0xFF3B2A6B))
     UiSkin.Minimal -> if (dark) scheme(true, Color(0xFFF5F5F5), Color(0xFF111111), Color(0xFF0A0A0A), Color(0xFF161616), Color(0xFF171717), Color(0xFFF5F5F5), Color(0xFF8A8A8A), Color(0xFF2A2A2A))
         else scheme(false, Color(0xFF111111), Color.White, Color(0xFFFAFAFA), Color(0xFFF2F2F2), Color.White, Color(0xFF111111), Color(0xFF8A8A8A), Color(0xFFE5E5E5))
     UiSkin.Glass -> if (dark) scheme(true, Color.White, Color(0xFF4C1D95), Color(0xFF2A1F5C), Color(0x33FFFFFF), Color(0xFF2E2563), Color.White, Color(0xB3FFFFFF), Color(0x47FFFFFF))
@@ -255,6 +307,8 @@ fun skinShapes(skin: UiSkin): Shapes? {
         UiSkin.Minimal -> listOf(2, 4, 6, 8, 12)
         UiSkin.Glass, UiSkin.Neu, UiSkin.Paper, UiSkin.Midnight -> listOf(12, 16, 20, 24, 28)
         UiSkin.Keys -> listOf(6, 8, 12, 14, 16)
+        UiSkin.Jelly, UiSkin.Bubble -> listOf(16, 20, 24, 28, 32)
+        UiSkin.Sticker, UiSkin.Arcade -> listOf(10, 14, 18, 22, 24)
         UiSkin.Clay -> listOf(14, 20, 26, 30, 36)
         UiSkin.Brutal -> listOf(4, 4, 6, 6, 8)
         UiSkin.Bento -> listOf(10, 14, 18, 22, 26)
@@ -293,6 +347,10 @@ fun skinTypography(skin: UiSkin, base: Typography): Typography? = when (skin) {
     UiSkin.Keys -> base.map { it.copy(fontFamily = FontFamily.Monospace) }
         .headings { it.copy(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold) }
     UiSkin.Clay -> base.headings { it.copy(fontWeight = FontWeight.ExtraBold) }
+    UiSkin.Jelly, UiSkin.Bubble -> base.headings { it.copy(fontWeight = FontWeight.ExtraBold, letterSpacing = (-0.2).sp) }
+    UiSkin.Sticker -> base.headings { it.copy(fontWeight = FontWeight.Black, letterSpacing = (-0.3).sp) }
+        .copy(labelLarge = base.labelLarge.copy(fontWeight = FontWeight.Black))
+    UiSkin.Arcade -> base.headings { it.copy(fontFamily = condensed, fontWeight = FontWeight.Black, letterSpacing = 0.8.sp) }
     UiSkin.Brutal -> base.headings { it.copy(fontWeight = FontWeight.Black, letterSpacing = (-0.4).sp) }
         .copy(labelLarge = base.labelLarge.copy(fontWeight = FontWeight.Black, letterSpacing = 0.6.sp))
     UiSkin.Bento -> base.headings { it.copy(fontWeight = FontWeight.Bold, letterSpacing = (-0.3).sp) }
