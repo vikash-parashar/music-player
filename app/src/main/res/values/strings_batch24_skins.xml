@@ -3,12 +3,12 @@
     <!-- Pro app looks (skins) -->
     <string name="skin_classic">Classic</string>
     <string name="skin_minimal">Minimal</string>
-    <string name="skin_glass">Glass</string>
+    <string name="skin_glass">Frost Glass</string>
     <string name="skin_neu">Neumorphic</string>
-    <string name="skin_clay">Clay</string>
+    <string name="skin_clay">Soft Clay</string>
     <string name="skin_brutal">Brutal</string>
     <string name="skin_bento">Bento</string>
-    <string name="skin_hifi">Hi-Fi</string>
+    <string name="skin_hifi">Hi-Fi Metal</string>
     <string name="skin_card_title">App style</string>
     <string name="skin_card_desc">Changes the whole app: buttons, lists, switches, cards and the player.</string>
     <string name="skin_try">Try 30s</string>

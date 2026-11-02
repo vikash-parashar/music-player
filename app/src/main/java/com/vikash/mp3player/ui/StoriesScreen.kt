@@ -11,6 +11,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import com.vikash.mp3player.ui.skin.skinPressFrame
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -229,7 +230,8 @@ fun StoryCover(series: StorySeries, modifier: Modifier, big: Boolean = false, on
     val fg = Color(series.fg)
     val accent = Color(series.accent)
     Box(
-        modifier.clip(RoundedCornerShape(if (big) 22.dp else 16.dp))
+        modifier.skinPressFrame(RoundedCornerShape(if (big) 22.dp else 16.dp))
+            .clip(RoundedCornerShape(if (big) 22.dp else 16.dp))
             .background(Brush.verticalGradient(listOf(bg, Color.Black)))
             .border(1.dp, fg.copy(alpha = 0.12f), RoundedCornerShape(if (big) 22.dp else 16.dp))
             .clickable(onClick = onClick),

@@ -28,6 +28,9 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.filled.RepeatOne
 import androidx.compose.material.icons.filled.Shuffle
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.ui.semantics.Role
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material.icons.filled.DirectionsCar
@@ -51,8 +54,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import com.vikash.mp3player.ui.skin.LocalSkin
-import com.vikash.mp3player.ui.skin.TactileIconButton
-import com.vikash.mp3player.ui.skin.GlowToggle
+import com.vikash.mp3player.ui.skin.PaperKey
+import com.vikash.mp3player.ui.skin.PaperPanel
 import com.vikash.mp3player.ui.skin.skinBackdrop
 import com.vikash.mp3player.ui.skin.skinScreenColor
 import androidx.compose.material3.Text
@@ -321,25 +324,30 @@ fun NowPlayingScreen(
                 Text(formatDuration(state.durationMs), style = MaterialTheme.typography.bodySmall)
             }
 
-            Row(
+            if (!LocalSkin.current.isClassic) {
+                // Pro app styles: the five keys rise out of one sheet of paper.
+                PaperPanel(Modifier.padding(vertical = 14.dp)) {
+                    PaperKey(Icons.Default.Shuffle, stringResource(R.string.player_shuffle), player::toggleShuffle, size = 44.dp, active = state.shuffle, role = Role.Switch)
+                    PaperKey(Icons.Default.SkipPrevious, stringResource(R.string.common_previous), { player.previous() }, size = 54.dp)
+                    PaperKey(
+                        if (state.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                        stringResource(if (state.isPlaying) R.string.common_pause else R.string.common_play),
+                        player::togglePlay, size = 68.dp, accent = true,
+                    )
+                    PaperKey(Icons.Default.SkipNext, stringResource(R.string.common_next), { player.next() }, size = 54.dp)
+                    PaperKey(
+                        if (state.repeatMode == Player.REPEAT_MODE_ONE) Icons.Default.RepeatOne else Icons.Default.Repeat,
+                        stringResource(R.string.player_repeat), player::cycleRepeat, size = 44.dp,
+                        active = state.repeatMode != Player.REPEAT_MODE_OFF, role = Role.Switch,
+                    )
+                }
+            } else Row(
                 Modifier.fillMaxWidth().padding(vertical = 16.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 val active = MaterialTheme.colorScheme.primary
                 val inactive = MaterialTheme.colorScheme.onSurfaceVariant
-                if (!LocalSkin.current.isClassic) {
-                    // Pro app styles: square push keys with a dome that sinks in.
-                    GlowToggle(state.shuffle, player::toggleShuffle, Icons.Default.Shuffle, stringResource(R.string.player_shuffle), size = 44.dp)
-                    TactileIconButton(Icons.Default.SkipPrevious, stringResource(R.string.common_previous), { player.previous() }, size = 54.dp)
-                    GradientPlayButton(state.isPlaying, 72.dp, player::togglePlay)
-                    TactileIconButton(Icons.Default.SkipNext, stringResource(R.string.common_next), { player.next() }, size = 54.dp)
-                    GlowToggle(
-                        state.repeatMode != Player.REPEAT_MODE_OFF, player::cycleRepeat,
-                        if (state.repeatMode == Player.REPEAT_MODE_ONE) Icons.Default.RepeatOne else Icons.Default.Repeat,
-                        stringResource(R.string.player_repeat), size = 44.dp,
-                    )
-                } else {
                 IconButton(onClick = player::toggleShuffle) {
                     Icon(Icons.Default.Shuffle, stringResource(R.string.player_shuffle), tint = if (state.shuffle) active else inactive)
                 }
@@ -352,7 +360,6 @@ fun NowPlayingScreen(
                         stringResource(R.string.player_repeat),
                         tint = if (state.repeatMode == Player.REPEAT_MODE_OFF) inactive else active,
                     )
-                }
                 }
             }
 

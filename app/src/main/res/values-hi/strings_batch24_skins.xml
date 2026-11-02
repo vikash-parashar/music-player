@@ -2,12 +2,12 @@
 <resources>
     <string name="skin_classic">क्लासिक</string>
     <string name="skin_minimal">मिनिमल</string>
-    <string name="skin_glass">ग्लास</string>
+    <string name="skin_glass">फ्रॉस्ट ग्लास</string>
     <string name="skin_neu">न्यूमॉर्फिक</string>
-    <string name="skin_clay">क्ले</string>
+    <string name="skin_clay">सॉफ्ट क्ले</string>
     <string name="skin_brutal">ब्रूटल</string>
     <string name="skin_bento">बेंटो</string>
-    <string name="skin_hifi">हाई-फाई</string>
+    <string name="skin_hifi">हाई-फाई मेटल</string>
     <string name="skin_card_title">ऐप स्टाइल</string>
     <string name="skin_card_desc">पूरा ऐप बदल जाता है: बटन, लिस्ट, स्विच, कार्ड और प्लेयर।</string>
     <string name="skin_try">30 सेकंड आज़माएँ</string>

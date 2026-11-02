@@ -120,6 +120,15 @@ class AppPrefs(context: Context) {
         prefs.edit().putString(KEY_UI_SKIN, skin.id).apply()
     }
 
+    /** Colour of the main buttons in the Pro looks. */
+    private val _keyColor = MutableStateFlow(KeyColor.from(prefs.getString(KEY_KEY_COLOR, null)))
+    val keyColor: StateFlow<KeyColor> = _keyColor.asStateFlow()
+
+    fun setKeyColor(color: KeyColor) {
+        _keyColor.value = color
+        prefs.edit().putString(KEY_KEY_COLOR, color.id).apply()
+    }
+
     /** Light vibration on taps in the Pro looks. */
     private val _skinHaptics = MutableStateFlow(prefs.getBoolean(KEY_SKIN_HAPTICS, true))
     val skinHaptics: StateFlow<Boolean> = _skinHaptics.asStateFlow()
@@ -228,6 +237,7 @@ class AppPrefs(context: Context) {
         const val KEY_LITE = "lite_mode"
         const val KEY_UI_SKIN = "ui_skin"
         const val KEY_SKIN_HAPTICS = "skin_haptics"
+        const val KEY_KEY_COLOR = "key_color"
         const val KEY_KEEP_GOING = "keep_going"
     }
 }

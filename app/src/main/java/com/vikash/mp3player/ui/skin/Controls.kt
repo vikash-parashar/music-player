@@ -56,7 +56,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
@@ -82,60 +81,20 @@ fun SkinCard(modifier: Modifier = Modifier, content: @Composable ColumnScope.() 
         Card(modifier, content = content)
         return
     }
-    CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
-        Column(modifier.skinSurface(s.shape), content = content)
+    // One sheet of paper: held down, the whole card is pushed in, with its buttons.
+    val pressed = remember { mutableStateOf(false) }
+    CompositionLocalProvider(
+        LocalContentColor provides MaterialTheme.colorScheme.onSurface,
+        LocalCardPressed provides pressed.value,
+        LocalPaper provides paperColor(),
+    ) {
+        Column(modifier.skinPressSurface(s.shape, pressed), content = content)
     }
 }
 
 // ---------- push buttons ----------
 
 private val pill = RoundedCornerShape(percent = 50)
-
-/** The square base the key sits in (inset, like a socket). */
-@Composable
-private fun Modifier.tactileBase(shape: Shape): Modifier {
-    val s = LocalSkin.current
-    if (s.style == SurfaceStyle.Raised) return this
-        .background(s.tactile, shape)
-        .innerShadow(shape, s.shadowDark.copy(alpha = 0.75f), 3.dp, 3.dp, 7.dp)
-        .innerShadow(shape, s.shadowLight, (-3).dp, (-3).dp, 7.dp)
-    return this
-        .background(s.tactile, shape)
-        .innerShadow(shape, Color.Black.copy(alpha = 0.25f), blur = 12.dp, spread = 2.dp)
-        .innerShadow(shape, Color.White.copy(alpha = if (s.dark) 0.25f else 0.9f), offsetY = 1.5.dp, blur = 1.dp)
-        .innerShadow(shape, Color.Black.copy(alpha = 0.25f), offsetY = (-1.5).dp, blur = 1.dp)
-}
-
-/** The domed key: lifted with a soft shadow, sunk in with inset shading while pressed. */
-@Composable
-private fun Modifier.tactileDome(shape: Shape, tint: Color, pressed: Boolean): Modifier {
-    val s = LocalSkin.current
-    if (s.style == SurfaceStyle.Raised) {
-        // Moulded key: convex sheen when up, flips to a concave dip when pressed.
-        val light = androidx.compose.ui.graphics.lerp(tint, Color.White, if (s.dark) 0.06f else 0.35f)
-        val shade = androidx.compose.ui.graphics.lerp(tint, Color.Black, if (s.dark) 0.18f else 0.08f)
-        return if (pressed) this
-            .background(Brush.linearGradient(listOf(shade, light)), shape)
-            .innerShadow(shape, s.shadowDark, 4.dp, 4.dp, 9.dp)
-            .innerShadow(shape, s.shadowLight, (-4).dp, (-4).dp, 9.dp)
-        else this
-            .dropShadow(shape, s.shadowDark, 6.dp, 6.dp, 12.dp)
-            .dropShadow(shape, s.shadowLight, (-6).dp, (-6).dp, 12.dp)
-            .background(Brush.linearGradient(listOf(light, shade)), shape)
-    }
-    val hi = if (s.dark) 0.25f else 1f
-    val base = this
-        .dropShadow(shape, Color.Black.copy(alpha = if (pressed) 0.35f else 0.45f), offsetY = 5.dp, blur = 9.dp, spread = (-2).dp)
-        .dropShadow(shape, Color.White.copy(alpha = 0.6f * hi), offsetY = (-3).dp, blur = 5.dp)
-        .background(tint, shape)
-    return if (pressed) base
-        .innerShadow(shape, Color.White.copy(alpha = 0.9f * hi), offsetY = (-3).dp, blur = 10.dp, spread = 1.dp)
-        .innerShadow(shape, Color.Black.copy(alpha = 0.4f), offsetY = 3.dp, blur = 9.dp)
-    else base
-        .innerShadow(shape, Color.Black.copy(alpha = 0.2f), offsetY = (-1).dp, blur = 2.dp)
-        .innerShadow(shape, Color.White.copy(alpha = 0.8f * hi), blur = 2.dp, spread = 1.dp)
-        .innerShadow(shape, Color.White.copy(alpha = 0.2f * hi), offsetY = 8.dp, blur = 12.dp)
-}
 
 @Composable
 private fun TactileButton(
@@ -148,27 +107,28 @@ private fun TactileButton(
     val s = LocalSkin.current
     val haptic = rememberSkinHaptic()
     val source = remember { MutableInteractionSource() }
-    val pressed by source.collectIsPressedAsState()
-    val pairHaptics = SkinPressHaptics(pressed)
-    val press by animateFloatAsState(if (pressed) 0.97f else 1f, tween(300, easing = CubicBezierEasing(0.23f, 1f, 0.32f, 1f)), label = "key")
-    val baseShape = RoundedCornerShape(if (s.corner < 8.dp) 6.dp else if (s.style == SurfaceStyle.Raised) 18.dp else 12.dp)
-    val tint = if (accent) s.tactileAccent else s.tactile
+    val selfPressed by source.collectIsPressedAsState()
+    val pairHaptics = SkinPressHaptics(selfPressed)
+    // Sinks when pressed itself, and together with the card around it.
+    val pressed = selfPressed || LocalCardPressed.current
+    val down by animateFloatAsState(if (pressed) 1f else 0f, tween(260, easing = CubicBezierEasing(0.23f, 1f, 0.32f, 1f)), label = "key")
+    // Rises out of the paper like the Now Playing keys; round-ended pill (owner picked circles).
+    val shape = if (s.corner < 8.dp) RoundedCornerShape(6.dp) else pill
     val ink = if (accent) s.onTactileAccent else s.tactileInk
     Box(
         modifier
-            .defaultMinSize(minHeight = 52.dp)
+            .defaultMinSize(minHeight = 46.dp)
             .alpha(if (enabled) 1f else 0.45f)
-            .tactileBase(baseShape)
+            .emboss(shape, keyFace(accent), down, glow = if (accent) s.tactileAccent.copy(alpha = 0.3f) else Color.Transparent, depth = 5.dp)
             .clickable(source, indication = null, enabled = enabled, role = Role.Button) { if (!pairHaptics) haptic(); onClick() },
         contentAlignment = Alignment.Center,
     ) {
-        Box(Modifier.matchParentSize().padding(5.dp).scale(press).tactileDome(pill, tint, pressed))
         CompositionLocalProvider(
             LocalContentColor provides ink,
             LocalTextStyle provides MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
         ) {
             Row(
-                Modifier.padding(horizontal = 24.dp, vertical = 14.dp),
+                Modifier.padding(horizontal = 20.dp, vertical = 12.dp).scale(1f - 0.03f * down),
                 horizontalArrangement = androidx.compose.foundation.layout.Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically,
                 content = content,
@@ -228,27 +188,24 @@ fun TactileIconButton(
     val s = LocalSkin.current
     val haptic = rememberSkinHaptic()
     val source = remember { MutableInteractionSource() }
-    val pressed by source.collectIsPressedAsState()
-    val pairHaptics = SkinPressHaptics(pressed)
-    val press by animateFloatAsState(if (pressed) 0.94f else 1f, tween(300, easing = CubicBezierEasing(0.23f, 1f, 0.32f, 1f)), label = "key")
-    val baseShape = RoundedCornerShape(if (s.corner < 8.dp) 6.dp else size / 3.2f)
+    val selfPressed by source.collectIsPressedAsState()
+    val pairHaptics = SkinPressHaptics(selfPressed)
+    val pressed = selfPressed || LocalCardPressed.current
+    val down by animateFloatAsState(if (pressed) 1f else 0f, tween(260, easing = CubicBezierEasing(0.23f, 1f, 0.32f, 1f)), label = "key")
+    // A key moulded out of the paper, same as the Now Playing keys.
+    val shape = if (s.corner < 8.dp) RoundedCornerShape(6.dp) else CircleShape
     val accentColor = MaterialTheme.colorScheme.primary
     Box(
         Modifier
             .size(size)
-            .tactileBase(baseShape)
+            .dropShadow(shape, accentColor.copy(alpha = 0.40f * glow * (1f - down)), blur = 18.dp, spread = 2.dp)
+            .emboss(shape, keyFace(accent), down, glow = if (accent) s.tactileAccent.copy(alpha = 0.35f) else Color.Transparent)
             .clickable(source, indication = null, role = Role.Button) { if (!pairHaptics) haptic(); onClick() },
         contentAlignment = Alignment.Center,
     ) {
-        if (glow > 0f && !pressed) Box(
-            Modifier.size(size * 0.7f)
-                .dropShadow(CircleShape, accentColor.copy(alpha = 0.40f * glow), blur = 18.dp, spread = 2.dp)
-                .dropShadow(CircleShape, accentColor.copy(alpha = 0.18f * glow), spread = 3.dp),
-        )
-        Box(Modifier.size(size * 0.7f).scale(press).tactileDome(CircleShape, if (accent) s.tactileAccent else s.tactile, pressed))
         Icon(
             icon, contentDescription,
-            Modifier.size(size * if (accent) 0.4f else 0.36f).scale(press),
+            Modifier.size(size * if (accent) 0.42f else 0.38f).scale(1f - 0.06f * down),
             tint = tint ?: if (accent) s.onTactileAccent else s.tactileInk,
         )
     }
@@ -285,17 +242,17 @@ fun Switch3D(checked: Boolean, onCheckedChange: ((Boolean) -> Unit)?, modifier: 
     val knobX by animateDpAsState(if (checked) w * 0.40f else w * 0.05f, tween(600, easing = snap), label = "knob")
     val litShade by animateFloatAsState(if (checked) 0f else 1f, tween(600, easing = snap), label = "lit")
     val greyShade by animateFloatAsState(if (checked) 1f else 0f, tween(600, easing = snap), label = "grey")
-    val hue = s.accentHue
+    // Owner, 2026-11-02: green when on, red when off.
     val lit = Brush.verticalGradient(
-        0.10f to Color.hsl((hue + 20f) % 360f, 0.95f, 0.80f),
-        0.30f to Color.hsl((hue + 20f) % 360f, 1f, 0.60f),
-        0.60f to Color.hsl(hue, 0.90f, 0.50f),
-        0.75f to Color.hsl(hue, 0.90f, 0.60f),
-        1f to Color.hsl(hue, 0.90f, 0.50f),
+        0.10f to Color.hsl(150f, 0.70f, 0.75f),
+        0.30f to Color.hsl(148f, 0.70f, 0.52f),
+        0.60f to Color.hsl(146f, 0.70f, 0.40f),
+        0.75f to Color.hsl(146f, 0.70f, 0.47f),
+        1f to Color.hsl(146f, 0.70f, 0.40f),
     )
     val grey = Brush.verticalGradient(
-        0f to Color.hsl(220f, 0.2f, 0.95f), 0.6f to Color.hsl(220f, 0.2f, 0.65f),
-        0.7f to Color.hsl(220f, 0.2f, 0.70f), 1f to Color.hsl(220f, 0.2f, 0.65f),
+        0f to Color.hsl(352f, 0.85f, 0.85f), 0.6f to Color.hsl(352f, 0.70f, 0.58f),
+        0.7f to Color.hsl(352f, 0.70f, 0.63f), 1f to Color.hsl(352f, 0.70f, 0.58f),
     )
     val dark15 = Color.hsl(220f, 0.2f, 0.15f)
     val dark45 = Color.hsl(220f, 0.2f, 0.45f)

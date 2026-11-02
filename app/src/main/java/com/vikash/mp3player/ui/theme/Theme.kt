@@ -3,6 +3,7 @@ package com.vikash.mp3player.ui.theme
 import com.vikash.mp3player.data.ColorProfile
 import com.vikash.mp3player.data.ThemeMode
 import com.vikash.mp3player.data.UiSkin
+import com.vikash.mp3player.data.KeyColor
 import com.vikash.mp3player.ui.skin.LocalSkin
 import com.vikash.mp3player.ui.skin.skinColorScheme
 import com.vikash.mp3player.ui.skin.skinShapes
@@ -185,6 +186,7 @@ fun Mp3PlayerTheme(
     profile: ColorProfile = ColorProfile.Ampli,
     skin: UiSkin = UiSkin.Classic,
     skinHaptics: Boolean = true,
+    keyColor: KeyColor = KeyColor.Theme,
     content: @Composable () -> Unit,
 ) {
     val dark = when (mode) {
@@ -209,12 +211,20 @@ fun Mp3PlayerTheme(
             surfaceContainerHigh = Color(0xFF161616),
         )
     }
+    // Button colour picked in Settings (Pro looks only): the main keys and accents follow it.
+    var spec = skinSpec(skin, dark, skinHaptics)
+    if (skin != UiSkin.Classic && keyColor != KeyColor.Theme) {
+        val c = Color(if (spec.dark) keyColor.light else keyColor.argb)
+        val key = Color(keyColor.argb)
+        scheme = scheme.copy(primary = c, onPrimary = if (spec.dark) Color.Black else Color.White, secondary = c, tertiary = c)
+        spec = spec.copy(tactileAccent = if (keyColor == KeyColor.Black && spec.dark) c else key, onTactileAccent = Color.White)
+    }
     val shapes = skinShapes(skin)
     MaterialTheme(
         colorScheme = scheme,
         typography = skinTypography(skin, AmpliTypography) ?: AmpliTypography,
         shapes = shapes ?: MaterialTheme.shapes,
     ) {
-        CompositionLocalProvider(LocalSkin provides skinSpec(skin, dark, skinHaptics), content = content)
+        CompositionLocalProvider(LocalSkin provides spec, content = content)
     }
 }
