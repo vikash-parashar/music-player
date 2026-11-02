@@ -242,17 +242,17 @@ fun Switch3D(checked: Boolean, onCheckedChange: ((Boolean) -> Unit)?, modifier: 
     val knobX by animateDpAsState(if (checked) w * 0.40f else w * 0.05f, tween(600, easing = snap), label = "knob")
     val litShade by animateFloatAsState(if (checked) 0f else 1f, tween(600, easing = snap), label = "lit")
     val greyShade by animateFloatAsState(if (checked) 1f else 0f, tween(600, easing = snap), label = "grey")
-    val hue = s.accentHue
+    // Owner, 2026-11-02: green when on, red when off.
     val lit = Brush.verticalGradient(
-        0.10f to Color.hsl((hue + 20f) % 360f, 0.95f, 0.80f),
-        0.30f to Color.hsl((hue + 20f) % 360f, 1f, 0.60f),
-        0.60f to Color.hsl(hue, 0.90f, 0.50f),
-        0.75f to Color.hsl(hue, 0.90f, 0.60f),
-        1f to Color.hsl(hue, 0.90f, 0.50f),
+        0.10f to Color.hsl(150f, 0.70f, 0.75f),
+        0.30f to Color.hsl(148f, 0.70f, 0.52f),
+        0.60f to Color.hsl(146f, 0.70f, 0.40f),
+        0.75f to Color.hsl(146f, 0.70f, 0.47f),
+        1f to Color.hsl(146f, 0.70f, 0.40f),
     )
     val grey = Brush.verticalGradient(
-        0f to Color.hsl(220f, 0.2f, 0.95f), 0.6f to Color.hsl(220f, 0.2f, 0.65f),
-        0.7f to Color.hsl(220f, 0.2f, 0.70f), 1f to Color.hsl(220f, 0.2f, 0.65f),
+        0f to Color.hsl(352f, 0.85f, 0.85f), 0.6f to Color.hsl(352f, 0.70f, 0.58f),
+        0.7f to Color.hsl(352f, 0.70f, 0.63f), 1f to Color.hsl(352f, 0.70f, 0.58f),
     )
     val dark15 = Color.hsl(220f, 0.2f, 0.15f)
     val dark45 = Color.hsl(220f, 0.2f, 0.45f)

@@ -68,15 +68,16 @@ internal fun paperShade(paper: Color, dark: Boolean) = lerp(paper, Color.Black, 
  * 0..1 pushes it back in (the shading flips inside). Put it before clickable; it draws the face.
  */
 @Composable
-internal fun Modifier.emboss(shape: Shape, face: Brush, down: Float, glow: Color = Color.Transparent, depth: Dp = 7.dp): Modifier {
+internal fun Modifier.emboss(shape: Shape, face: Brush, down: Float, glow: Color = Color.Transparent, depth: Dp = 7.dp, green: Float = down): Modifier {
     val s = LocalSkin.current
     val paper = LocalPaper.current.takeOrElse { paperColor() }
     val up = 1f - down
     val lift = depth * up
     // A soft grey ring between the key and the card, so the key reads as rising out of it.
-    // Deeper grey in the gap (owner, 2026-11-02) plus a small contact shadow right under the key.
-    val ringFill = lerp(paper, if (s.dark) Color.White else Color.Black, if (s.dark) 0.10f else 0.11f)
-    val ringEdge = lerp(paper, if (s.dark) Color.White else Color.Black, if (s.dark) 0.22f else 0.26f)
+    // Ring around the key (owner, 2026-11-02): red while the key is up, green while it is pressed
+    // or while a toggle is on. A small contact shadow sits right under the key.
+    val ringFill = lerp(RingRedFill, RingGreenFill, green)
+    val ringEdge = lerp(RingRedEdge, RingGreenEdge, green)
     return this
         .dropShadow(shape, ringEdge, spread = 7.dp)
         .dropShadow(shape, ringFill, spread = 6.dp)
@@ -88,6 +89,11 @@ internal fun Modifier.emboss(shape: Shape, face: Brush, down: Float, glow: Color
         .innerShadow(shape, paperShade(paper, s.dark).copy(alpha = 0.9f * down), 4.dp, 4.dp, 8.dp)
         .innerShadow(shape, paperLight(paper, s.dark).copy(alpha = down), (-4).dp, (-4).dp, 8.dp)
 }
+
+private val RingRedFill = Color(0xFFF8C7CE)
+private val RingRedEdge = Color(0xFFE05A6E)
+private val RingGreenFill = Color(0xFFBDEBCF)
+private val RingGreenEdge = Color(0xFF22A55B)
 
 /** Face of a paper-coloured key, or of the purple accent key. */
 @Composable
@@ -140,6 +146,7 @@ fun PaperKey(
     val pressed by source.collectIsPressedAsState()
     val pairHaptics = SkinPressHaptics(pressed)
     val down by animateFloatAsState(if (pressed) 1f else 0f, tween(260, easing = ease), label = "paperKey")
+    val on by animateFloatAsState(if (active) 1f else 0f, tween(260, easing = ease), label = "paperKeyOn")
     val shape: Shape = if (round) CircleShape else RoundedCornerShape(size / 3.2f)
     val ink = when {
         accent -> s.onTactileAccent
@@ -149,7 +156,7 @@ fun PaperKey(
     Box(
         Modifier
             .size(size)
-            .emboss(shape, keyFace(accent), down, glow = if (accent) s.tactileAccent.copy(alpha = 0.35f) else Color.Transparent)
+            .emboss(shape, keyFace(accent), down, glow = if (accent) s.tactileAccent.copy(alpha = 0.35f) else Color.Transparent, green = maxOf(down, on))
             .clickable(source, indication = null, role = role) { if (!pairHaptics) haptic(); onClick() },
         contentAlignment = Alignment.Center,
     ) {
