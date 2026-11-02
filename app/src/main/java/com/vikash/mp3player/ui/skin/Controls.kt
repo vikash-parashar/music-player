@@ -82,29 +82,19 @@ fun SkinCard(modifier: Modifier = Modifier, content: @Composable ColumnScope.() 
         Card(modifier, content = content)
         return
     }
-    CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
-        Column(modifier.skinSurface(s.shape), content = content)
+    // Whole card is one big push button: grey base behind, face sinks when held (style D).
+    val pressed = remember { mutableStateOf(false) }
+    CompositionLocalProvider(
+        LocalContentColor provides MaterialTheme.colorScheme.onSurface,
+        LocalCardPressed provides pressed.value,
+    ) {
+        Column(modifier.skinPressSurface(s.shape, pressed), content = content)
     }
 }
 
 // ---------- push buttons ----------
 
 private val pill = RoundedCornerShape(percent = 50)
-
-/** The square base the key sits in (inset, like a socket). */
-@Composable
-private fun Modifier.tactileBase(shape: Shape): Modifier {
-    val s = LocalSkin.current
-    if (s.style == SurfaceStyle.Raised) return this
-        .background(s.tactile, shape)
-        .innerShadow(shape, s.shadowDark.copy(alpha = 0.75f), 3.dp, 3.dp, 7.dp)
-        .innerShadow(shape, s.shadowLight, (-3).dp, (-3).dp, 7.dp)
-    return this
-        .background(s.tactile, shape)
-        .innerShadow(shape, Color.Black.copy(alpha = 0.25f), blur = 12.dp, spread = 2.dp)
-        .innerShadow(shape, Color.White.copy(alpha = if (s.dark) 0.25f else 0.9f), offsetY = 1.5.dp, blur = 1.dp)
-        .innerShadow(shape, Color.Black.copy(alpha = 0.25f), offsetY = (-1.5).dp, blur = 1.dp)
-}
 
 /** The domed key: lifted with a soft shadow, sunk in with inset shading while pressed. */
 @Composable
@@ -148,17 +138,19 @@ private fun TactileButton(
     val s = LocalSkin.current
     val haptic = rememberSkinHaptic()
     val source = remember { MutableInteractionSource() }
-    val pressed by source.collectIsPressedAsState()
-    val pairHaptics = SkinPressHaptics(pressed)
+    val selfPressed by source.collectIsPressedAsState()
+    val pairHaptics = SkinPressHaptics(selfPressed)
+    // Sinks when pressed itself, and together with the card around it.
+    val pressed = selfPressed || LocalCardPressed.current
     val press by animateFloatAsState(if (pressed) 0.97f else 1f, tween(300, easing = CubicBezierEasing(0.23f, 1f, 0.32f, 1f)), label = "key")
-    val baseShape = RoundedCornerShape(if (s.corner < 8.dp) 6.dp else if (s.style == SurfaceStyle.Raised) 18.dp else 12.dp)
+    val baseShape = if (s.corner < 8.dp) RoundedCornerShape(6.dp) else pill
     val tint = if (accent) s.tactileAccent else s.tactile
     val ink = if (accent) s.onTactileAccent else s.tactileInk
     Box(
         modifier
             .defaultMinSize(minHeight = 52.dp)
             .alpha(if (enabled) 1f else 0.45f)
-            .tactileBase(baseShape)
+            .pressBase(baseShape)
             .clickable(source, indication = null, enabled = enabled, role = Role.Button) { if (!pairHaptics) haptic(); onClick() },
         contentAlignment = Alignment.Center,
     ) {
@@ -228,15 +220,16 @@ fun TactileIconButton(
     val s = LocalSkin.current
     val haptic = rememberSkinHaptic()
     val source = remember { MutableInteractionSource() }
-    val pressed by source.collectIsPressedAsState()
-    val pairHaptics = SkinPressHaptics(pressed)
+    val selfPressed by source.collectIsPressedAsState()
+    val pairHaptics = SkinPressHaptics(selfPressed)
+    val pressed = selfPressed || LocalCardPressed.current
     val press by animateFloatAsState(if (pressed) 0.94f else 1f, tween(300, easing = CubicBezierEasing(0.23f, 1f, 0.32f, 1f)), label = "key")
     val baseShape = RoundedCornerShape(if (s.corner < 8.dp) 6.dp else size / 3.2f)
     val accentColor = MaterialTheme.colorScheme.primary
     Box(
         Modifier
             .size(size)
-            .tactileBase(baseShape)
+            .pressBase(baseShape)
             .clickable(source, indication = null, role = Role.Button) { if (!pairHaptics) haptic(); onClick() },
         contentAlignment = Alignment.Center,
     ) {

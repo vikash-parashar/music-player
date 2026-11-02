@@ -50,6 +50,7 @@ import com.vikash.mp3player.data.MixEngine
 import com.vikash.mp3player.data.Song
 import com.vikash.mp3player.data.StatsData
 import com.vikash.mp3player.ui.skin.skinSurface
+import com.vikash.mp3player.ui.skin.skinPressSurface
 import com.vikash.mp3player.ui.skin.LocalSkin
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -209,7 +210,7 @@ private fun SectionTitle(text: String) {
 /** Card surface that follows the Pro look when one is on. */
 @Composable
 private fun Modifier.homeCard(shape: RoundedCornerShape, classic: Boolean, color: Color): Modifier =
-    if (classic) clip(shape).background(color) else skinSurface(shape)
+    if (classic) clip(shape).background(color) else skinPressSurface(shape)
 
 @Composable
 private fun QuickTile(mix: Mix, locked: Boolean, modifier: Modifier, onClick: () -> Unit) {

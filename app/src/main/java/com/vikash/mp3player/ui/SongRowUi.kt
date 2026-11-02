@@ -1,6 +1,7 @@
 package com.vikash.mp3player.ui
 
 import com.vikash.mp3player.ui.skin.skinSurface
+import com.vikash.mp3player.ui.skin.skinPressSurface
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -116,7 +117,7 @@ internal fun SongRowContent(
                     com.vikash.mp3player.ui.skin.SurfaceStyle.Hairline -> Modifier.drawBehind {
                         drawLine(skin.edge, androidx.compose.ui.geometry.Offset(16.dp.toPx(), size.height), androidx.compose.ui.geometry.Offset(size.width - 16.dp.toPx(), size.height), 1.dp.toPx())
                     }
-                    else -> Modifier.padding(horizontal = 12.dp, vertical = 5.dp).skinSurface(RoundedCornerShape(minOf(skin.corner, 18.dp)))
+                    else -> Modifier.padding(horizontal = 12.dp, vertical = 3.dp).skinPressSurface(RoundedCornerShape(minOf(skin.corner, 18.dp)))
                 }
             )
             .graphicsLayer {

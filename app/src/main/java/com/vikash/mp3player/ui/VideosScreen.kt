@@ -12,6 +12,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import com.vikash.mp3player.ui.skin.skinPressSurface
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -127,9 +128,14 @@ fun VideosScreen(state: VideoState, onLoad: () -> Unit) {
             modifier = Modifier.fillMaxSize(),
         ) {
             items(shown, key = { it.id }) { video ->
-                Column(Modifier.clickable {
-                    VideoPlayerActivity.start(context, shown.map { it.uri }, shown.indexOf(video))
-                }) {
+                val proLook = !com.vikash.mp3player.ui.skin.LocalSkin.current.isClassic
+                Column(
+                    Modifier
+                        .then(if (proLook) Modifier.skinPressSurface(RoundedCornerShape(18.dp)) else Modifier)
+                        .then(if (proLook) Modifier.clip(RoundedCornerShape(18.dp)) else Modifier)
+                        .clickable { VideoPlayerActivity.start(context, shown.map { it.uri }, shown.indexOf(video)) }
+                        .then(if (proLook) Modifier.padding(8.dp) else Modifier),
+                ) {
                     Box(Modifier.fillMaxWidth().aspectRatio(16f / 10f).clip(RoundedCornerShape(12.dp))) {
                         VideoThumbnail(video)
                         Box(
