@@ -76,11 +76,11 @@ internal fun Modifier.emboss(shape: Shape, face: Brush, down: Float, glow: Color
     // A soft grey ring between the key and the card, so the key reads as rising out of it.
     // Ring around the key (owner, 2026-11-02): red while the key is up, green while it is pressed
     // or while a toggle is on. A small contact shadow sits right under the key.
+    // No hard outer line (owner): the ring melts into the card like a soft embedded glow.
     val ringFill = lerp(RingRedFill, RingGreenFill, green)
-    val ringEdge = lerp(RingRedEdge, RingGreenEdge, green)
     return this
-        .dropShadow(shape, ringEdge, spread = 7.dp)
-        .dropShadow(shape, ringFill, spread = 6.dp)
+        .dropShadow(shape, ringFill, blur = 7.dp, spread = 6.dp)
+        .dropShadow(shape, ringFill, spread = 5.dp)
         .dropShadow(shape, Color.Black.copy(alpha = (if (s.dark) 0.5f else 0.3f) * up), offsetY = 2.dp, blur = 3.dp)
         .dropShadow(shape, paperShade(paper, s.dark).copy(alpha = up), lift, lift, depth * 2)
         .dropShadow(shape, paperLight(paper, s.dark).copy(alpha = up), -lift, -lift, depth * 2)
@@ -90,10 +90,8 @@ internal fun Modifier.emboss(shape: Shape, face: Brush, down: Float, glow: Color
         .innerShadow(shape, paperLight(paper, s.dark).copy(alpha = down), (-4).dp, (-4).dp, 8.dp)
 }
 
-private val RingRedFill = Color(0xFFF8C7CE)
-private val RingRedEdge = Color(0xFFE05A6E)
-private val RingGreenFill = Color(0xFFBDEBCF)
-private val RingGreenEdge = Color(0xFF22A55B)
+private val RingRedFill = Color(0xFFF5B1BC)
+private val RingGreenFill = Color(0xFFA6E3BE)
 
 /** Face of a paper-coloured key, or of the purple accent key. */
 @Composable
