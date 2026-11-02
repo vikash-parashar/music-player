@@ -31,6 +31,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
@@ -43,11 +44,12 @@ import androidx.compose.ui.unit.dp
  * the sheet.
  */
 
-private val LocalPaper = compositionLocalOf { Color.White }
+/** The colour of the sheet the current content sits on, so keys inside match it. */
+val LocalPaper = compositionLocalOf { Color.Unspecified }
 private val ease = CubicBezierEasing(0.23f, 1f, 0.32f, 1f)
 
 @Composable
-private fun paperColor(): Color {
+internal fun paperColor(): Color {
     val s = LocalSkin.current
     val surface = MaterialTheme.colorScheme.surface
     return when {
@@ -57,8 +59,37 @@ private fun paperColor(): Color {
     }
 }
 
-private fun light(paper: Color, dark: Boolean) = lerp(paper, Color.White, if (dark) 0.10f else 0.9f)
-private fun shade(paper: Color, dark: Boolean) = lerp(paper, Color.Black, if (dark) 0.55f else 0.2f)
+internal fun paperLight(paper: Color, dark: Boolean) = lerp(paper, Color.White, if (dark) 0.10f else 0.9f)
+// Darker than at first (owner, 2026-11-02) so each key stands apart from its neighbours.
+internal fun paperShade(paper: Color, dark: Boolean) = lerp(paper, Color.Black, if (dark) 0.65f else 0.3f)
+
+/**
+ * Raises a shape out of the paper: light on the top-left rim, shade under the bottom-right. [down]
+ * 0..1 pushes it back in (the shading flips inside). Put it before clickable; it draws the face.
+ */
+@Composable
+internal fun Modifier.emboss(shape: Shape, face: Brush, down: Float, glow: Color = Color.Transparent, depth: Dp = 7.dp): Modifier {
+    val s = LocalSkin.current
+    val paper = LocalPaper.current.takeOrElse { paperColor() }
+    val up = 1f - down
+    val lift = depth * up
+    return this
+        .dropShadow(shape, paperShade(paper, s.dark).copy(alpha = up), lift, lift, depth * 2)
+        .dropShadow(shape, paperLight(paper, s.dark).copy(alpha = up), -lift, -lift, depth * 2)
+        .dropShadow(shape, glow.copy(alpha = glow.alpha * up), offsetY = depth - 1.dp, blur = depth * 2.2f)
+        .background(face, shape)
+        .innerShadow(shape, paperShade(paper, s.dark).copy(alpha = 0.9f * down), 4.dp, 4.dp, 8.dp)
+        .innerShadow(shape, paperLight(paper, s.dark).copy(alpha = down), (-4).dp, (-4).dp, 8.dp)
+}
+
+/** Face of a paper-coloured key, or of the purple accent key. */
+@Composable
+internal fun keyFace(accent: Boolean): Brush {
+    val s = LocalSkin.current
+    val paper = LocalPaper.current.takeOrElse { paperColor() }
+    return if (accent) Brush.linearGradient(listOf(lerp(s.tactileAccent, Color.White, 0.22f), lerp(s.tactileAccent, Color.Black, 0.12f)))
+    else Brush.linearGradient(listOf(lerp(paper, Color.White, if (s.dark) 0.05f else 0.5f), lerp(paper, Color.Black, if (s.dark) 0.08f else 0.04f)))
+}
 
 /** The single sheet the keys rise out of. */
 @Composable
@@ -72,7 +103,7 @@ fun PaperPanel(modifier: Modifier = Modifier, content: @Composable RowScope.() -
                 .fillMaxWidth()
                 .dropShadow(shape, Color.Black.copy(alpha = if (s.dark) 0.45f else 0.14f), offsetY = 8.dp, blur = 20.dp)
                 .background(paper, shape)
-                .innerShadow(shape, light(paper, s.dark), offsetY = 1.5.dp, blur = 1.dp)
+                .innerShadow(shape, paperLight(paper, s.dark), offsetY = 1.5.dp, blur = 1.dp)
                 .padding(horizontal = 10.dp, vertical = 16.dp),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically,
@@ -97,17 +128,12 @@ fun PaperKey(
     role: Role = Role.Button,
 ) {
     val s = LocalSkin.current
-    val paper = LocalPaper.current
     val haptic = rememberSkinHaptic()
     val source = remember { MutableInteractionSource() }
     val pressed by source.collectIsPressedAsState()
     val pairHaptics = SkinPressHaptics(pressed)
     val down by animateFloatAsState(if (pressed) 1f else 0f, tween(260, easing = ease), label = "paperKey")
     val shape: Shape = if (round) CircleShape else RoundedCornerShape(size / 3.2f)
-    val up = 1f - down
-    val lift = 7.dp * up
-    val face = if (accent) Brush.linearGradient(listOf(lerp(s.tactileAccent, Color.White, 0.22f), lerp(s.tactileAccent, Color.Black, 0.12f)))
-    else Brush.linearGradient(listOf(lerp(paper, Color.White, if (s.dark) 0.05f else 0.5f), lerp(paper, Color.Black, if (s.dark) 0.08f else 0.04f)))
     val ink = when {
         accent -> s.onTactileAccent
         active -> MaterialTheme.colorScheme.primary
@@ -116,14 +142,7 @@ fun PaperKey(
     Box(
         Modifier
             .size(size)
-            // Raised: light falls on the top-left rim, shade under the bottom-right.
-            .dropShadow(shape, shade(paper, s.dark).copy(alpha = up), lift, lift, 14.dp)
-            .dropShadow(shape, light(paper, s.dark).copy(alpha = up), -lift, -lift, 14.dp)
-            .then(if (accent) Modifier.dropShadow(shape, s.tactileAccent.copy(alpha = 0.35f * up), offsetY = 6.dp, blur = 16.dp) else Modifier)
-            .background(face, shape)
-            // Pushed back into the sheet: the shading flips inside.
-            .innerShadow(shape, shade(paper, s.dark).copy(alpha = 0.9f * down), 4.dp, 4.dp, 8.dp)
-            .innerShadow(shape, light(paper, s.dark).copy(alpha = down), (-4).dp, (-4).dp, 8.dp)
+            .emboss(shape, keyFace(accent), down, glow = if (accent) s.tactileAccent.copy(alpha = 0.35f) else Color.Transparent)
             .clickable(source, indication = null, role = role) { if (!pairHaptics) haptic(); onClick() },
         contentAlignment = Alignment.Center,
     ) {

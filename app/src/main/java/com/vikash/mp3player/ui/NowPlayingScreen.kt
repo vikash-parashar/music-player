@@ -327,7 +327,7 @@ fun NowPlayingScreen(
             if (!LocalSkin.current.isClassic) {
                 // Pro app styles: the five keys rise out of one sheet of paper.
                 PaperPanel(Modifier.padding(vertical = 14.dp)) {
-                    PaperKey(Icons.Default.Shuffle, stringResource(R.string.player_shuffle), player::toggleShuffle, size = 44.dp, round = true, active = state.shuffle, role = Role.Switch)
+                    PaperKey(Icons.Default.Shuffle, stringResource(R.string.player_shuffle), player::toggleShuffle, size = 44.dp, active = state.shuffle, role = Role.Switch)
                     PaperKey(Icons.Default.SkipPrevious, stringResource(R.string.common_previous), { player.previous() }, size = 54.dp)
                     PaperKey(
                         if (state.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
@@ -337,7 +337,7 @@ fun NowPlayingScreen(
                     PaperKey(Icons.Default.SkipNext, stringResource(R.string.common_next), { player.next() }, size = 54.dp)
                     PaperKey(
                         if (state.repeatMode == Player.REPEAT_MODE_ONE) Icons.Default.RepeatOne else Icons.Default.Repeat,
-                        stringResource(R.string.player_repeat), player::cycleRepeat, size = 44.dp, round = true,
+                        stringResource(R.string.player_repeat), player::cycleRepeat, size = 44.dp,
                         active = state.repeatMode != Player.REPEAT_MODE_OFF, role = Role.Switch,
                     )
                 }
