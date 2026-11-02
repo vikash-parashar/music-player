@@ -30,6 +30,18 @@ import com.google.android.gms.ads.nativead.NativeAdView
 import com.vikash.mp3player.BuildConfig
 import com.vikash.mp3player.R
 
+/** True where list ad cards may show (free user, ads ready, not a fewer-ads region). */
+val LocalListAds = androidx.compose.runtime.compositionLocalOf { false }
+
+/** In long lists: one ad card after the 6th row, then one every 15 rows. */
+fun listAdAfter(index: Int): Boolean = index == 5 || (index > 5 && (index - 5) % 15 == 0)
+
+/** A native ad card for a list, shown only to free users; hidden until an ad loads. */
+@Composable
+fun ListAd(modifier: Modifier = Modifier) {
+    if (LocalListAds.current) NativeAdCard(modifier)
+}
+
 /** True when a Native ad unit is configured for this build. */
 val nativeAdConfigured: Boolean get() = BuildConfig.ADMOB_NATIVE_ID.isNotBlank()
 

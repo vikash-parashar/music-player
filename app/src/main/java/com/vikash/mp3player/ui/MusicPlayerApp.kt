@@ -266,7 +266,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
 
     // Lite mode: the CDs stand still, so no frame loop runs while music plays.
     val discAngle: State<Float> = if (liteMode) remember { mutableFloatStateOf(0f) } else rememberDiscSpin(vm.player)
-    CompositionLocalProvider(LocalIsPlaying provides player.isPlaying, LocalDiscAngle provides discAngle, LocalStartRadio provides { s: Song -> vm.startRadio(s); vm.notify(context.getString(R.string.radio_started, s.title)) }) {
+    CompositionLocalProvider(com.vikash.mp3player.monetization.LocalListAds provides (!adsRemoved && adsReady && !fewerAds), LocalIsPlaying provides player.isPlaying, LocalDiscAngle provides discAngle, LocalStartRadio provides { s: Song -> vm.startRadio(s); vm.notify(context.getString(R.string.radio_started, s.title)) }) {
     Box(Modifier.fillMaxSize().skinBackdrop()) {
         Scaffold(
             containerColor = skinScreenColor(),

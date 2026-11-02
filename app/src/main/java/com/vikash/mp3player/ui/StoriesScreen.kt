@@ -199,6 +199,7 @@ private fun StoriesHome(
                 if (row.size == 1) Spacer(Modifier.weight(1f))
             }
         }
+        item(key = "stories-ad") { com.vikash.mp3player.monetization.ListAd() }
         item {
             Text(stringResource(R.string.stories_ai_note), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }

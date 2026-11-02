@@ -662,7 +662,7 @@ private fun SongList(
                 }
             }
         }
-        items(songs.size, key = { songs[it].id }) { i ->
+        items(songs.size, key = { songs[it].id }) { i -> Column {
             val song = songs[i]
             val fav = song.id in favorites
             SongRow(
@@ -689,6 +689,9 @@ private fun SongList(
                 onLongClick = { toggle(song) },
                 selected = if (selecting) song.id in selected else null,
             )
-        }
+            if (!selecting && songs.size > 8 && com.vikash.mp3player.monetization.listAdAfter(i)) {
+                com.vikash.mp3player.monetization.ListAd(Modifier.padding(horizontal = 16.dp, vertical = 10.dp))
+            }
+        } }
     }
 }

@@ -163,6 +163,8 @@ fun HomeScreen(
                 }
             }
         }
+        // Free users: one ad card between sections, clearly marked "Ad".
+        item(key = "home-ad") { com.vikash.mp3player.monetization.ListAd(Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) }
         if (data.lists.isNotEmpty()) {
             item { SectionTitle(stringResource(R.string.home_your_lists)) }
             item {
