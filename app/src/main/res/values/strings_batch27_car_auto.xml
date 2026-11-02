@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="car_auto_title">Car mode when my car connects</string>
+    <string name="car_auto_desc">Opens Car mode and starts the music when your car\'s Bluetooth connects. If Ampli is in the background, you get a notification to tap instead. Works while Ampli is open or paused in the notification.</string>
+    <string name="car_auto_your_car">Your car</string>
+    <string name="car_auto_none">Connect your phone to your car\'s Bluetooth once while Ampli is open, then pick it here.</string>
+    <string name="car_auto_hint">Pick your car so earbuds and speakers don\'t open Car mode.</string>
+    <string name="car_auto_channel">Car connected</string>
+    <string name="car_auto_notif_title">%1$s connected</string>
+    <string name="car_auto_notif_text">Tap to open Car mode</string>
+</resources>

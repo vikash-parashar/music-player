@@ -98,7 +98,13 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
+        com.vikash.mp3player.playback.CarAutoOpen.appVisible = true
         AppUpdates.refresh()
         (application as MusicApp).billing.refresh()
+    }
+
+    override fun onPause() {
+        com.vikash.mp3player.playback.CarAutoOpen.appVisible = false
+        super.onPause()
     }
 }

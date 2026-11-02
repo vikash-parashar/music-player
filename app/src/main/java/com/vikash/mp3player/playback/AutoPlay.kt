@@ -22,13 +22,16 @@ class AutoPlay(private val context: Context, private val player: () -> Player?) 
         override fun onAudioDevicesAdded(addedDevices: Array<out AudioDeviceInfo>) {
             val fresh = addedDevices.filter { it.isSink && it.isHeadphoneLike() && known.add(it.id) }
             // Registration replays devices that were already connected; they are in [known], so skipped.
-            if (fresh.isNotEmpty() && isEnabled(context)) {
-                val p = player() ?: return
-                if (!p.isPlaying && p.mediaItemCount > 0) {
+            fresh.filter { with(CarAutoOpen) { it.isBluetoothAudio() } }.forEach { CarAutoOpen.remember(context, it) }
+            val car = fresh.firstOrNull { CarAutoOpen.isCar(context, it) }
+            if (fresh.isNotEmpty() && (isEnabled(context) || car != null)) {
+                val p = player()
+                if (p != null && !p.isPlaying && p.mediaItemCount > 0) {
                     if (p.playbackState == Player.STATE_IDLE) p.prepare()
                     p.play()
                 }
             }
+            if (car != null) CarAutoOpen.open(context, car.productName.toString().trim())
         }
 
         override fun onAudioDevicesRemoved(removedDevices: Array<out AudioDeviceInfo>) {
@@ -38,7 +41,10 @@ class AutoPlay(private val context: Context, private val player: () -> Player?) 
 
     fun start() {
         // Seed with what is connected now, so the registration callback adds nothing new.
-        audio.getDevices(AudioManager.GET_DEVICES_OUTPUTS).filter { it.isHeadphoneLike() }.forEach { known.add(it.id) }
+        audio.getDevices(AudioManager.GET_DEVICES_OUTPUTS).filter { it.isHeadphoneLike() }.forEach {
+            known.add(it.id)
+            if (with(CarAutoOpen) { it.isBluetoothAudio() }) CarAutoOpen.remember(context, it)
+        }
         audio.registerAudioDeviceCallback(callback, Handler(Looper.getMainLooper()))
     }
 

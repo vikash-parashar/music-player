@@ -125,6 +125,7 @@ fun SettingsScreen(
         ProSoundCard(proUnlocked, onRemoveAds)
         KeepGoingCard()
         AutoPlayCard()
+        CarAutoOpenCard()
         DiscAnimationCard()
         HeadsetClicksCard()
         CarModeCard(onOpenCarMode)
