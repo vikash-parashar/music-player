@@ -52,6 +52,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.foundation.border
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -87,7 +89,13 @@ fun Artwork(uri: Uri?, size: Dp, modifier: Modifier = Modifier) {
     }
     // Load again when "Find album art" saves a cover, so albums with no art pick it up.
     val artVersion by com.vikash.mp3player.data.AlbumArtFinder.version.collectAsState()
-    Box(modifier.size(size).clip(shape)) {
+    val skin = com.vikash.mp3player.ui.skin.LocalSkin.current
+    // Full themes frame the cover: a black sticker outline, or a jelly shine on top.
+    val frame = when (skin.look) {
+        com.vikash.mp3player.ui.skin.TactileLook.Sticker -> Modifier.border(if (size > 100.dp) 3.dp else 2.dp, skin.edge, shape)
+        else -> Modifier
+    }
+    Box(modifier.size(size).clip(shape).then(frame)) {
         if (uri == null) placeholder() else key(artVersion) {
             SubcomposeAsyncImage(
                 model = uri,
@@ -98,6 +106,11 @@ fun Artwork(uri: Uri?, size: Dp, modifier: Modifier = Modifier) {
                 modifier = Modifier.fillMaxSize(),
             )
         }
+        if (skin.look == com.vikash.mp3player.ui.skin.TactileLook.Jelly) Box(
+            Modifier.fillMaxSize().background(
+                Brush.verticalGradient(0f to Color.White.copy(alpha = 0.35f), 0.4f to Color.Transparent, 1f to Color.Black.copy(alpha = 0.08f)),
+            ),
+        )
     }
 }
 

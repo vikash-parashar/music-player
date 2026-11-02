@@ -38,7 +38,7 @@ import com.vikash.mp3player.data.UiSkin
 enum class TactileLook { Paper, Clay, Led, Metal, Frost, Keys, Jelly, Sticker, Bubble, Arcade }
 
 /** How cards, the dock and the mini player are drawn in a look. */
-enum class SurfaceStyle { Material, Hairline, Glass, Raised, Clay, Brutal, Tile, Metal }
+enum class SurfaceStyle { Material, Hairline, Glass, Raised, Clay, Brutal, Tile, Metal, Jelly }
 
 /**
  * Everything a screen needs to draw itself in the chosen look. Read it with [LocalSkin]; colours
@@ -124,13 +124,13 @@ fun skinSpec(skin: UiSkin, dark: Boolean, hapticsOn: Boolean = true): SkinSpec =
     )
     // Glossy Jelly: shiny candy keys that squish when pressed.
     UiSkin.Jelly -> if (dark) SkinSpec(
-        skin, true, SurfaceStyle.Raised, Brush.verticalGradient(listOf(Color(0xFF241523), Color(0xFF1A1020))),
+        skin, true, SurfaceStyle.Jelly, Brush.verticalGradient(listOf(Color(0xFF241523), Color(0xFF1A1020))),
         card = Color(0xFF331F31), edge = Color.Transparent, corner = 28.dp,
         shadowDark = Color(0xAA000000), shadowLight = Color(0x14FFFFFF),
         tactile = Color(0xFF3D2639), tactileInk = Color(0xFFFBD5E5), tactileAccent = Color(0xFFE11D48),
         accentHue = 345f, haptic = CONTEXT, hapticsOn = hapticsOn, pressHaptics = true, look = TactileLook.Jelly,
     ) else SkinSpec(
-        skin, false, SurfaceStyle.Raised, Brush.verticalGradient(listOf(Color(0xFFFDF2F8), Color(0xFFFCE7F3))),
+        skin, false, SurfaceStyle.Jelly, Brush.verticalGradient(listOf(Color(0xFFFDF2F8), Color(0xFFFCE7F3))),
         card = Color(0xFFFFF7FB), edge = Color.Transparent, corner = 28.dp,
         shadowDark = Color(0x55BE123C), shadowLight = Color.White,
         tactile = Color(0xFFFFE4EF), tactileInk = Color(0xFF881337), tactileAccent = Color(0xFFE11D48),
@@ -367,6 +367,14 @@ fun Modifier.skinBackdrop(): Modifier {
     val bg = MaterialTheme.colorScheme.background
     return drawBehind {
         if (s.backdrop != null) drawRect(s.backdrop) else drawRect(bg)
+        // Glossy Jelly: soft candy bubbles floating behind everything.
+        if (s.look == TactileLook.Jelly) {
+            val a = if (s.dark) 0.16f else 0.55f
+            drawCircle(Color(0xFFF9A8D4).copy(alpha = a), size.width * 0.32f, Offset(size.width * 0.12f, size.height * 0.06f))
+            drawCircle(Color(0xFFC4B5FD).copy(alpha = a), size.width * 0.22f, Offset(size.width * 0.98f, size.height * 0.30f))
+            drawCircle(Color(0xFF86EFAC).copy(alpha = a * 0.8f), size.width * 0.18f, Offset(size.width * 0.02f, size.height * 0.68f))
+            drawCircle(Color(0xFFFDE68A).copy(alpha = a * 0.8f), size.width * 0.15f, Offset(size.width * 0.9f, size.height * 0.88f))
+        }
         if (s.dots.alpha > 0f) {
             val step = 14.dp.toPx()
             val r = 1.2.dp.toPx()
@@ -407,6 +415,12 @@ fun Modifier.skinSurface(shape: Shape = LocalSkin.current.shape): Modifier {
             .dropShadow(shape, s.shadowDark, 4.dp, 4.dp)
             .background(s.card, shape).border(3.dp, s.edge, shape)
         SurfaceStyle.Tile -> this.background(s.card, shape).border(1.dp, s.edge, shape)
+        // Glossy jelly: soft pink shadow, a shine along the top and a little colour at the bottom.
+        SurfaceStyle.Jelly -> this
+            .dropShadow(shape, s.shadowDark, offsetY = 10.dp, blur = 22.dp)
+            .background(s.card, shape)
+            .innerShadow(shape, Color.White.copy(alpha = if (s.dark) 0.10f else 0.95f), offsetY = 3.dp, blur = 6.dp)
+            .innerShadow(shape, s.tactileAccent.copy(alpha = if (s.dark) 0.18f else 0.10f), offsetY = (-3).dp, blur = 8.dp)
         SurfaceStyle.Metal -> this
             .dropShadow(shape, s.shadowDark, offsetY = 4.dp, blur = 10.dp)
             .background(s.cardBrush ?: Brush.linearGradient(listOf(s.card, s.card)), shape)
