@@ -127,6 +127,9 @@ fun VideosScreen(state: VideoState, onLoad: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(14.dp),
             modifier = Modifier.fillMaxSize(),
         ) {
+            if (shown.size > 4) item(key = "videos-ad", span = { androidx.compose.foundation.lazy.grid.GridItemSpan(maxLineSpan) }) {
+                com.vikash.mp3player.monetization.ListAd()
+            }
             items(shown, key = { it.id }) { video ->
                 val proLook = !com.vikash.mp3player.ui.skin.LocalSkin.current.isClassic
                 Column(
