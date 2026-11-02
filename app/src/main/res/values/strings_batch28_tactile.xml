@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="skin_paper">Paper</string>
+    <string name="skin_midnight">Midnight LED</string>
+    <string name="skin_keys">Retro Keys</string>
+    <string name="key_color_title">Button colour</string>
+    <string name="key_color_desc">Colour of the main buttons, like Play, Open and Scan.</string>
+    <string name="key_color_theme">Theme colour</string>
+</resources>

@@ -9,13 +9,17 @@ import com.vikash.mp3player.R
  */
 enum class UiSkin(val id: String, @StringRes val labelRes: Int) {
     Classic("classic", R.string.skin_classic),
-    Minimal("minimal", R.string.skin_minimal),
-    Glass("glass", R.string.skin_glass),
-    Neu("neu", R.string.skin_neu),
+    // Tactile themes (2026-11-02): paper cards, buttons rising out of them with a red/green ring.
+    Paper("paper", R.string.skin_paper),
     Clay("clay", R.string.skin_clay),
+    Midnight("midnight", R.string.skin_midnight),
+    HiFi("hifi", R.string.skin_hifi),
+    Glass("glass", R.string.skin_glass),
+    Keys("keys", R.string.skin_keys),
+    Minimal("minimal", R.string.skin_minimal),
+    Neu("neu", R.string.skin_neu),
     Brutal("brutal", R.string.skin_brutal),
-    Bento("bento", R.string.skin_bento),
-    HiFi("hifi", R.string.skin_hifi);
+    Bento("bento", R.string.skin_bento);
 
     companion object {
         fun from(id: String?): UiSkin = entries.firstOrNull { it.id == id } ?: Classic

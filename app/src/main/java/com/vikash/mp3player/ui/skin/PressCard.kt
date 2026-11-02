@@ -4,6 +4,7 @@ import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.runtime.Composable
@@ -96,10 +97,36 @@ fun Modifier.skinPressSurface(
     val paper = paperColor()
     val down by animateFloatAsState(if (pressed.value) 1f else 0f, tween(220, easing = ease), label = "cardPress")
     val up = 1f - down
-    return this
-        .watchPress(pressed)
-        .dropShadow(shape, Color.Black.copy(alpha = (if (s.dark) 0.45f else 0.14f) * up), offsetY = 8.dp * up, blur = 20.dp)
-        .background(paper, shape)
+    val base = this.watchPress(pressed)
+    // Card face per look; every look still sinks the whole card when held.
+    val faced = when (s.look) {
+        TactileLook.Clay -> base
+            .dropShadow(shape, s.shadowDark.copy(alpha = s.shadowDark.alpha * up), offsetY = 12.dp * up, blur = 28.dp)
+            .background(paper, shape)
+            .innerShadow(shape, Color.White.copy(alpha = (if (s.dark) 0.08f else 0.9f) * up), (-3).dp, (-3).dp, 8.dp)
+            .innerShadow(shape, s.shadowDark.copy(alpha = 0.6f * up), 3.dp, 3.dp, 8.dp)
+        TactileLook.Metal -> base
+            .dropShadow(shape, Color.Black.copy(alpha = (if (s.dark) 0.5f else 0.25f) * up), offsetY = 6.dp * up, blur = 14.dp)
+            .then(s.cardBrush?.let { Modifier.background(it, shape) } ?: Modifier.background(paper, shape))
+            .border(1.dp, Color.White.copy(alpha = if (s.dark) 0.12f else 0.7f), shape)
+        TactileLook.Frost -> base
+            .dropShadow(shape, Color.Black.copy(alpha = 0.18f * up), offsetY = 8.dp * up, blur = 24.dp)
+            .background(s.card, shape)
+            .border(1.dp, s.edge, shape)
+        TactileLook.Keys -> base
+            .graphicsLayer { translationY = 3.dp.toPx() * down }
+            .dropShadow(shape, s.shadowDark.copy(alpha = up), offsetY = 4.dp * up)
+            .background(paper, shape)
+            .border(1.dp, s.edge, shape)
+        TactileLook.Led -> base
+            .dropShadow(shape, Color.Black.copy(alpha = 0.6f * up), offsetY = 8.dp * up, blur = 20.dp)
+            .background(paper, shape)
+            .border(1.dp, Color.White.copy(alpha = 0.05f), shape)
+        TactileLook.Paper -> base
+            .dropShadow(shape, Color.Black.copy(alpha = (if (s.dark) 0.45f else 0.14f) * up), offsetY = 8.dp * up, blur = 20.dp)
+            .background(paper, shape)
+    }
+    return faced
         .innerShadow(shape, paperLight(paper, s.dark).copy(alpha = up), offsetY = 1.5.dp, blur = 1.dp)
         .innerShadow(shape, paperShade(paper, s.dark).copy(alpha = 0.8f * down), 4.dp, 4.dp, 10.dp)
         .innerShadow(shape, paperLight(paper, s.dark).copy(alpha = down), (-4).dp, (-4).dp, 10.dp)

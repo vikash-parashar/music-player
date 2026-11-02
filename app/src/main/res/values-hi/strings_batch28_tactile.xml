@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="skin_paper">पेपर</string>
+    <string name="skin_midnight">मिडनाइट LED</string>
+    <string name="skin_keys">रेट्रो कीज़</string>
+    <string name="key_color_title">बटन का रंग</string>
+    <string name="key_color_desc">मुख्य बटन जैसे Play, Open और Scan का रंग।</string>
+    <string name="key_color_theme">थीम का रंग</string>
+</resources>

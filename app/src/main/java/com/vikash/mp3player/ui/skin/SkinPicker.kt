@@ -39,6 +39,17 @@ import androidx.compose.ui.unit.sp
 import com.vikash.mp3player.MusicApp
 import com.vikash.mp3player.R
 import com.vikash.mp3player.data.UiSkin
+import com.vikash.mp3player.data.KeyColor
+import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import com.vikash.mp3player.ui.isDarkTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -158,6 +169,10 @@ fun SkinPickerCard(unlocked: Boolean, onGetPro: () -> Unit) {
                     else -> SkinTrial.start(k)
                 }
             }
+            if (current != UiSkin.Classic) {
+                Spacer(Modifier.height(14.dp))
+                KeyColorRow(prefs.keyColor.collectAsState().value, prefs::setKeyColor)
+            }
             val t = trial
             if (t != null) {
                 Spacer(Modifier.height(12.dp))
@@ -187,6 +202,43 @@ fun SkinPickerCard(unlocked: Boolean, onGetPro: () -> Unit) {
                 }
                 SkinSwitch(checked = haptics, onCheckedChange = prefs::setSkinHaptics)
             }
+        }
+    }
+}
+
+/** Button colour for the Pro looks: the look's own colour or one of eight. */
+@Composable
+private fun KeyColorRow(chosen: KeyColor, onPick: (KeyColor) -> Unit) {
+    Text(stringResource(R.string.key_color_title), style = MaterialTheme.typography.titleSmall)
+    Text(
+        stringResource(R.string.key_color_desc), style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+    Spacer(Modifier.height(10.dp))
+    val themeLabel = stringResource(R.string.key_color_theme)
+    val ring = MaterialTheme.colorScheme.onSurface
+    Row(
+        Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        KeyColor.entries.forEach { k ->
+            val fill: Brush = if (k == KeyColor.Theme) {
+                Brush.sweepGradient(listOf(Color(0xFFE11D48), Color(0xFFEA580C), Color(0xFF0F766E), Color(0xFF2563EB), Color(0xFF6D28D9), Color(0xFFE11D48)))
+            } else {
+                Brush.linearGradient(listOf(Color(k.light), Color(k.argb)))
+            }
+            val on = k == chosen
+            Box(
+                Modifier
+                    .size(40.dp)
+                    .then(if (on) Modifier.border(2.dp, ring, CircleShape) else Modifier)
+                    .padding(if (on) 5.dp else 2.dp)
+                    .clip(CircleShape)
+                    .background(fill)
+                    .semantics { contentDescription = if (k == KeyColor.Theme) themeLabel else k.name; selected = on }
+                    .clickable(role = Role.RadioButton) { onPick(k) },
+            )
         }
     }
 }

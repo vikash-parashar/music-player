@@ -31,6 +31,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
@@ -53,6 +54,9 @@ internal fun paperColor(): Color {
     val s = LocalSkin.current
     val surface = MaterialTheme.colorScheme.surface
     return when {
+        s.look == TactileLook.Frost -> s.card.compositeOver(MaterialTheme.colorScheme.background)
+        s.look != TactileLook.Paper -> s.card
+        s.skin == com.vikash.mp3player.data.UiSkin.Paper -> s.card
         s.style == SurfaceStyle.Raised -> s.card
         s.dark -> lerp(surface, Color.White, 0.07f)
         else -> lerp(surface, s.tactile, 0.3f)
@@ -77,10 +81,17 @@ internal fun Modifier.emboss(shape: Shape, face: Brush, down: Float, glow: Color
     // Ring around the key (owner, 2026-11-02): red while the key is up, green while it is pressed
     // or while a toggle is on. A small contact shadow sits right under the key.
     // No hard outer line (owner): the ring melts into the card like a soft embedded glow.
-    val ringFill = lerp(RingRedFill, RingGreenFill, green)
+    // Each look tints the ring its own way: an LED glow at night, a coloured bezel on metal,
+    // a frosted halo on glass, soft clay, or a print-like ring on the retro keys.
+    val (red, green0) = ringColors(s.look)
+    val ringFill = lerp(red, green0, green)
+    val glowRing = s.look == TactileLook.Led
+    val keysEdge = s.look == TactileLook.Keys
     return this
-        .dropShadow(shape, ringFill, blur = 7.dp, spread = 6.dp)
-        .dropShadow(shape, ringFill, spread = 5.dp)
+        .dropShadow(shape, ringFill.copy(alpha = if (glowRing) 0.85f else ringFill.alpha), blur = if (glowRing) 12.dp else 7.dp, spread = if (glowRing) 4.dp else 6.dp)
+        .dropShadow(shape, ringFill, spread = if (glowRing) 3.dp else 5.dp)
+        .then(if (s.look == TactileLook.Metal) Modifier.dropShadow(shape, Color(0xFF8A8F98), spread = 1.5.dp) else Modifier)
+        .then(if (keysEdge) Modifier.dropShadow(shape, paperShade(paper, s.dark).copy(alpha = up), offsetY = 4.dp * up) else Modifier)
         .dropShadow(shape, Color.Black.copy(alpha = (if (s.dark) 0.5f else 0.3f) * up), offsetY = 2.dp, blur = 3.dp)
         .dropShadow(shape, paperShade(paper, s.dark).copy(alpha = up), lift, lift, depth * 2)
         .dropShadow(shape, paperLight(paper, s.dark).copy(alpha = up), -lift, -lift, depth * 2)
@@ -90,8 +101,15 @@ internal fun Modifier.emboss(shape: Shape, face: Brush, down: Float, glow: Color
         .innerShadow(shape, paperLight(paper, s.dark).copy(alpha = down), (-4).dp, (-4).dp, 8.dp)
 }
 
-private val RingRedFill = Color(0xFFF5B1BC)
-private val RingGreenFill = Color(0xFFA6E3BE)
+/** Ring colours per look: red while a key is up, green while pressed or on. */
+private fun ringColors(look: TactileLook): Pair<Color, Color> = when (look) {
+    TactileLook.Paper -> Color(0xFFF5B1BC) to Color(0xFFA6E3BE)
+    TactileLook.Clay -> Color(0xFFFFB0A6) to Color(0xFFB2E8C4)
+    TactileLook.Led -> Color(0xFFFF3B5C) to Color(0xFF2EE68A)
+    TactileLook.Metal -> Color(0xFFFF6B6B) to Color(0xFF3DDC84)
+    TactileLook.Frost -> Color(0xB3FF8FA3) to Color(0xB37BE3AE)
+    TactileLook.Keys -> Color(0xFFF49C8C) to Color(0xFF9FD8A8)
+}
 
 /** Face of a paper-coloured key, or of the purple accent key. */
 @Composable
@@ -99,7 +117,14 @@ internal fun keyFace(accent: Boolean): Brush {
     val s = LocalSkin.current
     val paper = LocalPaper.current.takeOrElse { paperColor() }
     return if (accent) Brush.linearGradient(listOf(lerp(s.tactileAccent, Color.White, 0.22f), lerp(s.tactileAccent, Color.Black, 0.12f)))
-    else Brush.linearGradient(listOf(lerp(paper, Color.White, if (s.dark) 0.05f else 0.5f), lerp(paper, Color.Black, if (s.dark) 0.08f else 0.04f)))
+    else when (s.look) {
+        // Brushed chrome knob.
+        TactileLook.Metal -> if (s.dark) Brush.radialGradient(listOf(Color(0xFF6B6F78), Color(0xFF34373D)))
+            else Brush.radialGradient(listOf(Color.White, Color(0xFFC9CDD3)))
+        TactileLook.Frost -> Brush.linearGradient(listOf(Color.White.copy(alpha = if (s.dark) 0.30f else 0.85f), Color.White.copy(alpha = if (s.dark) 0.12f else 0.45f)))
+        TactileLook.Led -> Brush.linearGradient(listOf(lerp(paper, Color.White, 0.08f), lerp(paper, Color.Black, 0.25f)))
+        else -> Brush.linearGradient(listOf(lerp(paper, Color.White, if (s.dark) 0.05f else 0.5f), lerp(paper, Color.Black, if (s.dark) 0.08f else 0.04f)))
+    }
 }
 
 /** The single sheet the keys rise out of. */
