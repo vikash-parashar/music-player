@@ -27,10 +27,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /*
- * Whole-card push effect for the Pro looks (style "D", picked by the owner 2026-11-02): every card
- * is built like the push buttons. A grey base shape sits behind it, the card face rides on top with
- * a thick bottom edge, and pressing anywhere on the card sinks the face into the base. Buttons
- * inside the card sit in the same grey base and sink together with the card.
+ * Whole-card push effect for the Pro looks (picked by the owner 2026-11-02): every card is a 3D push
+ * key with a thick bottom edge, and pressing anywhere on it sinks the whole card. Buttons inside sit
+ * in a deep grey base, pop out of the card, and sink together with it.
  */
 
 /** True while the card around this content is held down, so buttons inside sink with it. */
@@ -39,16 +38,19 @@ val LocalCardPressed = compositionLocalOf { false }
 private val EDGE = 5.dp
 private val ease = CubicBezierEasing(0.23f, 1f, 0.32f, 1f)
 
-/** The raised grey base shape that cards and buttons sit in. */
+/** The deep grey base shape every push button sits in, so the button pops out of its card. */
 @Composable
 fun Modifier.pressBase(shape: Shape): Modifier {
     val s = LocalSkin.current
-    val top = lerp(s.tactile, Color.White, if (s.dark) 0.06f else 0.35f)
-    val bottom = lerp(s.tactile, Color.Black, if (s.dark) 0.14f else 0.07f)
+    val top = lerp(s.tactile, Color.White, if (s.dark) 0.05f else 0.2f)
+    val bottom = lerp(s.tactile, Color.Black, if (s.dark) 0.2f else 0.15f)
+    val rim = lerp(s.tactile, Color.Black, if (s.dark) 0.45f else 0.27f)
     return this
-        .dropShadow(shape, Color.Black.copy(alpha = if (s.dark) 0.35f else 0.13f), offsetY = 2.dp, blur = 4.dp)
+        .dropShadow(shape, Color.Black.copy(alpha = if (s.dark) 0.4f else 0.2f), offsetY = 5.dp, blur = 8.dp)
+        .dropShadow(shape, rim, offsetY = 3.dp)
         .background(Brush.verticalGradient(listOf(top, bottom)), shape)
-        .innerShadow(shape, Color.White.copy(alpha = if (s.dark) 0.14f else 0.9f), offsetY = 1.dp, blur = 1.dp)
+        .innerShadow(shape, Color.White.copy(alpha = if (s.dark) 0.16f else 0.95f), offsetY = 1.dp, blur = 1.dp)
+        .innerShadow(shape, Color.Black.copy(alpha = if (s.dark) 0.3f else 0.14f), offsetY = (-2).dp, blur = 3.dp)
 }
 
 /**
@@ -87,7 +89,7 @@ private fun Modifier.watchPress(pressed: MutableState<Boolean>): Modifier {
 }
 
 /**
- * Base + sinking frame without a face: the caller draws the face (a cover image, a tile...).
+ * Thick edge + sinking frame without a face: the caller draws the face (a cover image, a tile...).
  * Does nothing in Classic.
  */
 @Composable
@@ -96,10 +98,10 @@ fun Modifier.skinPressFrame(shape: Shape, pressed: MutableState<Boolean> = remem
     if (s.isClassic) return this
     val down by animateFloatAsState(if (pressed.value) 1f else 0f, tween(220, easing = ease), label = "cardPress")
     val edge = lerp(s.tactile, Color.Black, if (s.dark) 0.35f else 0.16f)
+    // No grey behind the card (owner's call): just the thick edge, room for it below, and the sink.
     return this
-        .pressBase(shape)
         .watchPress(pressed)
-        .padding(start = 5.dp, end = 5.dp, top = 5.dp, bottom = 5.dp + EDGE)
+        .padding(bottom = EDGE)
         .graphicsLayer { translationY = EDGE.toPx() * down }
         .dropShadow(shape, edge.copy(alpha = 1f - down), offsetY = EDGE * (1f - down))
         .dropShadow(shape, Color.Black.copy(alpha = (if (s.dark) 0.3f else 0.12f) * (1f - down)), offsetY = EDGE + 2.dp, blur = 6.dp)
