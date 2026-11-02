@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="car_auto_title">कार जुड़ते ही Car mode</string>
+    <string name="car_auto_desc">आपकी कार का Bluetooth जुड़ते ही Car mode खुलेगा और गाना चलेगा। अगर Ampli पीछे चल रहा है, तो एक notification आएगी, उसे दबाएँ। यह तब काम करता है जब Ampli खुला हो या notification में रुका हो।</string>
+    <string name="car_auto_your_car">आपकी कार</string>
+    <string name="car_auto_none">Ampli खोलकर एक बार फ़ोन को कार के Bluetooth से जोड़ें, फिर यहाँ अपनी कार चुनें।</string>
+    <string name="car_auto_hint">अपनी कार चुनें, ताकि earbuds या speaker से Car mode न खुले।</string>
+    <string name="car_auto_channel">कार जुड़ी</string>
+    <string name="car_auto_notif_title">%1$s जुड़ गई</string>
+    <string name="car_auto_notif_text">Car mode खोलने के लिए दबाएँ</string>
+</resources>

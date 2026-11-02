@@ -378,6 +378,19 @@ fun loadSavedQueue(context: Context, player: Player): Boolean {
     return true
 }
 
+/**
+ * The queue the app saved last time, for Media3's playback resumption (earbuds or the car pressing
+ * play, or the media card in quick settings, after Android closed the app). Null when nothing was saved.
+ */
+fun savedQueueForResumption(context: Context): androidx.media3.session.MediaSession.MediaItemsWithStartPosition? {
+    val prefs = context.getSharedPreferences("queue", Context.MODE_PRIVATE)
+    val (queues, active) = readSavedQueues(prefs, Json { ignoreUnknownKeys = true })
+    val q = queues.getOrNull(active)?.takeIf { it.items.isNotEmpty() } ?: return null
+    return androidx.media3.session.MediaSession.MediaItemsWithStartPosition(
+        q.items.map { it.toMediaItem() }, q.index.coerceIn(0, q.items.lastIndex), q.positionMs,
+    )
+}
+
 @Serializable
 private data class SavedQueue(
     val name: String,

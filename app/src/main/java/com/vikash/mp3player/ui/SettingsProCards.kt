@@ -88,6 +88,70 @@ fun AutoPlayCard() {
     }
 }
 
+/** Free: open Car mode when the Bluetooth device picked as "your car" connects. */
+@Composable
+fun CarAutoOpenCard() {
+    val context = LocalContext.current
+    var on by remember { mutableStateOf(com.vikash.mp3player.playback.CarAutoOpen.isEnabled(context)) }
+    var picked by remember { mutableStateOf(com.vikash.mp3player.playback.CarAutoOpen.car(context)) }
+    val devices = remember {
+        (com.vikash.mp3player.playback.CarAutoOpen.connectedNow(context) +
+            com.vikash.mp3player.playback.CarAutoOpen.seen(context) +
+            listOfNotNull(picked)).distinct()
+    }
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(16.dp)) {
+            CardTitle(stringResource(R.string.car_auto_title), pro = false, unlocked = true) {
+                Switch(checked = on, onCheckedChange = { on = it; com.vikash.mp3player.playback.CarAutoOpen.setEnabled(context, it) })
+            }
+            Text(
+                stringResource(R.string.car_auto_desc),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            if (on) {
+                Spacer(Modifier.height(12.dp))
+                Text(stringResource(R.string.car_auto_your_car), style = MaterialTheme.typography.labelLarge)
+                Spacer(Modifier.height(6.dp))
+                if (devices.isEmpty()) {
+                    Text(
+                        stringResource(R.string.car_auto_none),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                devices.forEach { name ->
+                    val selected = name == picked
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 3.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .border(
+                                1.dp,
+                                if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
+                                RoundedCornerShape(12.dp),
+                            )
+                            .clickable { picked = name; com.vikash.mp3player.playback.CarAutoOpen.setCar(context, name) }
+                            .padding(horizontal = 12.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        androidx.compose.material3.RadioButton(selected = selected, onClick = null)
+                        Spacer(Modifier.width(10.dp))
+                        Text(name, style = MaterialTheme.typography.bodyMedium)
+                    }
+                }
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    stringResource(R.string.car_auto_hint),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
+}
+
 /** Free: when a queue ends, song radio keeps the music going (Spotify's Autoplay). */
 @Composable
 fun KeepGoingCard() {
