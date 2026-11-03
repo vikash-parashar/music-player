@@ -61,7 +61,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-/** Free users can wear a Pro look for [SECONDS] seconds; then it goes back to Classic. */
+/** Free users can wear a Pro look for [SECONDS] seconds; then it goes back to their free look. */
 object SkinTrial {
     const val SECONDS = 30
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
@@ -137,7 +137,7 @@ fun SkinGrid(current: UiSkin, unlocked: Boolean, onPick: (UiSkin) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         UiSkin.entries.chunked(4).forEach { row ->
             Row(Modifier.fillMaxWidth()) {
-                row.forEach { k -> SkinSwatch(k, k == current, locked = !unlocked && k != UiSkin.Classic, Modifier.weight(1f)) { onPick(k) } }
+                row.forEach { k -> SkinSwatch(k, k == current, locked = !unlocked && !k.free, Modifier.weight(1f)) { onPick(k) } }
             }
         }
     }
@@ -151,7 +151,7 @@ fun SkinPickerCard(unlocked: Boolean, onGetPro: () -> Unit) {
     val haptics by prefs.skinHaptics.collectAsState()
     val trial by SkinTrial.active.collectAsState()
     val left by SkinTrial.left.collectAsState()
-    val current = trial ?: if (unlocked) chosen else UiSkin.Classic
+    val current = trial ?: if (unlocked || chosen.free) chosen else UiSkin.Default
     SkinCard(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -165,11 +165,11 @@ fun SkinPickerCard(unlocked: Boolean, onGetPro: () -> Unit) {
             Spacer(Modifier.height(14.dp))
             SkinGrid(current, unlocked) { k ->
                 when {
-                    unlocked || k == UiSkin.Classic -> { SkinTrial.stop(); prefs.setUiSkin(k) }
+                    unlocked || k.free -> { SkinTrial.stop(); prefs.setUiSkin(k) }
                     else -> SkinTrial.start(k)
                 }
             }
-            if (current != UiSkin.Classic) {
+            if (current != UiSkin.Classic && unlocked) {
                 Spacer(Modifier.height(14.dp))
                 KeyColorRow(prefs.keyColor.collectAsState().value, prefs::setKeyColor)
             }

@@ -191,19 +191,21 @@ fun skinSpec(skin: UiSkin, dark: Boolean, hapticsOn: Boolean = true): SkinSpec =
     )
     // Lit from the top left: raised parts get a light edge up-left and a soft shade down-right, and
     // every raised surface has a faint diagonal sheen so it reads as moulded, not flat.
+    // Neumorphism, the default look: everything moulded out of one soft sheet, rose only for
+    // Play and the active item.
     UiSkin.Neu -> if (dark) SkinSpec(
-        skin, true, SurfaceStyle.Raised, null, card = Color(0xFF2A2D34),
-        cardBrush = Brush.linearGradient(listOf(Color(0xFF30333B), Color(0xFF25282E))),
+        skin, true, SurfaceStyle.Raised, null, card = Color(0xFF262A33),
+        cardBrush = Brush.linearGradient(listOf(Color(0xFF2B303A), Color(0xFF22262E))),
         edge = Color.Transparent, corner = 22.dp,
-        shadowDark = Color(0xFF1A1C21), shadowLight = Color(0xFF3A3E47),
-        tactile = Color(0xFF2A2D34), tactileInk = Color(0xB3E2E6EE), tactileAccent = Color(0xFF2E3138), onTactileAccent = Color(0xFFFB7185),
+        shadowDark = Color(0xFF16181D), shadowLight = Color(0xFF363B47),
+        tactile = Color(0xFF262A33), tactileInk = Color(0xFFB9C1D0), tactileAccent = Color(0xFFFB7185), onTactileAccent = Color.White,
         accentHue = 350f, haptic = TICK, hapticsOn = hapticsOn, pressHaptics = true,
     ) else SkinSpec(
-        skin, false, SurfaceStyle.Raised, null, card = Color(0xFFE0E5EC),
-        cardBrush = Brush.linearGradient(listOf(Color(0xFFE9EEF5), Color(0xFFD4DAE2))),
+        skin, false, SurfaceStyle.Raised, null, card = Color(0xFFE4E9F0),
+        cardBrush = Brush.linearGradient(listOf(Color(0xFFEEF2F7), Color(0xFFDCE2EA))),
         edge = Color.Transparent, corner = 22.dp,
         shadowDark = Color(0xFFB8C0CC), shadowLight = Color.White,
-        tactile = Color(0xFFE0E5EC), tactileInk = Color(0xFF5B6778), tactileAccent = Color(0xFFE6EBF1), onTactileAccent = Color(0xFFE11D48),
+        tactile = Color(0xFFE4E9F0), tactileInk = Color(0xFF55627A), tactileAccent = Color(0xFFE11D48), onTactileAccent = Color.White,
         accentHue = 350f, haptic = TICK, hapticsOn = hapticsOn, pressHaptics = true,
     )
     UiSkin.Clay -> if (dark) SkinSpec(
@@ -289,8 +291,8 @@ fun skinColorScheme(skin: UiSkin, dark: Boolean): ColorScheme? = when (skin) {
         else scheme(false, Color(0xFF111111), Color.White, Color(0xFFFAFAFA), Color(0xFFF2F2F2), Color.White, Color(0xFF111111), Color(0xFF8A8A8A), Color(0xFFE5E5E5))
     UiSkin.Glass -> if (dark) scheme(true, Color.White, Color(0xFF4C1D95), Color(0xFF2A1F5C), Color(0x33FFFFFF), Color(0xFF2E2563), Color.White, Color(0xB3FFFFFF), Color(0x47FFFFFF))
         else scheme(false, Color(0xFF6D28D9), Color.White, Color(0xFFF3EEFF), Color(0x80FFFFFF), Color(0xFFF7F4FF), Color(0xFF1E1B4B), Color(0xFF5B5675), Color(0x331E1B4B))
-    UiSkin.Neu -> if (dark) scheme(true, Color(0xFFFB7185), Color(0xFF2A2D34), Color(0xFF2A2D34), Color(0xFF2E3138), Color(0xFF30333B), Color(0xFFE2E6EE), Color(0xFF9AA3B2), Color(0xFF3A3E47))
-        else scheme(false, Color(0xFFE11D48), Color.White, Color(0xFFE0E5EC), Color(0xFFE6EBF1), Color(0xFFE6EBF1), Color(0xFF3D4A5C), Color(0xFF7D8AA0), Color(0xFFC5CED9))
+    UiSkin.Neu -> if (dark) scheme(true, Color(0xFFFB7185), Color.White, Color(0xFF262A33), Color(0xFF2B303A), Color(0xFF2B303A), Color(0xFFE3E7EF), Color(0xFF9AA3B2), Color(0xFF363B47))
+        else scheme(false, Color(0xFFE11D48), Color.White, Color(0xFFE4E9F0), Color(0xFFEAEEF4), Color(0xFFEAEEF4), Color(0xFF2F3A4C), Color(0xFF6B788D), Color(0xFFC5CED9))
     UiSkin.Clay -> if (dark) scheme(true, Color(0xFFFF7A3D), Color.White, Color(0xFF2A1E1A), Color(0xFF3A2A24), Color(0xFF3A2A24), Color(0xFFFBEDE4), Color(0xFFC9A897), Color(0xFF5A4238))
         else scheme(false, Color(0xFFF0705E), Color.White, Color(0xFFFFE3D3), Color(0xFFFFF4EC), Color(0xFFFFF4EC), Color(0xFF4A2A1E), Color(0xFF8A6A5C), Color(0xFFF0C6B0))
     UiSkin.Brutal -> if (dark) scheme(true, Color(0xFFFACC15), Color.Black, Color(0xFF18181B), Color(0xFF27272A), Color(0xFF27272A), Color(0xFFFAFAFA), Color(0xFFD4D4D8), Color(0xFFFAFAFA))
@@ -341,7 +343,7 @@ fun skinTypography(skin: UiSkin, base: Typography): Typography? = when (skin) {
     UiSkin.Classic -> null
     UiSkin.Minimal -> base.headings { it.copy(fontFamily = light, fontWeight = FontWeight.Normal, letterSpacing = (-0.2).sp) }
     UiSkin.Glass -> base.headings { it.copy(fontWeight = FontWeight.SemiBold, letterSpacing = (-0.3).sp) }
-    UiSkin.Neu -> base.headings { it.copy(fontWeight = FontWeight.Medium) }
+    UiSkin.Neu -> base.headings { it.copy(fontWeight = FontWeight.Bold, letterSpacing = (-0.2).sp) }
     UiSkin.Paper -> base.headings { it.copy(fontWeight = FontWeight.Bold, letterSpacing = (-0.2).sp) }
     UiSkin.Midnight -> base.headings { it.copy(fontWeight = FontWeight.SemiBold) }
     UiSkin.Keys -> base.map { it.copy(fontFamily = FontFamily.Monospace) }

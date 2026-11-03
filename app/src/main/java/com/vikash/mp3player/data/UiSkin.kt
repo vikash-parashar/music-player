@@ -9,6 +9,8 @@ import com.vikash.mp3player.R
  */
 enum class UiSkin(val id: String, @StringRes val labelRes: Int) {
     Classic("classic", R.string.skin_classic),
+    // Neumorphism: the default look for everyone, free users included (owner, 2026-11-02).
+    Neu("neu", R.string.skin_neu),
     // Tactile themes (2026-11-02): paper cards, buttons rising out of them with a red/green ring.
     Paper("paper", R.string.skin_paper),
     Clay("clay", R.string.skin_clay),
@@ -22,11 +24,16 @@ enum class UiSkin(val id: String, @StringRes val labelRes: Int) {
     Bubble("bubble", R.string.skin_bubble),
     Arcade("arcade", R.string.skin_arcade),
     Minimal("minimal", R.string.skin_minimal),
-    Neu("neu", R.string.skin_neu),
     Brutal("brutal", R.string.skin_brutal),
     Bento("bento", R.string.skin_bento);
 
+    /** Looks everyone can use without Pro. */
+    val free: Boolean get() = this == Classic || this == Neu
+
     companion object {
+        /** What the app opens in until the user picks something else. */
+        val Default = Neu
+
         fun from(id: String?): UiSkin = entries.firstOrNull { it.id == id } ?: Classic
     }
 }
