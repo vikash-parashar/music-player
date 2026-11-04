@@ -35,6 +35,7 @@ export const footerLinks = [
   { href: "/privacy/carhub/", label: "Privacy (Car Hub)" },
   { href: "/privacy/naukri/", label: "Privacy (Naukri)" },
   { href: "/privacy/kavach/", label: "Privacy (Kavach)" },
+  { href: "/privacy/oopsnaut/", label: "Privacy (Oopsnaut)" },
 ];
 
 export type AppId = "mp3" | "carhub" | "kavach" | "naukri";
