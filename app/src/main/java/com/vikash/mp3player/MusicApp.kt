@@ -52,6 +52,10 @@ class MusicApp : Application(), SingletonImageLoader.Factory {
         com.vikash.mp3player.data.OwnerHooks.init(this, onboarded)
         // Lite mode switched in Settings: the widget's disc, bars and glow stop or start.
         appScope.launch { prefs.liteMode.drop(1).collect { com.vikash.mp3player.widget.WidgetState.redraw(this@MusicApp) } }
+        // The style widgets show the heart, the sleep timer and Pro state: redraw when those change in the app.
+        appScope.launch { prefs.favorites.drop(1).collect { com.vikash.mp3player.widget.WidgetState.redraw(this@MusicApp) } }
+        appScope.launch { com.vikash.mp3player.playback.SleepTimer.endsAtMillis.drop(1).collect { com.vikash.mp3player.widget.WidgetState.redraw(this@MusicApp) } }
+        appScope.launch { proUnlocked.drop(1).collect { com.vikash.mp3player.widget.WidgetState.redraw(this@MusicApp) } }
     }
 
     // Lite mode: covers appear at once instead of fading in (read when the loader is first made).

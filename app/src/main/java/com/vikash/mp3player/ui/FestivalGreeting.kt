@@ -1,6 +1,11 @@
 package com.vikash.mp3player.ui
 
 import android.content.Context
+import android.media.AudioAttributes
+import android.os.Handler
+import android.os.Looper
+import android.speech.tts.TextToSpeech
+import java.util.Locale
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -17,6 +22,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -41,8 +47,10 @@ import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -102,6 +110,8 @@ private fun prog(t: Float, start: Float, dur: Float) = ((t - start) / dur).coerc
 fun DiwaliGreetingScreen(onDone: () -> Unit) {
     BackHandler(onBack = onDone)
     val haptic = LocalHapticFeedback.current
+    val voiceLine = stringResource(R.string.diwali_vo)
+    DiwaliVoice(voiceLine)
     var time by remember { mutableFloatStateOf(0f) }
     var canvasSize by remember { mutableStateOf(Size.Zero) }
 
@@ -243,9 +253,10 @@ fun DiwaliGreetingScreen(onDone: () -> Unit) {
                         start = Offset(-600f + 1600f * shine, 0f), end = Offset(200f + 1600f * shine, 0f),
                     ),
                     shadow = Shadow(Color(0x99FF9F1C), blurRadius = 28f),
-                    fontSize = 54.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center,
+                    fontSize = 52.sp, lineHeight = 84.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center,
+                    platformStyle = PlatformTextStyle(includeFontPadding = true),
                 ),
-                modifier = Modifier.graphicsLayer { alpha = titleIn; scaleX = pop; scaleY = pop },
+                modifier = Modifier.padding(top = 12.dp).graphicsLayer { alpha = titleIn; scaleX = pop; scaleY = pop },
             )
             Spacer(Modifier.height(8.dp))
             FadeUp(prog(t, 2.9f, 1f)) { Text("HAPPY DIWALI", color = Peach, fontSize = 14.sp, letterSpacing = 6.sp, fontWeight = FontWeight.SemiBold) }
@@ -368,6 +379,48 @@ private fun DrawScope.toran(t: Float, a: Float) {
                     drawCircle(Color(0xFFFFD36E).copy(alpha = a), 4 * px, c)
                 }
             }
+        }
+    }
+}
+
+/**
+ * Speaks the Diwali wish with the phone's own text-to-speech voice, in Hindi on Hindi phones
+ * and English elsewhere. Starts as the title appears; stops when the screen closes.
+ * If the phone has no usable voice, the screen simply stays silent.
+ */
+@Composable
+private fun DiwaliVoice(line: String) {
+    val context = LocalContext.current
+    DisposableEffect(line) {
+        val handler = Handler(Looper.getMainLooper())
+        var tts: TextToSpeech? = null
+        var released = false
+        tts = TextToSpeech(context.applicationContext, TextToSpeech.OnInitListener init@{ status ->
+            val engine = tts
+            if (released || engine == null || status != TextToSpeech.SUCCESS) return@init
+            val hindi = Locale.getDefault().language == "hi"
+            val ok = if (hindi) engine.setLanguage(Locale("hi", "IN")) else engine.setLanguage(Locale.getDefault())
+            if (ok == TextToSpeech.LANG_MISSING_DATA || ok == TextToSpeech.LANG_NOT_SUPPORTED) {
+                if (hindi) return@init // don't read Hindi text with an English voice
+                engine.setLanguage(Locale.US)
+            }
+            engine.setSpeechRate(0.92f)
+            engine.setPitch(1.05f)
+            engine.setAudioAttributes(
+                AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_MEDIA)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                    .build(),
+            )
+            handler.postDelayed({
+                if (!released) engine.speak(line, TextToSpeech.QUEUE_FLUSH, null, "diwali_wish")
+            }, 2200L)
+        })
+        onDispose {
+            released = true
+            handler.removeCallbacksAndMessages(null)
+            tts?.stop()
+            tts?.shutdown()
         }
     }
 }

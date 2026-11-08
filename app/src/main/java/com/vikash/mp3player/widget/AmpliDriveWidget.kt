@@ -67,7 +67,10 @@ import com.vikash.mp3player.ui.CarLaunch
  */
 abstract class AmpliDriveWidget(private val palette: DrivePalette) : GlanceAppWidget() {
 
-    override val sizeMode: SizeMode = SizeMode.Responsive(setOf(SMALL, WIDE, MEDIUM))
+    // Exact, not Responsive: Responsive reports the matched bucket size (250 dp wide) instead of the
+    // real widget size, so on wide phones the car and controls were squeezed into the left part of
+    // the card and the right side stayed empty.
+    override val sizeMode: SizeMode = SizeMode.Exact
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         provideContent {
@@ -151,11 +154,11 @@ abstract class AmpliDriveWidget(private val palette: DrivePalette) : GlanceAppWi
                 Image(
                     ImageProvider(R.drawable.widget_drive_title), "DRIVE",
                     GlanceModifier.size(if (big) 158.dp else 116.dp, if (big) 34.dp else 25.dp),
-                    contentScale = ContentScale.Fit, colorFilter = ColorFilter.tint(ColorProvider(palette.accent)),
+                    contentScale = ContentScale.Fit, colorFilter = ColorFilter.tint(ColorProvider(palette.title)),
                 )
                 Image(
                     ImageProvider(R.drawable.widget_drive_subtitle), "differently",
-                    GlanceModifier.size(if (big) 80.dp else 62.dp, if (big) 18.dp else 14.dp),
+                    GlanceModifier.size(if (big) 80.dp else 62.dp, if (big) 23.dp else 18.dp),
                     contentScale = ContentScale.Fit, colorFilter = ColorFilter.tint(ColorProvider(palette.ink)),
                 )
                 Spacer(GlanceModifier.height(if (big) 10.dp else 6.dp))
@@ -298,6 +301,8 @@ abstract class AmpliDriveWidget(private val palette: DrivePalette) : GlanceAppWi
 class DrivePalette(
     val bg: Color,
     val accent: Color,
+    /** Colour of the DRIVE headline. */
+    val title: Color,
     val beam: Color,
     val ink: Color,
     val disc: Int,
@@ -307,12 +312,12 @@ class DrivePalette(
 ) {
     companion object {
         val CRIMSON = DrivePalette(
-            bg = Color(0xFF06110C), accent = Color(0xFFC62A22), beam = Color(0x99D23A2E), ink = Color(0xFFC9DDD0),
+            bg = Color(0xFF06110C), accent = Color(0xFFC62A22), title = Color(0xFF8FD3FF), beam = Color(0x99D23A2E), ink = Color(0xFFC9DDD0),
             disc = R.drawable.widget_drive_disc_crimson, spinLayout = R.layout.widget_drive_spin_crimson,
             playBg = R.drawable.widget_drive_play_crimson, logo = R.drawable.widget_drive_logo_crimson,
         )
         val ORANGE = DrivePalette(
-            bg = Color(0xFF07111E), accent = Color(0xFFF2732A), beam = Color(0x99FF8030), ink = Color(0xFFCFE2F2),
+            bg = Color(0xFF07111E), accent = Color(0xFFF2732A), title = Color(0xFF5EEAD4), beam = Color(0x99FF8030), ink = Color(0xFFCFE2F2),
             disc = R.drawable.widget_drive_disc_orange, spinLayout = R.layout.widget_drive_spin_orange,
             playBg = R.drawable.widget_drive_play_orange, logo = R.drawable.widget_drive_logo_orange,
         )

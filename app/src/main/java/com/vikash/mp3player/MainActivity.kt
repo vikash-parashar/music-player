@@ -34,6 +34,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         if (savedInstanceState == null) CarLaunch.handle(intent)
+        if (savedInstanceState == null) com.vikash.mp3player.widget.WidgetLaunch.handle(intent)
 
         val billing = (application as MusicApp).billing
         billing.start()
@@ -96,6 +97,7 @@ class MainActivity : ComponentActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         CarLaunch.handle(intent)
+        com.vikash.mp3player.widget.WidgetLaunch.handle(intent)
     }
 
     override fun onResume() {
