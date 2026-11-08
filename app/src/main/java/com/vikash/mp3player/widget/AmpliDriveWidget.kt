@@ -67,7 +67,10 @@ import com.vikash.mp3player.ui.CarLaunch
  */
 abstract class AmpliDriveWidget(private val palette: DrivePalette) : GlanceAppWidget() {
 
-    override val sizeMode: SizeMode = SizeMode.Responsive(setOf(SMALL, WIDE, MEDIUM))
+    // Exact, not Responsive: Responsive reports the matched bucket size (250 dp wide) instead of the
+    // real widget size, so on wide phones the car and controls were squeezed into the left part of
+    // the card and the right side stayed empty.
+    override val sizeMode: SizeMode = SizeMode.Exact
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         provideContent {
