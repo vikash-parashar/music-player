@@ -11,4 +11,3 @@
 *.jks
 *.keystore
 node_modules
-config.bat

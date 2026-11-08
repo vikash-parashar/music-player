@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "node init && next dev",
-    "build": "node init && next build",
-    "start": "node init && npx serve out",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "npx serve out",
     "lint": "tsc --noEmit"
   },
   "dependencies": {
