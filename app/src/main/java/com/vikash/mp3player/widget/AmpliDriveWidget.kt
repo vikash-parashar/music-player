@@ -312,12 +312,12 @@ class DrivePalette(
 ) {
     companion object {
         val CRIMSON = DrivePalette(
-            bg = Color(0xFF06110C), accent = Color(0xFFC62A22), title = Color(0xFF6FD9A8), beam = Color(0x99D23A2E), ink = Color(0xFFC9DDD0),
+            bg = Color(0xFF06110C), accent = Color(0xFFC62A22), title = Color(0xFF8FD3FF), beam = Color(0x99D23A2E), ink = Color(0xFFC9DDD0),
             disc = R.drawable.widget_drive_disc_crimson, spinLayout = R.layout.widget_drive_spin_crimson,
             playBg = R.drawable.widget_drive_play_crimson, logo = R.drawable.widget_drive_logo_crimson,
         )
         val ORANGE = DrivePalette(
-            bg = Color(0xFF07111E), accent = Color(0xFFF2732A), title = Color(0xFF6FD9A8), beam = Color(0x99FF8030), ink = Color(0xFFCFE2F2),
+            bg = Color(0xFF07111E), accent = Color(0xFFF2732A), title = Color(0xFF5EEAD4), beam = Color(0x99FF8030), ink = Color(0xFFCFE2F2),
             disc = R.drawable.widget_drive_disc_orange, spinLayout = R.layout.widget_drive_spin_orange,
             playBg = R.drawable.widget_drive_play_orange, logo = R.drawable.widget_drive_logo_orange,
         )
