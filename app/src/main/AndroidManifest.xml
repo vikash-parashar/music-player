@@ -142,6 +142,63 @@
                 android:resource="@xml/ampli_drive_widget_orange_info" />
         </receiver>
 
+        <!-- Style widgets (8 Nov 2026): Vinyl Deck, Clock + Music, Quick Mixes, Retro Cassette, Slim Pill. -->
+        <receiver
+            android:name=".widget.VinylDeckReceiver"
+            android:exported="true"
+            android:label="@string/widget_vinyl_deck">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/ampli_widget_vinyl_deck_info" />
+        </receiver>
+        <receiver
+            android:name=".widget.ClockMusicReceiver"
+            android:exported="true"
+            android:label="@string/widget_clock_music">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/ampli_widget_clock_music_info" />
+        </receiver>
+        <receiver
+            android:name=".widget.QuickMixesReceiver"
+            android:exported="true"
+            android:label="@string/widget_quick_mixes">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/ampli_widget_quick_mixes_info" />
+        </receiver>
+        <receiver
+            android:name=".widget.CassetteReceiver"
+            android:exported="true"
+            android:label="@string/widget_cassette">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/ampli_widget_cassette_info" />
+        </receiver>
+        <receiver
+            android:name=".widget.SlimPillReceiver"
+            android:exported="true"
+            android:label="@string/widget_slim_pill">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/ampli_widget_slim_pill_info" />
+        </receiver>
+
         <!-- Lyric cards: hands the picture to WhatsApp, Instagram or the share sheet. -->
         <provider
             android:name="androidx.core.content.FileProvider"

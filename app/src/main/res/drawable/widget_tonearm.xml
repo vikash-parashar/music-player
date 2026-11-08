@@ -1,0 +1,8 @@
+<!-- Vinyl Deck tonearm: pivot at the top, arm down to the headshell over the record. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="30dp" android:height="72dp" android:viewportWidth="30" android:viewportHeight="72">
+    <path android:fillColor="#FF5A4A3A" android:pathData="M15,9m-8,0a8,8 0,1 1,16 0a8,8 0,1 1,-16 0" />
+    <path android:fillColor="#FFD8C3A5" android:pathData="M15,9m-4,0a4,4 0,1 1,8 0a4,4 0,1 1,-8 0" />
+    <path android:strokeColor="#FFD8C3A5" android:strokeWidth="3" android:strokeLineCap="round" android:pathData="M15,12 L18,52 L11,62" />
+    <path android:fillColor="#FF8A7356" android:pathData="M6,60 L14,58 L16,68 L8,70Z" />
+</vector>

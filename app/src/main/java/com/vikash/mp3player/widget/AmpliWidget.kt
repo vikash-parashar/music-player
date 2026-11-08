@@ -69,6 +69,7 @@ import com.vikash.mp3player.MainActivity
 import com.vikash.mp3player.MusicApp
 import com.vikash.mp3player.R
 import com.vikash.mp3player.playback.PlaybackService
+import com.vikash.mp3player.playback.SleepTimer
 import com.vikash.mp3player.playback.loadSavedQueue
 import coil3.SingletonImageLoader
 import coil3.request.ImageRequest
@@ -513,6 +514,9 @@ class AmpliWidget : GlanceAppWidget() {
         const val CMD_PREV = "prev"
         const val CMD_TOGGLE = "toggle"
         const val CMD_NEXT = "next"
+        const val CMD_SHUFFLE = "shuffle"
+        const val CMD_FAVOURITE = "favourite"
+        const val CMD_SLEEP = "sleep"
         val CommandKey = ActionParameters.Key<String>("command")
 
         private const val ART_PX = 240
@@ -553,6 +557,12 @@ class PlayerAction : ActionCallback {
     }
 
     private suspend fun send(context: Context, command: String) {
+        // The sleep timer lives in the app process; no player connection needed.
+        if (command == AmpliWidget.CMD_SLEEP) {
+            if (SleepTimer.endsAtMillis.value != null) SleepTimer.cancel() else SleepTimer.start(30)
+            WidgetState.redraw(context)
+            return
+        }
         val controller = withTimeoutOrNull(5_000) { connect(context) } ?: return
         try {
             // If the app was closed, the button woke a fresh service with an empty player, so
@@ -562,6 +572,12 @@ class PlayerAction : ActionCallback {
             when (command) {
                 AmpliWidget.CMD_PREV -> controller.seekToPrevious()
                 AmpliWidget.CMD_NEXT -> controller.seekToNext()
+                AmpliWidget.CMD_SHUFFLE -> controller.shuffleModeEnabled = !controller.shuffleModeEnabled
+                AmpliWidget.CMD_FAVOURITE -> {
+                    val id = controller.currentMediaItem?.mediaId.orEmpty()
+                    if (id.isNotEmpty()) (context.applicationContext as? MusicApp)?.prefs?.toggleFavorite(id)
+                    WidgetState.redraw(context)
+                }
                 AmpliWidget.CMD_TOGGLE -> if (controller.isPlaying && !restored) controller.pause() else {
                     if (controller.playbackState == Player.STATE_IDLE) controller.prepare()
                     controller.play()
@@ -606,6 +622,9 @@ data class WidgetState(
     val positionMs: Long = 0L,
     val durationMs: Long = 0L,
     val capturedAt: Long = 0L,
+    /** The current song's media id ("" when nothing is loaded), for the favourite heart. */
+    val id: String = "",
+    val shuffle: Boolean = false,
 ) {
     /** Same song and state, and the clock would show the same time (within half a second). */
     private fun sameAs(other: WidgetState): Boolean {
@@ -628,6 +647,7 @@ data class WidgetState(
                 p.getString("title", "").orEmpty(), p.getString("artist", "").orEmpty(), p.getBoolean("playing", false),
                 p.getString("next", "").orEmpty(), p.getString("art", "").orEmpty(),
                 p.getLong("position", 0L), p.getLong("duration", 0L), p.getLong("captured", 0L),
+                p.getString("id", "").orEmpty(), p.getBoolean("shuffle", false),
             )
         }
 
@@ -649,6 +669,8 @@ data class WidgetState(
                 positionMs = player.currentPosition.coerceAtLeast(0L),
                 durationMs = if (duration == C.TIME_UNSET || duration < 0L) 0L else duration,
                 capturedAt = SystemClock.elapsedRealtime(),
+                id = player.currentMediaItem?.mediaId.orEmpty(),
+                shuffle = player.shuffleModeEnabled,
             )
         }
 
@@ -659,6 +681,7 @@ data class WidgetState(
                 .putString("title", state.title).putString("artist", state.artist).putBoolean("playing", state.playing)
                 .putString("next", state.next).putString("art", state.art)
                 .putLong("position", state.positionMs).putLong("duration", state.durationMs).putLong("captured", state.capturedAt)
+                .putString("id", state.id).putBoolean("shuffle", state.shuffle)
                 .apply()
             redraw(context)
         }
@@ -668,6 +691,7 @@ data class WidgetState(
             _changes.update { it + 1 }
             runCatching { AmpliWidget().updateAll(context) }
             AmpliDriveWidget.redrawAll(context)
+            StyleWidget.redrawAll(context)
         }
     }
 }

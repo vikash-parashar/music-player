@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_vinyl_deck">Ampli Vinyl Deck</string>
+    <string name="widget_clock_music">Ampli घड़ी + म्यूज़िक</string>
+    <string name="widget_quick_mixes">Ampli Quick Mixes</string>
+    <string name="widget_cassette">Ampli Retro Cassette</string>
+    <string name="widget_slim_pill">Ampli Slim Pill</string>
+    <string name="widget_vinyl_deck_description">घूमता record, progress, shuffle और favourite (Pro)</string>
+    <string name="widget_clock_music_description">बड़ी घड़ी और तारीख़, sleep timer और छोटा player</string>
+    <string name="widget_quick_mixes_description">एक tap में Favourites, नए गाने, सबसे ज़्यादा सुने या सब shuffle (Pro)</string>
+    <string name="widget_cassette_description">घूमती reels और walkman buttons वाला पुराना tape (Pro)</string>
+    <string name="widget_slim_pill_description">Progress वाली पतली player पट्टी</string>
+    <string name="widget_pro_locked">Ampli Pro widget. खोलने के लिए tap करें।</string>
+    <string name="widget_shuffle">Shuffle</string>
+    <string name="widget_favourite">Favourite</string>
+    <string name="widget_sleep_30">🌙 30 मिनट में बंद</string>
+    <string name="widget_sleep_until">🌙 %1$s पर बंद</string>
+    <string name="widget_mix_favourites">Favourites</string>
+    <string name="widget_mix_recent">नए गाने</string>
+    <string name="widget_mix_most">सबसे ज़्यादा सुने</string>
+    <string name="widget_mix_shuffle">सब shuffle</string>
+    <string name="widget_chip_sleep">🌙 Sleep</string>
+    <string name="widget_chip_player">🎵 Player</string>
+    <string name="widget_chip_car">🚗 Car mode</string>
+    <string name="widget_mix_empty">इस mix के लिए अभी कोई गाना नहीं</string>
+</resources>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_vinyl_deck">Ampli Vinyl Deck</string>
+    <string name="widget_clock_music">Ampli Clock + Music</string>
+    <string name="widget_quick_mixes">Ampli Quick Mixes</string>
+    <string name="widget_cassette">Ampli Retro Cassette</string>
+    <string name="widget_slim_pill">Ampli Slim Pill</string>
+    <string name="widget_vinyl_deck_description">Spinning record with progress, shuffle and favourite (Pro)</string>
+    <string name="widget_clock_music_description">Big clock and date, sleep timer and a mini player</string>
+    <string name="widget_quick_mixes_description">One tap for Favourites, Recently added, Most played or Shuffle all (Pro)</string>
+    <string name="widget_cassette_description">Retro tape with turning reels and walkman keys (Pro)</string>
+    <string name="widget_slim_pill_description">A slim player bar with progress</string>
+    <string name="widget_pro_locked">Ampli Pro widget. Tap to unlock.</string>
+    <string name="widget_shuffle">Shuffle</string>
+    <string name="widget_favourite">Favourite</string>
+    <string name="widget_sleep_30">🌙 Sleep 30m</string>
+    <string name="widget_sleep_until">🌙 Stops at %1$s</string>
+    <string name="widget_mix_favourites">Favourites</string>
+    <string name="widget_mix_recent">Recently added</string>
+    <string name="widget_mix_most">Most played</string>
+    <string name="widget_mix_shuffle">Shuffle all</string>
+    <string name="widget_chip_sleep">🌙 Sleep</string>
+    <string name="widget_chip_player">🎵 Player</string>
+    <string name="widget_chip_car">🚗 Car mode</string>
+    <string name="widget_mix_empty">No songs for this mix yet</string>
+</resources>

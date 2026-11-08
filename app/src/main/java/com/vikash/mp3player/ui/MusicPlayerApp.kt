@@ -182,6 +182,27 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
             }
         }
     }
+    // Quick Mixes widget: start the tapped mix once the player and library are ready.
+    val widgetMix by com.vikash.mp3player.widget.WidgetLaunch.pending.collectAsStateWithLifecycle()
+    LaunchedEffect(widgetMix, player.connected, library.songs.isNotEmpty()) {
+        val mix = widgetMix ?: return@LaunchedEffect
+        if (!player.connected || library.songs.isEmpty()) return@LaunchedEffect
+        com.vikash.mp3player.widget.WidgetLaunch.done()
+        val local = library.songs.filter { !it.isOnline }
+        val byId = local.associateBy { it.id }
+        val (list, label) = when (mix) {
+            com.vikash.mp3player.widget.WidgetLaunch.MIX_FAVOURITES ->
+                favorites.mapNotNull { byId[it] } to context.getString(R.string.widget_mix_favourites)
+            com.vikash.mp3player.widget.WidgetLaunch.MIX_RECENT ->
+                local.sortedByDescending { it.dateAddedSec }.take(100) to context.getString(R.string.widget_mix_recent)
+            com.vikash.mp3player.widget.WidgetLaunch.MIX_MOST_PLAYED -> {
+                fun plays(id: String) = stats.songs[id]?.plays ?: 0
+                local.filter { plays(it.id) > 0 }.sortedByDescending { plays(it.id) }.take(100) to context.getString(R.string.widget_mix_most)
+            }
+            else -> local.shuffled() to context.getString(R.string.widget_mix_shuffle)
+        }
+        if (list.isEmpty()) vm.notify(context.getString(R.string.widget_mix_empty)) else vm.player.play(list, 0, label)
+    }
     var showDuplicates by rememberSaveable { mutableStateOf(false) }
     var showRecognize by remember { mutableStateOf(false) }
     // Right after Pro starts (purchase or trial), offer the app styles once.
