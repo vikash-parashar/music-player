@@ -469,4 +469,7 @@
     <!-- Home screen widget -->
     <string name="widget_open_app">Open Ampli</string>
     <string name="widget_tap_play">Tap play to resume your music</string>
+    <string name="diwali_msg">Wishing you and your family a Diwali full of light, joy and sweet music.</string>
+    <string name="diwali_sig">— Team Ampli</string>
+    <string name="diwali_cta">Let\'s play music</string>
 </resources>

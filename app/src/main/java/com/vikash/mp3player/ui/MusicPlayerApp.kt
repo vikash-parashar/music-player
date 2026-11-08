@@ -186,6 +186,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     var showRecognize by remember { mutableStateOf(false) }
     // Right after Pro starts (purchase or trial), offer the app styles once.
     var showSkinWelcome by remember { mutableStateOf(false) }
+    var showDiwali by remember { mutableStateOf(FestivalGreeting.shouldShow(context)) }
     var wasPro by remember { mutableStateOf(proUnlocked) }
     LaunchedEffect(proUnlocked) {
         if (proUnlocked && !wasPro) showSkinWelcome = true
@@ -640,6 +641,17 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                     switchDone = true
                 },
             )
+        }
+
+        AnimatedVisibility(
+            visible = showDiwali && welcomeDone && switchDone,
+            enter = fadeIn(),
+            exit = fadeOut(),
+        ) {
+            DiwaliGreetingScreen(onDone = {
+                FestivalGreeting.markSeen(context)
+                showDiwali = false
+            })
         }
 
         if (showSkinWelcome) SkinWelcomeDialog(onDismiss = { showSkinWelcome = false })
