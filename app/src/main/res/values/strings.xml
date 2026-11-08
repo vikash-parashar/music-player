@@ -473,4 +473,9 @@
     <string name="diwali_sig">— Team Ampli</string>
     <string name="diwali_vo">Happy Diwali! From all of us at Ampli, wishing you and your family a Diwali full of light, joy, and sweet music.</string>
     <string name="diwali_cta">Let\'s play music</string>
+    <string name="battery_help_title">Keep music playing with the screen off</string>
+    <string name="battery_help_body">Your %1$s phone may stop Ampli in the background to save battery, which cuts the music. Change one setting, just once.</string>
+    <string name="battery_help_steps">Tap Allow, then open Battery and choose \"Allow background activity\" (or \"No restrictions\").</string>
+    <string name="battery_help_allow">Allow</string>
+    <string name="battery_help_later">Later</string>
 </resources>

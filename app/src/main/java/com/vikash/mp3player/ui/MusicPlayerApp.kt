@@ -654,6 +654,19 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
             })
         }
 
+        // Ask once, the first time music plays, on brands that kill background playback.
+        var showBatteryHelp by remember { mutableStateOf(false) }
+        LaunchedEffect(player.isPlaying, welcomeDone, switchDone, showDiwali) {
+            if (player.isPlaying && welcomeDone && switchDone && !showDiwali && BatteryHelp.shouldShow(context)) {
+                kotlinx.coroutines.delay(4_000)
+                showBatteryHelp = true
+            }
+        }
+        if (showBatteryHelp) BatteryHelpDialog(onDone = {
+            BatteryHelp.markDone(context)
+            showBatteryHelp = false
+        })
+
         if (showSkinWelcome) SkinWelcomeDialog(onDismiss = { showSkinWelcome = false })
         if (!proUnlocked) SkinTrialEndedDialog(onGetPro = openPro)
     }
