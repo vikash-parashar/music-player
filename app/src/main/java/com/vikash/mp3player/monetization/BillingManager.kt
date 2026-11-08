@@ -77,8 +77,10 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
     private val client = BillingClient.newBuilder(context)
         .setListener(this)
         .enablePendingPurchases(PendingPurchasesParams.newBuilder().enableOneTimeProducts().build())
-        // Billing 8: reconnects by itself when Play's service drops, so a tap never hits a dead client.
-        .enableAutoServiceReconnection()
+        // No enableAutoServiceReconnection(): in Billing 8.0.0 it can crash the app with
+        // "IllegalStateException: This stopwatch is already running" from onServiceDisconnected
+        // on a Play Billing thread (seen on Android 16). We reconnect ourselves instead: every
+        // buy tap and refresh calls start() when the client is not ready.
         .build()
 
     fun start() {
