@@ -27,6 +27,7 @@ import androidx.glance.action.actionStartActivity
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.AndroidRemoteViews
 import androidx.glance.appwidget.GlanceAppWidget
+import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.action.actionRunCallback
@@ -62,12 +63,12 @@ import java.text.DateFormat
 import java.util.Date
 
 /**
- * The style widgets added on 8 Nov 2026: Vinyl Deck, Clock + Music, Quick Mixes, Retro Cassette and
+ * The style widgets added on 8 Nov 2026: Vinyl Deck, Clock + Music, Quick Mixes, Glass Cassette and
  * Slim Pill. They read the same [WidgetState] as [AmpliWidget] and send the same commands through
  * [PlayerAction]. All use [SizeMode.Exact], so layouts get the real widget size (Responsive only
  * reports the matched bucket, which left the right side of wide widgets empty).
  *
- * Vinyl Deck, Quick Mixes and Retro Cassette are Pro; without Pro they show a "Pro widget" card
+ * Vinyl Deck, Quick Mixes and Glass Cassette are Pro; without Pro they show a "Pro widget" card
  * that opens the app. Clock + Music and Slim Pill are free.
  */
 abstract class StyleWidget(private val pro: Boolean) : GlanceAppWidget() {
@@ -75,6 +76,8 @@ abstract class StyleWidget(private val pro: Boolean) : GlanceAppWidget() {
     override val sizeMode: SizeMode = SizeMode.Exact
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
+        // The launcher's id for this widget: the Glass Cassette keeps a look per widget.
+        val widgetId = runCatching { GlanceAppWidgetManager(context).getAppWidgetId(id) }.getOrDefault(0)
         provideContent {
             val change by WidgetState.changes.collectAsState()
             val s = remember(change) { WidgetState.read(context) }
@@ -82,7 +85,7 @@ abstract class StyleWidget(private val pro: Boolean) : GlanceAppWidget() {
             val lite = runCatching { app?.prefs?.liteMode?.value }.getOrNull() ?: false
             val unlocked = !pro || (runCatching { app?.proUnlocked?.value }.getOrNull() ?: false)
             val favourite = s.id.isNotEmpty() && (runCatching { app?.prefs?.isFavorite(s.id) }.getOrNull() ?: false)
-            if (unlocked) Body(s, StyleExtras(animate = s.playing && !lite, favourite = favourite))
+            if (unlocked) Body(s, StyleExtras(animate = s.playing && !lite, favourite = favourite, widgetId = widgetId))
             else Locked()
         }
     }
@@ -210,7 +213,7 @@ abstract class StyleWidget(private val pro: Boolean) : GlanceAppWidget() {
 }
 
 /** What a style widget needs besides [WidgetState]. */
-class StyleExtras(val animate: Boolean, val favourite: Boolean)
+class StyleExtras(val animate: Boolean, val favourite: Boolean, val widgetId: Int = 0)
 
 /** 1. Vinyl Deck (4x2, Pro): turntable with a tonearm, song, time, progress, shuffle, heart. */
 class VinylDeckWidget : StyleWidget(pro = true) {
@@ -381,70 +384,93 @@ class QuickMixesWidget : StyleWidget(pro = true) {
     }
 }
 
-/** 6. Retro Cassette (4x2, Pro): tape with turning reels, song on the label, walkman keys. */
+/**
+ * 6. Glass Cassette (Pro): a see-through classic cassette in one of 14 looks ([GlassCassette.LOOKS]),
+ * chosen per widget in [CassetteStyleActivity]. The hubs turn while music plays and the song name is
+ * hand-written on the label strip. Previous / play / next / shuffle / heart keys underneath.
+ */
 class CassetteWidget : StyleWidget(pro = true) {
     @Composable
     override fun Body(s: WidgetState, x: StyleExtras) {
+        val context = LocalContext.current
         val size = LocalSize.current
-        val ink = Color(0xFF2A2420)
+        val look = GlassCassette.LOOKS[GlassCassette.lookIndex(context, x.widgetId)]
+        val pen = GlassCassette.penColor(look, GlassCassette.penChoice(context, x.widgetId))
+        val keyTint = Color(look.keyTint)
+        val pad = 10.dp
+        val keysH = 30.dp
+        val gap = 8.dp
+        val roomW = size.width - pad * 2
+        val roomH = size.height - pad * 2 - keysH - gap
+        val ratio = GlassCassette.BODY_W / GlassCassette.BODY_H
+        val cw = if (roomH * ratio < roomW) roomH * ratio else roomW
+        val ch = cw / ratio
+        val sx = cw / GlassCassette.BODY_W // Dp per body pixel
+        val hub = sx * GlassCassette.HUB_SIZE
+
         Column(
-            GlanceModifier.fillMaxSize().cornerRadius(24.dp).background(Color(0xFFE9E2D0)).padding(12.dp),
+            GlanceModifier.fillMaxSize().cornerRadius(24.dp).background(Color(look.shell)).padding(pad),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Column(
-                GlanceModifier.fillMaxWidth().defaultWeight().cornerRadius(12.dp).background(ink).padding(8.dp).clickable(openApp()),
-            ) {
-                Row(
-                    GlanceModifier.fillMaxWidth().cornerRadius(6.dp).background(Color(0xFFF6C75B)).padding(horizontal = 10.dp, vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Box(GlanceModifier.defaultWeight()) { Title(s, 12, ink, mono = true) }
-                    Text("C-60", style = TextStyle(color = ColorProvider(ink), fontSize = 11.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold))
+            Box(GlanceModifier.width(cw).height(ch).clickable(openApp())) {
+                Image(
+                    ImageProvider(look.body), context.getString(R.string.widget_cassette),
+                    GlanceModifier.fillMaxSize(), contentScale = ContentScale.FillBounds,
+                )
+                // The song name, written on the strip.
+                val textW = sx * (GlassCassette.TEXT_RIGHT - GlassCassette.TEXT_LEFT)
+                val textH = sx * (GlassCassette.TEXT_BOTTOM - GlassCassette.TEXT_TOP)
+                val density = context.resources.displayMetrics.density
+                val title = s.title.ifEmpty { "Ampli" }
+                val artist = if (s.title.isEmpty()) context.getString(R.string.widget_tap_play) else s.artist
+                Box(GlanceModifier.padding(start = sx * GlassCassette.TEXT_LEFT, top = sx * GlassCassette.TEXT_TOP)) {
+                    Image(
+                        ImageProvider(GlassCassette.writing(context, title, artist, pen, (textW.value * density).toInt(), (textH.value * density).toInt())),
+                        title, GlanceModifier.width(textW).height(textH), contentScale = ContentScale.FillBounds,
+                    )
                 }
-                Spacer(GlanceModifier.height(6.dp))
-                val reel = minOf(size.height * 0.24f, 44.dp)
-                Row(
-                    GlanceModifier.fillMaxWidth().defaultWeight().cornerRadius(8.dp).background(Color(0xFF3B332D)),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Spinner(x.animate, R.layout.widget_reel_spin, R.drawable.widget_reel, reel)
-                    Spacer(GlanceModifier.width(size.width * 0.22f))
-                    Spinner(x.animate, R.layout.widget_reel_spin, R.drawable.widget_reel, reel)
+                // The two hubs, turning while music plays.
+                Box(GlanceModifier.padding(start = sx * GlassCassette.HUB_LEFT_X - hub / 2, top = sx * GlassCassette.HUB_Y - hub / 2)) {
+                    Spinner(x.animate, look.hub.spin, look.hub.still, hub)
+                }
+                Box(GlanceModifier.padding(start = sx * GlassCassette.HUB_RIGHT_X - hub / 2, top = sx * GlassCassette.HUB_Y - hub / 2)) {
+                    Spinner(x.animate, look.hub.spin, look.hub.still, hub)
                 }
             }
-            Spacer(GlanceModifier.height(8.dp))
+            Spacer(GlanceModifier.height(gap))
             Row(GlanceModifier.fillMaxWidth()) {
-                Key(R.drawable.ic_widget_prev, R.string.common_previous, command(AmpliWidget.CMD_PREV), false)
+                Key(R.drawable.ic_widget_prev, R.string.common_previous, command(AmpliWidget.CMD_PREV), false, keyTint)
                 Spacer(GlanceModifier.width(6.dp))
                 Key(
                     if (s.playing) R.drawable.ic_widget_pause else R.drawable.ic_widget_play,
                     if (s.playing) R.string.common_pause else R.string.common_play,
-                    if (s.title.isEmpty()) openApp() else command(AmpliWidget.CMD_TOGGLE), s.playing,
+                    if (s.title.isEmpty()) openApp() else command(AmpliWidget.CMD_TOGGLE), s.playing, keyTint,
                 )
                 Spacer(GlanceModifier.width(6.dp))
-                Key(R.drawable.ic_widget_next, R.string.common_next, command(AmpliWidget.CMD_NEXT), false)
+                Key(R.drawable.ic_widget_next, R.string.common_next, command(AmpliWidget.CMD_NEXT), false, keyTint)
                 Spacer(GlanceModifier.width(6.dp))
-                Key(R.drawable.ic_widget_shuffle, R.string.widget_shuffle, command(AmpliWidget.CMD_SHUFFLE), s.shuffle)
+                Key(R.drawable.ic_widget_shuffle, R.string.widget_shuffle, command(AmpliWidget.CMD_SHUFFLE), s.shuffle, keyTint)
                 Spacer(GlanceModifier.width(6.dp))
                 Key(
                     if (x.favourite) R.drawable.ic_widget_heart else R.drawable.ic_widget_heart_outline,
-                    R.string.widget_favourite, command(AmpliWidget.CMD_FAVOURITE), x.favourite,
+                    R.string.widget_favourite, command(AmpliWidget.CMD_FAVOURITE), x.favourite, keyTint,
                 )
             }
         }
     }
 
+    /** A see-through glass key; brighter while its mode is on. */
     @Composable
-    private fun androidx.glance.layout.RowScope.Key(icon: Int, label: Int, action: Action, on: Boolean) {
+    private fun androidx.glance.layout.RowScope.Key(icon: Int, label: Int, action: Action, on: Boolean, tint: Color) {
         val context = LocalContext.current
         Box(
-            GlanceModifier.defaultWeight().height(28.dp)
-                .background(ImageProvider(if (on) R.drawable.widget_key_on else R.drawable.widget_key)).clickable(action),
+            GlanceModifier.defaultWeight().height(30.dp).cornerRadius(10.dp)
+                .background(if (on) Color(0x66FFFFFF) else Color(0x33FFFFFF)).clickable(action),
             contentAlignment = Alignment.Center,
         ) {
             Image(
-                ImageProvider(icon), context.getString(label), GlanceModifier.size(14.dp),
-                colorFilter = ColorFilter.tint(ColorProvider(if (on) Color.White else Color(0xFF2A2420))),
+                ImageProvider(icon), context.getString(label), GlanceModifier.size(15.dp),
+                colorFilter = ColorFilter.tint(ColorProvider(tint)),
             )
         }
     }

@@ -1,8 +1,0 @@
-<!-- Cassette reel: hub with six spokes so the turn is visible. -->
-<vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="48dp" android:height="48dp" android:viewportWidth="48" android:viewportHeight="48">
-    <path android:fillColor="#FF5A4E44" android:pathData="M24,24m-24,0a24,24 0,1 1,48 0a24,24 0,1 1,-48 0" />
-    <path android:fillColor="#FFE9E2D0" android:pathData="M24,24m-17,0a17,17 0,1 1,34 0a17,17 0,1 1,-34 0" />
-    <path android:fillColor="#FF2A2420" android:pathData="M24,24 L24,8 L29,9.5Z M24,24 L37.9,16 L39.1,21Z M24,24 L37.9,32 L34,36Z M24,24 L24,40 L19,38.5Z M24,24 L10.1,32 L8.9,27Z M24,24 L10.1,16 L14,12Z" />
-    <path android:fillColor="#FF2A2420" android:pathData="M24,24m-5,0a5,5 0,1 1,10 0a5,5 0,1 1,-10 0" />
-</vector>

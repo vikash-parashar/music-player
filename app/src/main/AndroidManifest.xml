@@ -142,7 +142,7 @@
                 android:resource="@xml/ampli_drive_widget_orange_info" />
         </receiver>
 
-        <!-- Style widgets (8 Nov 2026): Vinyl Deck, Clock + Music, Quick Mixes, Retro Cassette, Slim Pill. -->
+        <!-- Style widgets (8 Nov 2026): Vinyl Deck, Clock + Music, Quick Mixes, Glass Cassette, Slim Pill. -->
         <receiver
             android:name=".widget.VinylDeckReceiver"
             android:exported="true"
@@ -187,6 +187,18 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/ampli_widget_cassette_info" />
         </receiver>
+        <!-- Glass Cassette look picker, opened by the launcher when the widget is added or reconfigured. -->
+        <activity
+            android:name=".widget.CassetteStyleActivity"
+            android:exported="true"
+            android:label="@string/widget_cassette"
+            android:theme="@style/Theme.Mp3Player"
+            android:excludeFromRecents="true"
+            android:taskAffinity="">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
         <receiver
             android:name=".widget.SlimPillReceiver"
             android:exported="true"

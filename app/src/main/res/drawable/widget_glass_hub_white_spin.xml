@@ -1,0 +1,4 @@
+<rotate xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/widget_glass_hub_white"
+    android:fromDegrees="360" android:toDegrees="0"
+    android:pivotX="50%" android:pivotY="50%" />
