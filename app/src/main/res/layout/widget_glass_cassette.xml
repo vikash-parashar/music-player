@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Glass Cassette (Pro widget). The cassette picture fills the frame, and the writing and the two hubs
+  are placed with layout weights in the picture's own 640 x 402 units, so they stay on the strip and
+  the reels whatever size the launcher gives the widget. (Placing them with dp padding drifted on
+  OnePlus, 9 Nov 2026.) Space is not a RemoteViews class, so empty FrameLayouts are the gaps.
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/glass_body"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="fitXY"
+        android:importantForAccessibility="no" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+    <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="42" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="74"
+        android:orientation="horizontal">
+        <FrameLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="150" />
+        <ImageView
+            android:id="@+id/glass_writing"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="380"
+            android:scaleType="fitXY" />
+        <FrameLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="110" />
+    </LinearLayout>
+    <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="70" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="60"
+        android:orientation="horizontal">
+        <FrameLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="170" />
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="60">
+            <ImageView
+                android:id="@+id/glass_hub_l_still"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="fitXY"
+                android:importantForAccessibility="no" />
+            <ProgressBar
+                android:id="@+id/glass_hub_l_white"
+                style="@android:style/Widget.ProgressBar"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:maxWidth="1000dp"
+                android:maxHeight="1000dp"
+                android:indeterminate="true"
+                android:indeterminateOnly="true"
+                android:indeterminateBehavior="repeat"
+                android:indeterminateDuration="2500"
+                android:interpolator="@android:anim/linear_interpolator"
+                android:indeterminateDrawable="@drawable/widget_glass_hub_white_spin"
+                android:visibility="gone" />
+            <ProgressBar
+                android:id="@+id/glass_hub_l_blue"
+                style="@android:style/Widget.ProgressBar"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:maxWidth="1000dp"
+                android:maxHeight="1000dp"
+                android:indeterminate="true"
+                android:indeterminateOnly="true"
+                android:indeterminateBehavior="repeat"
+                android:indeterminateDuration="2500"
+                android:interpolator="@android:anim/linear_interpolator"
+                android:indeterminateDrawable="@drawable/widget_glass_hub_blue_spin"
+                android:visibility="gone" />
+            <ProgressBar
+                android:id="@+id/glass_hub_l_gold"
+                style="@android:style/Widget.ProgressBar"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:maxWidth="1000dp"
+                android:maxHeight="1000dp"
+                android:indeterminate="true"
+                android:indeterminateOnly="true"
+                android:indeterminateBehavior="repeat"
+                android:indeterminateDuration="2500"
+                android:interpolator="@android:anim/linear_interpolator"
+                android:indeterminateDrawable="@drawable/widget_glass_hub_gold_spin"
+                android:visibility="gone" />
+        </FrameLayout>
+        <FrameLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="180" />
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="60">
+            <ImageView
+                android:id="@+id/glass_hub_r_still"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="fitXY"
+                android:importantForAccessibility="no" />
+            <ProgressBar
+                android:id="@+id/glass_hub_r_white"
+                style="@android:style/Widget.ProgressBar"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:maxWidth="1000dp"
+                android:maxHeight="1000dp"
+                android:indeterminate="true"
+                android:indeterminateOnly="true"
+                android:indeterminateBehavior="repeat"
+                android:indeterminateDuration="2500"
+                android:interpolator="@android:anim/linear_interpolator"
+                android:indeterminateDrawable="@drawable/widget_glass_hub_white_spin"
+                android:visibility="gone" />
+            <ProgressBar
+                android:id="@+id/glass_hub_r_blue"
+                style="@android:style/Widget.ProgressBar"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:maxWidth="1000dp"
+                android:maxHeight="1000dp"
+                android:indeterminate="true"
+                android:indeterminateOnly="true"
+                android:indeterminateBehavior="repeat"
+                android:indeterminateDuration="2500"
+                android:interpolator="@android:anim/linear_interpolator"
+                android:indeterminateDrawable="@drawable/widget_glass_hub_blue_spin"
+                android:visibility="gone" />
+            <ProgressBar
+                android:id="@+id/glass_hub_r_gold"
+                style="@android:style/Widget.ProgressBar"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:maxWidth="1000dp"
+                android:maxHeight="1000dp"
+                android:indeterminate="true"
+                android:indeterminateOnly="true"
+                android:indeterminateBehavior="repeat"
+                android:indeterminateDuration="2500"
+                android:interpolator="@android:anim/linear_interpolator"
+                android:indeterminateDrawable="@drawable/widget_glass_hub_gold_spin"
+                android:visibility="gone" />
+        </FrameLayout>
+        <FrameLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="170" />
+    </LinearLayout>
+    <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="156" />
+    </LinearLayout>
+</FrameLayout>

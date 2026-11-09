@@ -30,10 +30,11 @@ object GlassCassette {
         val pen: Int,
     )
 
-    enum class Hub(val still: Int, val spin: Int) {
-        WHITE(R.drawable.widget_glass_hub_white, R.layout.widget_glass_hub_white_spin),
-        BLUE(R.drawable.widget_glass_hub_blue, R.layout.widget_glass_hub_blue_spin),
-        GOLD(R.drawable.widget_glass_hub_gold, R.layout.widget_glass_hub_gold_spin),
+    /** The still hub picture, and the spinning ProgressBars for it in widget_glass_cassette.xml. */
+    enum class Hub(val still: Int, val spinLeft: Int, val spinRight: Int) {
+        WHITE(R.drawable.widget_glass_hub_white, R.id.glass_hub_l_white, R.id.glass_hub_r_white),
+        BLUE(R.drawable.widget_glass_hub_blue, R.id.glass_hub_l_blue, R.id.glass_hub_r_blue),
+        GOLD(R.drawable.widget_glass_hub_gold, R.id.glass_hub_l_gold, R.id.glass_hub_r_gold),
     }
 
     /** Blue, green and red ball-pen ink. */
@@ -59,19 +60,12 @@ object GlassCassette {
         Look("Sticker Mixtape", R.drawable.widget_glass_body_14, 0x29FFFFFF, 0xFFFFFFFF, Hub.WHITE, RED),
     )
 
-    // Where things sit on the 640x402 body picture.
+    // The body picture is 640x402. widget_glass_cassette.xml places the writing (380x74, from 150,42)
+    // and the hubs (60x60, centred on 200,216 and 440,216) with layout weights in these units.
     const val BODY_W = 640f
     const val BODY_H = 402f
-    /** The writing area of the label strip, right of the printed "A". */
-    const val TEXT_LEFT = 150f
-    const val TEXT_TOP = 42f
-    const val TEXT_RIGHT = 530f
-    const val TEXT_BOTTOM = 116f
-    /** Reel hub centres and the hub picture's diameter. */
-    const val HUB_LEFT_X = 200f
-    const val HUB_RIGHT_X = 440f
-    const val HUB_Y = 216f
-    const val HUB_SIZE = 60f
+    const val TEXT_W = 380f
+    const val TEXT_H = 74f
 
     private const val PREFS = "glass_cassette"
 

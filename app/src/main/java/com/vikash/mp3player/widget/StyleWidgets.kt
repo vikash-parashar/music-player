@@ -405,37 +405,34 @@ class CassetteWidget : StyleWidget(pro = true) {
         val ratio = GlassCassette.BODY_W / GlassCassette.BODY_H
         val cw = if (roomH * ratio < roomW) roomH * ratio else roomW
         val ch = cw / ratio
-        val sx = cw / GlassCassette.BODY_W // Dp per body pixel
-        val hub = sx * GlassCassette.HUB_SIZE
 
         Column(
             GlanceModifier.fillMaxSize().cornerRadius(24.dp).background(Color(look.shell)).padding(pad),
             horizontalAlignment = Alignment.CenterHorizontally,
+            verticalAlignment = Alignment.CenterVertically,
         ) {
+            val title = s.title.ifEmpty { "Ampli" }
+            val artist = if (s.title.isEmpty()) context.getString(R.string.widget_tap_play) else s.artist
+            val density = context.resources.displayMetrics.density
+            val writeW = (cw.value * density * GlassCassette.TEXT_W / GlassCassette.BODY_W).toInt()
+            val writeH = (ch.value * density * GlassCassette.TEXT_H / GlassCassette.BODY_H).toInt()
+            val views = RemoteViews(context.packageName, R.layout.widget_glass_cassette).apply {
+                setImageViewResource(R.id.glass_body, look.body)
+                setImageViewBitmap(R.id.glass_writing, GlassCassette.writing(context, title, artist, pen, writeW, writeH))
+                setContentDescription(R.id.glass_writing, title)
+                for (h in GlassCassette.Hub.values()) {
+                    val on = x.animate && h == look.hub
+                    setViewVisibility(h.spinLeft, if (on) android.view.View.VISIBLE else android.view.View.GONE)
+                    setViewVisibility(h.spinRight, if (on) android.view.View.VISIBLE else android.view.View.GONE)
+                }
+                val still = if (x.animate) android.view.View.INVISIBLE else android.view.View.VISIBLE
+                setImageViewResource(R.id.glass_hub_l_still, look.hub.still)
+                setImageViewResource(R.id.glass_hub_r_still, look.hub.still)
+                setViewVisibility(R.id.glass_hub_l_still, still)
+                setViewVisibility(R.id.glass_hub_r_still, still)
+            }
             Box(GlanceModifier.width(cw).height(ch).clickable(openApp())) {
-                Image(
-                    ImageProvider(look.body), context.getString(R.string.widget_cassette),
-                    GlanceModifier.fillMaxSize(), contentScale = ContentScale.FillBounds,
-                )
-                // The song name, written on the strip.
-                val textW = sx * (GlassCassette.TEXT_RIGHT - GlassCassette.TEXT_LEFT)
-                val textH = sx * (GlassCassette.TEXT_BOTTOM - GlassCassette.TEXT_TOP)
-                val density = context.resources.displayMetrics.density
-                val title = s.title.ifEmpty { "Ampli" }
-                val artist = if (s.title.isEmpty()) context.getString(R.string.widget_tap_play) else s.artist
-                Box(GlanceModifier.padding(start = sx * GlassCassette.TEXT_LEFT, top = sx * GlassCassette.TEXT_TOP)) {
-                    Image(
-                        ImageProvider(GlassCassette.writing(context, title, artist, pen, (textW.value * density).toInt(), (textH.value * density).toInt())),
-                        title, GlanceModifier.width(textW).height(textH), contentScale = ContentScale.FillBounds,
-                    )
-                }
-                // The two hubs, turning while music plays.
-                Box(GlanceModifier.padding(start = sx * GlassCassette.HUB_LEFT_X - hub / 2, top = sx * GlassCassette.HUB_Y - hub / 2)) {
-                    Spinner(x.animate, look.hub.spin, look.hub.still, hub)
-                }
-                Box(GlanceModifier.padding(start = sx * GlassCassette.HUB_RIGHT_X - hub / 2, top = sx * GlassCassette.HUB_Y - hub / 2)) {
-                    Spinner(x.animate, look.hub.spin, look.hub.still, hub)
-                }
+                AndroidRemoteViews(views, GlanceModifier.fillMaxSize())
             }
             Spacer(GlanceModifier.height(gap))
             Row(GlanceModifier.fillMaxWidth()) {
