@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Retro Cassette reel: the same spinning trick as widget_disc_spin, a little faster. -->
+<!-- Glass Cassette hub (gold): turns backwards like a tape playing, same trick as widget_disc_spin. -->
 <ProgressBar xmlns:android="http://schemas.android.com/apk/res/android"
     style="@android:style/Widget.ProgressBar"
     android:layout_width="match_parent"
@@ -13,4 +13,4 @@
     android:indeterminateBehavior="repeat"
     android:indeterminateDuration="2500"
     android:interpolator="@android:anim/linear_interpolator"
-    android:indeterminateDrawable="@drawable/widget_reel_spin" />
+    android:indeterminateDrawable="@drawable/widget_glass_hub_gold_spin" />
