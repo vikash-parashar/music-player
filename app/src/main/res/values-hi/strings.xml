@@ -469,10 +469,6 @@
     <!-- Home screen widget -->
     <string name="widget_open_app">Ampli खोलें</string>
     <string name="widget_tap_play">अपने गाने फिर से सुनने के लिए प्ले दबाएं</string>
-    <string name="diwali_msg">Ampli परिवार की ओर से आपको और आपके परिवार को रोशनी, खुशियों और मीठे संगीत से भरी दीपावली की शुभकामनाएँ।</string>
-    <string name="diwali_sig">— टीम Ampli</string>
-    <string name="diwali_vo">शुभ दीपावली! ऐम्पली परिवार की ओर से, आपको और आपके पूरे परिवार को दीपावली की हार्दिक शुभकामनाएँ। आपका घर रोशनी, खुशियों और मीठे संगीत से भरा रहे।</string>
-    <string name="diwali_cta">चलो, गाने सुनें</string>
     <string name="battery_help_title">Screen बंद होने पर भी गाना चलता रहे</string>
     <string name="battery_help_body">आपका %1$s phone battery बचाने के लिए Ampli को बंद कर सकता है, जिससे गाना रुक जाता है। बस एक बार एक setting बदलें।</string>
     <string name="battery_help_steps">Allow दबाएँ, फिर Battery खोलें और \"Allow background activity\" (या \"No restrictions\") चुनें।</string>

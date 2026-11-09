@@ -207,7 +207,6 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     var showRecognize by remember { mutableStateOf(false) }
     // Right after Pro starts (purchase or trial), offer the app styles once.
     var showSkinWelcome by remember { mutableStateOf(false) }
-    var showDiwali by remember { mutableStateOf(FestivalGreeting.shouldShow(context)) }
     var wasPro by remember { mutableStateOf(proUnlocked) }
     LaunchedEffect(proUnlocked) {
         if (proUnlocked && !wasPro) showSkinWelcome = true
@@ -664,21 +663,10 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
             )
         }
 
-        AnimatedVisibility(
-            visible = showDiwali && welcomeDone && switchDone,
-            enter = fadeIn(),
-            exit = fadeOut(),
-        ) {
-            DiwaliGreetingScreen(onDone = {
-                FestivalGreeting.markSeen(context)
-                showDiwali = false
-            })
-        }
-
         // Ask once, the first time music plays, on brands that kill background playback.
         var showBatteryHelp by remember { mutableStateOf(false) }
-        LaunchedEffect(player.isPlaying, welcomeDone, switchDone, showDiwali) {
-            if (player.isPlaying && welcomeDone && switchDone && !showDiwali && BatteryHelp.shouldShow(context)) {
+        LaunchedEffect(player.isPlaying, welcomeDone, switchDone) {
+            if (player.isPlaying && welcomeDone && switchDone && BatteryHelp.shouldShow(context)) {
                 kotlinx.coroutines.delay(4_000)
                 showBatteryHelp = true
             }
