@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="car_volume">आवाज़</string>
+    <string name="car_volume_down">आवाज़ कम</string>
+    <string name="car_volume_up">आवाज़ ज़्यादा</string>
+    <string name="car_volume_mute">म्यूट</string>
+</resources>

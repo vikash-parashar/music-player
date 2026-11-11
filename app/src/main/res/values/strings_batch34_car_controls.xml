@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="car_volume">Volume</string>
+    <string name="car_volume_down">Volume down</string>
+    <string name="car_volume_up">Volume up</string>
+    <string name="car_volume_mute">Mute</string>
+</resources>

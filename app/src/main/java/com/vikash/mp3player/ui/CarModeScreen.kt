@@ -1,5 +1,12 @@
 package com.vikash.mp3player.ui
 
+import androidx.compose.material.icons.filled.Shuffle
+import androidx.compose.material.icons.filled.Repeat
+import androidx.compose.material.icons.filled.RepeatOne
+import androidx.compose.material.icons.filled.VolumeDown
+import androidx.compose.material.icons.filled.VolumeUp
+import androidx.compose.material.icons.filled.VolumeOff
+import androidx.compose.material.icons.filled.VolumeMute
 import android.view.HapticFeedbackConstants
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
@@ -151,8 +158,21 @@ fun CarModeScreen(
     // Song progress for the ring and the thin bar; twice a second is plenty for a glance.
     var progress by remember { mutableFloatStateOf(0f) }
     var positionMs by remember { mutableStateOf(0L) }
+    val audio = remember { context.getSystemService(android.content.Context.AUDIO_SERVICE) as android.media.AudioManager }
+    val maxVolume = remember { audio.getStreamMaxVolume(android.media.AudioManager.STREAM_MUSIC).coerceAtLeast(1) }
+    var volume by remember { mutableStateOf(audio.getStreamVolume(android.media.AudioManager.STREAM_MUSIC)) }
+    var muted by remember { mutableStateOf(audio.isStreamMute(android.media.AudioManager.STREAM_MUSIC)) }
+    fun changeVolume(direction: Int) {
+        // FLAG_SHOW_UI is left out: the bar on this screen shows the level, big enough to read at a glance.
+        runCatching { audio.adjustStreamVolume(android.media.AudioManager.STREAM_MUSIC, direction, 0) }
+        volume = audio.getStreamVolume(android.media.AudioManager.STREAM_MUSIC)
+        muted = audio.isStreamMute(android.media.AudioManager.STREAM_MUSIC)
+    }
     LaunchedEffect(current?.mediaId, state.isPlaying, state.durationMs) {
         while (true) {
+            // Also picks up the car's own volume knob.
+            volume = audio.getStreamVolume(android.media.AudioManager.STREAM_MUSIC)
+            muted = audio.isStreamMute(android.media.AudioManager.STREAM_MUSIC)
             positionMs = player.positionMs()
             progress = (positionMs.toFloat() / state.durationMs.coerceAtLeast(1)).coerceIn(0f, 1f)
             delay(500)
@@ -256,6 +276,42 @@ fun CarModeScreen(
                 GaugeKey(Icons.Default.SkipNext, stringResource(R.string.common_next), keyHeight, Modifier.weight(1f)) { player.next() }
             }
         }
+        val extras: @Composable (Dp) -> Unit = { keyHeight ->
+            // Shuffle, repeat (off, all, one) and the volume keys, with a bar showing the level.
+            Column {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    GaugeKey(Icons.Default.Shuffle, stringResource(R.string.player_shuffle), keyHeight, Modifier.weight(1f), on = state.shuffle) { player.toggleShuffle() }
+                    GaugeKey(
+                        if (state.repeatMode == androidx.media3.common.Player.REPEAT_MODE_ONE) Icons.Default.RepeatOne else Icons.Default.Repeat,
+                        stringResource(R.string.player_repeat), keyHeight, Modifier.weight(1f),
+                        on = state.repeatMode != androidx.media3.common.Player.REPEAT_MODE_OFF,
+                    ) { player.cycleRepeat() }
+                    GaugeKey(Icons.Default.VolumeDown, stringResource(R.string.car_volume_down), keyHeight, Modifier.weight(1f)) {
+                        changeVolume(android.media.AudioManager.ADJUST_LOWER)
+                    }
+                    GaugeKey(
+                        if (muted) Icons.Default.VolumeOff else Icons.Default.VolumeMute,
+                        stringResource(R.string.car_volume_mute), keyHeight, Modifier.weight(1f), on = muted,
+                    ) { changeVolume(android.media.AudioManager.ADJUST_TOGGLE_MUTE) }
+                    GaugeKey(Icons.Default.VolumeUp, stringResource(R.string.car_volume_up), keyHeight, Modifier.weight(1f)) {
+                        changeVolume(android.media.AudioManager.ADJUST_RAISE)
+                    }
+                }
+                Row(Modifier.fillMaxWidth().padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text(stringResource(R.string.car_volume).uppercase(), color = CarMuted, fontFamily = CarTitleFont, fontSize = 10.sp, letterSpacing = 2.sp)
+                    Spacer(Modifier.width(8.dp))
+                    val level = if (muted) 0f else volume.toFloat() / maxVolume
+                    Box(Modifier.weight(1f).height(5.dp).clip(CircleShape).background(CarKeyEdge)) {
+                        Box(Modifier.fillMaxWidth(level).fillMaxHeight().clip(CircleShape).background(CarSky))
+                    }
+                    Text(
+                        if (muted) stringResource(R.string.car_volume_mute).uppercase() else "${(level * 100).toInt()}%",
+                        color = CarSky, fontFamily = CarTitleFont, fontWeight = FontWeight.Bold, fontSize = 11.sp,
+                        textAlign = TextAlign.End, modifier = Modifier.width(48.dp),
+                    )
+                }
+            }
+        }
         val mic: @Composable () -> Unit = {
             // Hidden where the phone or head unit has no speech engine, so there's no dead button.
             if (voiceAvailable) {
@@ -291,6 +347,8 @@ fun CarModeScreen(
                         }
                         Spacer(Modifier.weight(1f))
                         dock(if (shortScreen) 64.dp else 76.dp)
+                        Spacer(Modifier.height(10.dp))
+                        extras(if (shortScreen) 44.dp else 52.dp)
                         if (voiceAvailable) Spacer(Modifier.height(10.dp))
                         mic()
                     }
@@ -306,6 +364,8 @@ fun CarModeScreen(
                         Spacer(Modifier.height(14.dp))
                     }
                     dock(78.dp)
+                    Spacer(Modifier.height(10.dp))
+                    extras(50.dp)
                     if (voiceAvailable) Spacer(Modifier.height(10.dp))
                     mic()
                     if (!promoClosed) {
@@ -373,7 +433,7 @@ private fun CarIconButton(icon: ImageVector, label: String, onClick: () -> Unit)
  * ticks, and its edge lights up while it is held.
  */
 @Composable
-private fun GaugeKey(icon: ImageVector, label: String, height: Dp, modifier: Modifier, lit: Boolean = false, onClick: () -> Unit) {
+private fun GaugeKey(icon: ImageVector, label: String, height: Dp, modifier: Modifier, lit: Boolean = false, on: Boolean = false, onClick: () -> Unit) {
     val (source, pressed, scale) = rememberCarPress()
     val shape = RoundedCornerShape(20.dp)
     Box(
@@ -381,10 +441,10 @@ private fun GaugeKey(icon: ImageVector, label: String, height: Dp, modifier: Mod
             .then(if (lit) Modifier.shadow(if (pressed) 6.dp else 16.dp, shape, ambientColor = CarSky, spotColor = CarSky) else Modifier)
             .clip(shape)
             .background(if (lit) Brush.verticalGradient(listOf(CarSky, CarSkyDeep)) else Brush.verticalGradient(listOf(CarKey, CarKey)))
-            .border(1.5.dp, if (pressed) (if (lit) Color.White else CarSky) else (if (lit) Color.Transparent else CarKeyEdge), shape)
+            .border(1.5.dp, if (pressed) (if (lit) Color.White else CarSky) else (if (lit) Color.Transparent else if (on) CarSky else CarKeyEdge), shape)
             .clickable(interactionSource = source, indication = null, role = Role.Button, onClick = onClick),
         contentAlignment = Alignment.Center,
-    ) { Icon(icon, label, tint = if (lit) Color(0xFF04111C) else CarPale, modifier = Modifier.size(height * 0.46f)) }
+    ) { Icon(icon, label, tint = if (lit) Color(0xFF04111C) else if (on) CarSky else CarPale, modifier = Modifier.size(height * 0.46f)) }
 }
 
 /** Small card telling drivers about Ampli Car Hub. Closing it keeps it closed. */
