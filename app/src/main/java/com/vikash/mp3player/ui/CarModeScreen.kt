@@ -96,7 +96,6 @@ private val CarKey = Color(0xFF121822)
 private val CarKeyEdge = Color(0xFF1E2A3A)
 private val CarSky = Color(0xFF38BDF8)
 private val CarSkyDeep = Color(0xFF0284C7)
-private val CarTrack = Color(0xFF1A2230)
 private val CarPale = Color(0xFFCFE3FF)
 private val CarMuted = Color(0xFF6B7C93)
 // Kept for the Car Hub card.
@@ -224,41 +223,25 @@ fun CarModeScreen(
             }
         }
         val gauge: @Composable (Modifier) -> Unit = { m ->
+            // The glass cassette in the middle (no car picture, no spinning disc, no arc, 11 Nov 2026):
+            // its tape winds from left to right as the song plays.
+            val spin = LocalDiscAngle.current
+            val look = remember { com.vikash.mp3player.widget.GlassCassette.LOOKS[com.vikash.mp3player.widget.GlassCassette.playerLook(context)] }
             BoxWithConstraints(m, contentAlignment = Alignment.Center) {
-                val dial = min(min(maxWidth, maxHeight) - 8.dp, 330.dp).coerceAtLeast(64.dp)
-                // A 270 degree dial like a speedometer: the lit arc is how far into the song you are.
-                Canvas(Modifier.size(dial)) {
-                    val w = (dial * 0.05f).toPx()
-                    val inset = w / 2 + (dial * 0.02f).toPx()
-                    val arcSize = androidx.compose.ui.geometry.Size(size.width - inset * 2, size.height - inset * 2)
-                    val tl = Offset(inset, inset)
-                    drawArc(CarTrack, 135f, 270f, false, tl, arcSize, style = Stroke(w, cap = StrokeCap.Round))
-                    // Soft glow under the lit arc, then the arc itself.
-                    drawArc(CarSky.copy(alpha = 0.25f), 135f, 270f * progress, false, tl, arcSize, style = Stroke(w * 2.2f, cap = StrokeCap.Round))
-                    drawArc(CarSky, 135f, 270f * progress, false, tl, arcSize, style = Stroke(w, cap = StrokeCap.Round))
-                    // Tick marks every 10%, like the numbers on a speedometer.
-                    val r = arcSize.width / 2
-                    val c = Offset(size.width / 2, size.height / 2)
-                    for (i in 0..10) {
-                        val ang = Math.toRadians(135.0 + 27.0 * i)
-                        val dx = kotlin.math.cos(ang).toFloat(); val dy = kotlin.math.sin(ang).toFloat()
-                        val lit = i / 10f <= progress
-                        drawLine(
-                            if (lit) CarSky else CarMuted.copy(alpha = 0.6f),
-                            Offset(c.x + dx * (r - w * 1.4f), c.y + dy * (r - w * 1.4f)),
-                            Offset(c.x + dx * (r - w * 2.4f), c.y + dy * (r - w * 2.4f)),
-                            strokeWidth = (dial * 0.008f).toPx(), cap = StrokeCap.Round,
-                        )
-                    }
+                val w = min(maxWidth, (maxHeight - 28.dp) * (640f / 402f)).coerceAtLeast(80.dp)
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    GlassCassetteView(
+                        look, current?.title.orEmpty(), current?.artist.orEmpty(),
+                        progress = { progress },
+                        hubAngle = { if (state.isPlaying && !lite) spin.value * 2f else 0f },
+                        modifier = Modifier.width(w),
+                    )
+                    Text(
+                        "${fmtTime(positionMs)} / ${fmtTime(state.durationMs)}",
+                        color = CarSky, fontFamily = CarTitleFont, fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp, letterSpacing = 2.sp, modifier = Modifier.padding(top = 8.dp),
+                    )
                 }
-                // The album art as a spinning disc in the middle of the dial.
-                SpinningCd(current?.artworkUri, dial * 0.6f, spinning = !lite)
-                Text(
-                    "${fmtTime(positionMs)} / ${fmtTime(state.durationMs)}",
-                    color = CarSky, fontFamily = CarTitleFont, fontWeight = FontWeight.Bold,
-                    fontSize = (dial.value * 0.05f).coerceIn(11f, 16f).sp, letterSpacing = 2.sp,
-                    modifier = Modifier.align(Alignment.Center).offset(y = dial * 0.42f),
-                )
             }
         }
         val dock: @Composable (Dp) -> Unit = { keyHeight ->
