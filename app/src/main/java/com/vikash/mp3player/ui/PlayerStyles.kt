@@ -390,9 +390,15 @@ private fun NeonRingsView(uri: Uri?, isPlaying: Boolean, modifier: Modifier) {
 private fun LyricsFirstView(songId: String, positionMs: Long, onSeek: (Long) -> Unit, modifier: Modifier, fallback: @Composable () -> Unit) {
     val context = LocalContext.current
     var lyrics by remember(songId) { mutableStateOf<Lyrics?>(null) }
-    LaunchedEffect(songId) { lyrics = runCatching { LyricsRepository.load(context, songId) }.getOrNull() }
+    var loaded by remember(songId) { mutableStateOf(false) }
+    LaunchedEffect(songId) {
+        lyrics = runCatching { LyricsRepository.load(context, songId) }.getOrNull()
+        loaded = true
+    }
     val timed = lyrics?.takeIf { it.synced }?.lines?.filter { it.timeMs != null && it.text.isNotBlank() }.orEmpty()
     Box(modifier, contentAlignment = Alignment.Center) {
+        // Nothing until this song's lyrics are known, so the record player doesn't flash in between songs.
+        if (!loaded) return@Box
         if (timed.isEmpty()) {
             fallback()
             return@Box

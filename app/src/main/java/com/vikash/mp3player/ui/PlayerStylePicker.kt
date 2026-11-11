@@ -19,6 +19,7 @@ import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -68,6 +69,9 @@ fun PlayerStyleSheet(
     onPreview: ((PlayerStyle) -> Unit)? = null,
 ) {
     val sheet = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
+    // Slide the sheet down first, then close it, instead of it vanishing at once.
+    val close = { scope.launch { sheet.hide() }.invokeOnCompletion { onDismiss() }; Unit }
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheet) {
         Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(bottom = 24.dp)) {
             Text(stringResource(R.string.pstyle_title), style = MaterialTheme.typography.titleLarge,
@@ -87,8 +91,8 @@ fun PlayerStyleSheet(
                     OutlinedCard(
                         onClick = {
                             when {
-                                !locked -> { onPick(style); onDismiss() }
-                                onPreview != null -> { onPreview(style); onDismiss() }
+                                !locked -> { onPick(style); close() }
+                                onPreview != null -> { onPreview(style); close() }
                                 else -> onGetPro()
                             }
                         },

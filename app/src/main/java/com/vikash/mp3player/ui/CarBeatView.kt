@@ -102,6 +102,7 @@ internal fun CarBeatView(isPlaying: Boolean, isPro: Boolean, onGetPro: () -> Uni
     val car = ImageBitmap.imageResource(R.drawable.car_hero)
 
     val playing by rememberUpdatedState(isPlaying && !lite)
+    val musicOn by rememberUpdatedState(isPlaying)
     val kick = remember { mutableFloatStateOf(0f) } // 0..1, jumps to 1 on a beat and fades
     val hat = remember { mutableFloatStateOf(0f) }
     val beats = remember { mutableIntStateOf(0) }
@@ -128,7 +129,8 @@ internal fun CarBeatView(isPlaying: Boolean, isPro: Boolean, onGetPro: () -> Uni
         var avg = 0f
         var trebleAvg = 0f
         VisualizerTap.levels.collect { lv ->
-            levels.value = lv
+            // Paused: the bars fall to rest instead of freezing at the last levels.
+            levels.value = if (musicOn) lv else FloatArray(lv.size)
             var bass = 0f
             for (i in 0 until 6) bass += lv[i]
             bass /= 6f

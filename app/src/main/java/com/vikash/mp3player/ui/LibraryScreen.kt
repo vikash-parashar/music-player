@@ -71,6 +71,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import com.vikash.mp3player.ui.theme.Ampli
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -312,7 +313,11 @@ fun LibraryScreen(
                 }
             state.songs.isEmpty() -> EmptyMessage(stringResource(R.string.library_no_music))
             current == LibraryTab.Playlists && openGroup == null -> {
-                LazyColumn(Modifier.fillMaxSize()) {
+                LazyColumn(
+                    Modifier.fillMaxSize(),
+                    // Room under the last row for the floating "New playlist" button of the app styles.
+                    contentPadding = PaddingValues(bottom = if (LocalSkin.current.isClassic) 0.dp else 80.dp),
+                ) {
                     item {
                         PlaylistRow(
                             stringResource(R.string.library_stats_title), stringResource(R.string.library_stats_subtitle),
@@ -480,7 +485,11 @@ fun LibraryScreen(
                         .associateBy { current.key(it.first()) }
                         .toSortedMap(String.CASE_INSENSITIVE_ORDER)
                 }
-                LazyColumn(Modifier.fillMaxSize()) {
+                LazyColumn(
+                    Modifier.fillMaxSize(),
+                    // Room under the last row for the floating "New playlist" button of the app styles.
+                    contentPadding = PaddingValues(bottom = if (LocalSkin.current.isClassic) 0.dp else 80.dp),
+                ) {
                     items(groups.entries.toList(), key = { it.key }) { (name, songs) ->
                         Row(
                             Modifier.fillMaxWidth().clickable { openGroup = name }.padding(horizontal = 16.dp, vertical = 10.dp),
@@ -609,7 +618,11 @@ private fun SongList(
     val shareLabel = stringResource(R.string.song_share)
     val context = LocalContext.current
 
-    LazyColumn(Modifier.fillMaxSize()) {
+    LazyColumn(
+                    Modifier.fillMaxSize(),
+                    // Room under the last row for the floating "New playlist" button of the app styles.
+                    contentPadding = PaddingValues(bottom = if (LocalSkin.current.isClassic) 0.dp else 80.dp),
+                ) {
         stickyHeader {
             Surface(tonalElevation = if (selecting) 3.dp else 0.dp) {
                 if (selecting) {
