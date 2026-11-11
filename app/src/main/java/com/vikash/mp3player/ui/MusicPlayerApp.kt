@@ -81,7 +81,7 @@ private val launchPermissions = buildList {
 }.toTypedArray()
 
 @Composable
-fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
+fun MusicPlayerApp(vm: MainViewModel, onBuy: (String) -> Unit) {
     val context = LocalContext.current
     val library by vm.library.collectAsStateWithLifecycle()
     val online by vm.online.collectAsStateWithLifecycle()
@@ -95,6 +95,13 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     val fewerAds = remember { com.vikash.mp3player.monetization.AdRegion.fewerAds(context) }
     val app = context.applicationContext as com.vikash.mp3player.MusicApp
     val proUnlocked by app.proUnlocked.collectAsStateWithLifecycle()
+    val looksUnlocked by app.looksUnlocked.collectAsStateWithLifecycle()
+    // No ads for Pro buyers and during any free Pro trial (the 14-day welcome, or 24 h after a rewarded ad).
+    val adFree by app.adFree.collectAsStateWithLifecycle()
+    val supporter by vm.billing.supporter.collectAsStateWithLifecycle()
+    val looksPack by vm.billing.looksPack.collectAsStateWithLifecycle()
+    val supporterPrice by vm.billing.supporterPrice.collectAsStateWithLifecycle()
+    val packPrice by vm.billing.packPrice.collectAsStateWithLifecycle()
     val trialUntil by com.vikash.mp3player.monetization.ProTrial.until.collectAsStateWithLifecycle()
     val tipPrices by vm.billing.tipPrices.collectAsStateWithLifecycle()
     val tipsReceived by vm.billing.tipsReceived.collectAsStateWithLifecycle()
@@ -125,7 +132,7 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     val abLoop by vm.abLoop.collectAsStateWithLifecycle()
     // Pro styles fall back to Classic if Pro is turned off.
     val seekStyle = SeekStyle.entries.firstOrNull { it.name == seekStyleName }
-        ?.takeIf { !it.pro || featurePro } ?: SeekStyle.Classic
+        ?.takeIf { !it.pro || featurePro || looksUnlocked } ?: SeekStyle.Classic
 
     var hasPermission by remember { mutableStateOf(context.hasAudioPermission()) }
     var tab by rememberSaveable { mutableIntStateOf(0) }
@@ -290,17 +297,17 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
 
     // Lite mode: the CDs stand still, so no frame loop runs while music plays.
     val discAngle: State<Float> = if (liteMode) remember { mutableFloatStateOf(0f) } else rememberDiscSpin(vm.player)
-    CompositionLocalProvider(com.vikash.mp3player.monetization.LocalListAds provides (!adsRemoved && adsReady && !fewerAds), LocalIsPlaying provides player.isPlaying, LocalDiscAngle provides discAngle, LocalStartRadio provides { s: Song -> vm.startRadio(s); vm.notify(context.getString(R.string.radio_started, s.title)) }) {
+    CompositionLocalProvider(com.vikash.mp3player.monetization.LocalListAds provides false, LocalIsPlaying provides player.isPlaying, LocalDiscAngle provides discAngle, LocalStartRadio provides { s: Song -> vm.startRadio(s); vm.notify(context.getString(R.string.radio_started, s.title)) }) {
     Box(Modifier.fillMaxSize().skinBackdrop()) {
         Scaffold(
             containerColor = skinScreenColor(),
-            topBar = { BrandHeader(showAdFreePill = !adsRemoved, onAdFreeClick = openPro, onRecognize = { showRecognize = true }, onHelp = { showHelp = true }) },
+            topBar = { BrandHeader(showAdFreePill = !adFree, onAdFreeClick = openPro, onRecognize = { showRecognize = true }, onHelp = { showHelp = true }) },
             snackbarHost = { SnackbarHost(snackbar) },
             bottomBar = {
                 Column {
                     // Banner sits above the mini player with clear space, never touching playback buttons
                     // or the nav bar (AdMob's accidental-click guidance).
-                    if (!adsRemoved && adsReady && !fewerAds) {
+                    if (!adFree && adsReady && !fewerAds) {
                         androidx.compose.material3.HorizontalDivider(color = androidx.compose.material3.MaterialTheme.colorScheme.outlineVariant)
                         BannerAd(Modifier.padding(top = 8.dp, bottom = 10.dp))
                     }
@@ -405,6 +412,8 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                             onLibraryChanged = vm::loadLibrary,
                             onOpenHelp = { showHelp = true },
                             proUnlocked = proUnlocked,
+                            looksUnlocked = looksUnlocked,
+                            supporter = supporter,
                             tipPrices = tipPrices,
                             tipsReceived = tipsReceived,
                             onTip = onTip,
@@ -444,9 +453,10 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                 introShown = introShown,
                 onIntroShown = { introShown = it },
                 playerStyle = playerStyle,
-                stylesUnlocked = proUnlocked,
+                stylesUnlocked = looksUnlocked,
                 onPickStyle = app.prefs::setPlayerStyle,
-                showAd = !adsRemoved && adsReady,
+                // No native ad in Now Playing any more: the player screen stays clean for everyone.
+                showAd = false,
                 onStartRadio = {
                     val song = library.songs.firstOrNull { it.id == player.current?.mediaId }
                     if (song != null) { vm.startRadio(song); vm.notify(context.getString(R.string.radio_started, song.title)) }
@@ -523,7 +533,11 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
             ProScreen(
                 isPro = adsRemoved,
                 playPrice = price,
-                onBuy = onRemoveAds,
+                onBuy = onBuy,
+                supporter = supporter,
+                looksPack = looksPack,
+                supporterPrice = supporterPrice,
+                packPrice = packPrice,
                 onRestore = {
                     vm.billing.restore()
                     Toast.makeText(context, context.getString(R.string.pro_restoring), Toast.LENGTH_SHORT).show()

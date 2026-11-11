@@ -83,7 +83,7 @@ abstract class StyleWidget(private val pro: Boolean) : GlanceAppWidget() {
             val s = remember(change) { WidgetState.read(context) }
             val app = context.applicationContext as? MusicApp
             val lite = runCatching { app?.prefs?.liteMode?.value }.getOrNull() ?: false
-            val unlocked = !pro || (runCatching { app?.proUnlocked?.value }.getOrNull() ?: false)
+            val unlocked = !pro || (runCatching { app?.looksUnlocked?.value }.getOrNull() ?: false)
             val favourite = s.id.isNotEmpty() && (runCatching { app?.prefs?.isFavorite(s.id) }.getOrNull() ?: false)
             if (unlocked) Body(s, StyleExtras(animate = s.playing && !lite, favourite = favourite, widgetId = widgetId))
             else Locked()

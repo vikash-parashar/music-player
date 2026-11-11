@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tier_title">अपना प्लान चुनें</string>
+    <string name="tier_best">सबसे पसंदीदा</string>
+    <string name="tier_owned">आपके पास है</string>
+    <string name="tier_buy">%1$s लें · %2$s</string>
+    <string name="tier_pack_name">कैसेट और थीम पैक</string>
+    <string name="tier_pack_desc">सारे Pro विजेट, कैसेट लुक, थीम और सीक बार</string>
+    <string name="tier_pack_price">₹49</string>
+    <string name="tier_pro_name">Ampli Pro</string>
+    <string name="tier_pro_desc">नीचे लिखा सब कुछ, बिना ऐड, हमेशा के लिए</string>
+    <string name="tier_supporter_name">Pro + सपोर्टर</string>
+    <string name="tier_supporter_desc">पूरा Pro, सपोर्टर बैज और Ampli टीम की ओर से दिल से धन्यवाद</string>
+    <string name="tier_supporter_price">₹599</string>
+    <string name="pro_supporter_badge">Ampli सपोर्टर ❤</string>
+    <string name="supporter_thanks">आप उन लोगों में हैं जो Ampli को आज़ाद, बिना ऐड और आगे बढ़ता हुआ रखते हैं। हर नया फ़ीचर थोड़ा आपका भी है। Ampli की पूरी टीम की ओर से धन्यवाद।</string>
+    <plurals name="trial_welcome_left">
+        <item quantity="one">फ़्री Pro: %d दिन बाकी</item>
+        <item quantity="other">फ़्री Pro: %d दिन बाकी</item>
+    </plurals>
+    <string name="trial_welcome_desc">हर नए Ampli में 14 दिन का पूरा Pro, बिना ऐड। एक बार पैसे देकर इसे हमेशा के लिए रखें।</string>
+</resources>

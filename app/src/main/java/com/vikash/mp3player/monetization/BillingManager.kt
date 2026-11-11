@@ -51,6 +51,20 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
 
     private var productDetails: ProductDetails? = null
 
+    /** "Pro + Supporter" (Pro plus a supporter badge and thank-you) and its localised price. */
+    private val _supporter = MutableStateFlow(prefs.getBoolean(KEY_SUPPORTER, false))
+    val supporter: StateFlow<Boolean> = _supporter.asStateFlow()
+    private val _supporterPrice = MutableStateFlow<String?>(null)
+    val supporterPrice: StateFlow<String?> = _supporterPrice.asStateFlow()
+    private var supporterDetails: ProductDetails? = null
+
+    /** "Cassette & Themes Pack": the Pro looks (widgets, cassettes, themes, seek bars) without the rest of Pro. */
+    private val _looksPack = MutableStateFlow(prefs.getBoolean(KEY_LOOKS_PACK, false))
+    val looksPack: StateFlow<Boolean> = _looksPack.asStateFlow()
+    private val _packPrice = MutableStateFlow<String?>(null)
+    val packPrice: StateFlow<String?> = _packPrice.asStateFlow()
+    private var packDetails: ProductDetails? = null
+
     /** Tip product id to its localised price, filled once Play answers. */
     private val _tipPrices = MutableStateFlow<Map<String, String>>(emptyMap())
     val tipPrices: StateFlow<Map<String, String>> = _tipPrices.asStateFlow()
@@ -117,6 +131,14 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
     fun purchaseRemoveAds(activity: Activity): Buy =
         buy(activity, BuildConfig.REMOVE_ADS_PRODUCT_ID, productDetails, proQueried)
 
+    /** Opens Play's payment sheet for "Pro + Supporter". */
+    fun purchaseSupporter(activity: Activity): Buy =
+        buy(activity, SUPPORTER_ID, supporterDetails, proQueried)
+
+    /** Opens Play's payment sheet for the Cassette & Themes Pack. */
+    fun purchaseLooksPack(activity: Activity): Buy =
+        buy(activity, LOOKS_PACK_ID, packDetails, proQueried)
+
     /** Opens Play's payment sheet for a "buy the developer a chai" tip. */
     fun purchaseTip(activity: Activity, productId: String): Buy =
         buy(activity, productId, tipDetails[productId], tipsQueried)
@@ -151,7 +173,7 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
         // If Play never answers within 15 s, say so rather than leaving the tap hanging.
         val since = waitingSince
         timeout.postDelayed({
-            if (waitingFor == id && waitingSince == since) settleWaiting(forPro = id == BuildConfig.REMOVE_ADS_PRODUCT_ID, timedOut = true)
+            if (waitingFor == id && waitingSince == since) settleWaiting(forPro = id in UNLOCK_IDS, timedOut = true)
         }, 15_000)
         if (client.isReady) queryProduct() else start()
         return Buy.LOADING
@@ -175,8 +197,13 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
      */
     private fun settleWaiting(forPro: Boolean, timedOut: Boolean = false) {
         val id = waitingFor ?: return
-        if ((id == BuildConfig.REMOVE_ADS_PRODUCT_ID) != forPro) return
-        val details = if (forPro) productDetails else tipDetails[id]
+        if ((id in UNLOCK_IDS) != forPro) return
+        val details = when (id) {
+            BuildConfig.REMOVE_ADS_PRODUCT_ID -> productDetails
+            SUPPORTER_ID -> supporterDetails
+            LOOKS_PACK_ID -> packDetails
+            else -> tipDetails[id]
+        }
         val activity = waitingActivity?.get()
         waitingFor = null
         waitingActivity = null
@@ -222,19 +249,21 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
     private fun queryProduct() {
         val params = QueryProductDetailsParams.newBuilder()
             .setProductList(
-                listOf(
-                    QueryProductDetailsParams.Product.newBuilder()
-                        .setProductId(BuildConfig.REMOVE_ADS_PRODUCT_ID)
-                        .setProductType(ProductType.INAPP)
-                        .build()
-                )
+                UNLOCK_IDS.map {
+                    QueryProductDetailsParams.Product.newBuilder().setProductId(it).setProductType(ProductType.INAPP).build()
+                }
             )
             .build()
         client.queryProductDetailsAsync(params) { result, found ->
             if (result.responseCode == BillingClient.BillingResponseCode.OK) {
-                productDetails = found.productDetailsList.firstOrNull()
+                val byId = found.productDetailsList.associateBy { it.productId }
+                productDetails = byId[BuildConfig.REMOVE_ADS_PRODUCT_ID]
+                supporterDetails = byId[SUPPORTER_ID]
+                packDetails = byId[LOOKS_PACK_ID]
                 proQueried = true
                 _price.value = productDetails?.oneTimePurchaseOfferDetails?.formattedPrice
+                _supporterPrice.value = supporterDetails?.oneTimePurchaseOfferDetails?.formattedPrice
+                _packPrice.value = packDetails?.oneTimePurchaseOfferDetails?.formattedPrice
             }
             settleWaiting(forPro = true)
         }
@@ -280,6 +309,9 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
         ) { result, purchases ->
             if (result.responseCode != BillingClient.BillingResponseCode.OK) return@queryPurchasesAsync
             val owned = purchases.any { it.ownsRemoveAds() }
+            // A refund takes the badge and the pack away again, like it does Pro.
+            setSupporter(purchases.any { it.owns(SUPPORTER_ID) })
+            setLooksPack(purchases.any { it.owns(LOOKS_PACK_ID) })
             // Debug builds keep the test switch on; Play never knows about it.
             setAdsRemoved(owned || (BuildConfig.DEBUG && prefs.getBoolean(KEY_TEST_PRO, false)))
             // Play drops a cancelled or failed UPI payment from this list, so "Payment pending" clears here.
@@ -330,21 +362,28 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
             }
             return
         }
-        if (!purchase.ownsRemoveAds()) return
-        setAdsRemoved(true)
+        val pack = purchase.owns(LOOKS_PACK_ID)
+        if (!purchase.ownsRemoveAds() && !pack) return
+        if (pack) setLooksPack(true) else setAdsRemoved(true)
+        if (purchase.owns(SUPPORTER_ID)) setSupporter(true)
+        val kind = when {
+            pack -> "looks_pack"
+            purchase.owns(SUPPORTER_ID) -> "supporter"
+            else -> "pro"
+        }
         // Purchases not acknowledged within 3 days are refunded automatically by Play.
         if (!purchase.isAcknowledged) {
             if (!inFlight.add(purchase.purchaseToken)) return
             val params = AcknowledgePurchaseParams.newBuilder().setPurchaseToken(purchase.purchaseToken).build()
             client.acknowledgePurchase(params) { result ->
                 inFlight.remove(purchase.purchaseToken)
-                if (result.responseCode == BillingClient.BillingResponseCode.OK) report("pro", purchase)
+                if (result.responseCode == BillingClient.BillingResponseCode.OK) report(kind, purchase)
             }
         } else {
             // Already acknowledged but never reported here: a Play promo code redeemed while the app was
             // closed (hook spec v1.3, the Car Hub gift), or a purchase made before this build. The server
             // ignores repeats, so sending one twice is harmless.
-            report("pro", purchase)
+            report(kind, purchase)
         }
     }
 
@@ -361,9 +400,11 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
         }
     }
 
-    private fun Purchase.ownsRemoveAds() =
-        purchaseState == Purchase.PurchaseState.PURCHASED &&
-            BuildConfig.REMOVE_ADS_PRODUCT_ID in products
+    /** Ampli Pro on its own or inside "Pro + Supporter". */
+    private fun Purchase.ownsRemoveAds() = owns(BuildConfig.REMOVE_ADS_PRODUCT_ID) || owns(SUPPORTER_ID)
+
+    private fun Purchase.owns(id: String) =
+        purchaseState == Purchase.PurchaseState.PURCHASED && id in products
 
     private fun Purchase.ownsStoriesPass() =
         purchaseState == Purchase.PurchaseState.PURCHASED && STORIES_PASS_ID in products
@@ -385,6 +426,16 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
         prefs.edit().putBoolean(KEY_ADS_REMOVED, value).apply()
     }
 
+    private fun setSupporter(value: Boolean) {
+        _supporter.value = value
+        prefs.edit().putBoolean(KEY_SUPPORTER, value).apply()
+    }
+
+    private fun setLooksPack(value: Boolean) {
+        _looksPack.value = value
+        prefs.edit().putBoolean(KEY_LOOKS_PACK, value).apply()
+    }
+
     private fun setStoriesPass(value: Boolean) {
         _storiesPass.value = value
         prefs.edit().putBoolean(KEY_STORIES_PASS, value).apply()
@@ -393,7 +444,13 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
     companion object {
         /** Monthly subscription in Play Console (Monetize > Subscriptions), ₹49 a month. */
         const val STORIES_PASS_ID = "ampli_stories_pass"
+        /** One-time products in Play Console (Monetize > In-app products). */
+        const val SUPPORTER_ID = "ampli_pro_supporter"
+        const val LOOKS_PACK_ID = "ampli_looks_pack"
+        val UNLOCK_IDS = listOf(BuildConfig.REMOVE_ADS_PRODUCT_ID, SUPPORTER_ID, LOOKS_PACK_ID)
         private const val KEY_STORIES_PASS = "stories_pass"
+        private const val KEY_SUPPORTER = "supporter"
+        private const val KEY_LOOKS_PACK = "looks_pack"
         private const val KEY_ADS_REMOVED = "ads_removed"
         private const val KEY_REPORTED = "reported_tokens"
         private const val KEY_TEST_PRO = "test_pro"

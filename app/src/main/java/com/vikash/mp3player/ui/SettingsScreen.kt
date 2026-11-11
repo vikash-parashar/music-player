@@ -93,6 +93,8 @@ fun SettingsScreen(
     onLibraryChanged: () -> Unit,
     onOpenHelp: () -> Unit,
     proUnlocked: Boolean = adsRemoved,
+    looksUnlocked: Boolean = proUnlocked,
+    supporter: Boolean = false,
     tipPrices: Map<String, String> = emptyMap(),
     tipsReceived: Int = 0,
     onTip: (String) -> Unit = {},
@@ -103,20 +105,20 @@ fun SettingsScreen(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        ProCard(adsRemoved, price, onRemoveAds)
+        ProCard(adsRemoved, price, onRemoveAds, supporter = supporter)
         SupportDeveloperCard(tipPrices, tipsReceived, onTip)
         MoreFromAmpliCard()
         if (BuildConfig.DEBUG) TestProCard(adsRemoved, onTestPro)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) LanguageCard()
-        com.vikash.mp3player.ui.skin.SkinPickerCard(proUnlocked, onRemoveAds)
+        com.vikash.mp3player.ui.skin.SkinPickerCard(looksUnlocked, onRemoveAds)
         AppearanceCard(themeMode, onThemeMode)
         LiteModeCard()
         LibraryCleanCard(onLibraryChanged)
         ShakeToSkipCard()
         AudioOutputCard(isPro = proUnlocked, onGetPro = onRemoveAds)
         NetworkFoldersCard(isPro = proUnlocked, onOpen = onOpenNetwork, onGetPro = onRemoveAds)
-        ProLookCard(proUnlocked, onRemoveAds)
-        SeekStyleCard(seekStyle, isPro = proUnlocked, onPick = onSeekStyle, onGetPro = onRemoveAds)
+        ProLookCard(looksUnlocked, onRemoveAds)
+        SeekStyleCard(seekStyle, isPro = looksUnlocked, onPick = onSeekStyle, onGetPro = onRemoveAds)
         SleepTimerCard()
         FadeCard()
         EvenVolumeCard()
@@ -154,12 +156,16 @@ fun proFeatures(): List<String> = listOf(
 )
 
 @Composable
-fun ProCard(isPro: Boolean, price: String?, onGetPro: () -> Unit, modifier: Modifier = Modifier) {
+fun ProCard(isPro: Boolean, price: String?, onGetPro: () -> Unit, modifier: Modifier = Modifier, supporter: Boolean = false) {
     Box(modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(Ampli.Gradient)) {
         Row(Modifier.padding(20.dp), verticalAlignment = Alignment.Top) {
             Column(Modifier.weight(1f)) {
                 Text(
-                    if (isPro) stringResource(R.string.pro_you_have) else stringResource(R.string.pro_name),
+                    when {
+                        supporter -> stringResource(R.string.pro_supporter_badge)
+                        isPro -> stringResource(R.string.pro_you_have)
+                        else -> stringResource(R.string.pro_name)
+                    },
                     style = MaterialTheme.typography.titleLarge,
                     color = Color.White,
                 )
