@@ -241,7 +241,8 @@ private fun SeekStyleCard(current: SeekStyle, isPro: Boolean, onPick: (SeekStyle
                         }
                         AnimatedSeekBar(
                             progress = 0.25f + 0.07f * i,
-                            playing = true,
+                            // Only the chosen style moves, so ten previews don't redraw every frame.
+                            playing = style == current && !com.vikash.mp3player.ui.LocalLiteMode.current,
                             style = style,
                             height = 40.dp,
                             modifier = Modifier.alpha(if (locked) 0.55f else 1f),

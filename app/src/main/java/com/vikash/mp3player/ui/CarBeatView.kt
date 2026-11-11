@@ -93,6 +93,9 @@ private val ClubColors = listOf(Color(0xFFFF3CAC), Color(0xFF2BD2FF), Color(0xFF
  * The car with lights that follow the beat. Beats come from the audio tap (a jump in bass well
  * above its recent average); when it hears nothing, a steady 112 BPM pulse stands in.
  */
+/** All bars at rest, drawn while paused. */
+private val Rest = FloatArray(VisualizerTap.BARS)
+
 @Composable
 internal fun CarBeatView(isPlaying: Boolean, isPro: Boolean, onGetPro: () -> Unit, modifier: Modifier) {
     val context = LocalContext.current
@@ -192,7 +195,7 @@ internal fun CarBeatView(isPlaying: Boolean, isPro: Boolean, onGetPro: () -> Uni
                     }
                     CarLights.EQ_WALL -> {
                         drawCar(car)
-                        drawEqWall(levels.value, k)
+                        drawEqWall(if (isPlaying) levels.value else Rest, k)
                         clipPath(carOutline()) { drawCar(car) } // the car stays in front of the bars
                     }
                     else -> drawCar(car)

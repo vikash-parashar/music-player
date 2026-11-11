@@ -78,7 +78,7 @@ abstract class AmpliDriveWidget(private val palette: DrivePalette) : GlanceAppWi
             // Re-read on every change; the state is a few SharedPreferences values.
             val s = remember(change) { WidgetState.read(context) }
             val lite = runCatching { (context.applicationContext as MusicApp).prefs.liteMode.value }.getOrDefault(false)
-            Content(s, animate = s.playing && !lite)
+            Content(s, animate = s.live() && !lite)
         }
     }
 

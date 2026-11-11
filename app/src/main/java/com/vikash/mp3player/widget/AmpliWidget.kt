@@ -147,7 +147,7 @@ class AmpliWidget : GlanceAppWidget() {
         lastLook?.let { if (it.change == change) return@withLock it }
         val s = WidgetState.read(context)
         val lite = runCatching { (context.applicationContext as MusicApp).prefs.liteMode.value }.getOrDefault(false)
-        Look(s, cover(context, s.art), animate = s.playing && !lite, change = change).also { lastLook = it }
+        Look(s, cover(context, s.art), animate = s.live() && !lite, change = change).also { lastLook = it }
     }
 
     @Composable
@@ -390,7 +390,7 @@ class AmpliWidget : GlanceAppWidget() {
         val context = LocalContext.current
         val now = SystemClock.elapsedRealtime()
         // capturedAt from before a reboot is meaningless; show the saved position, still.
-        val running = s.playing && s.capturedAt in 1..now
+        val running = s.live(now)
         val base = if (running) s.capturedAt - s.positionMs else now - s.positionMs
         val views = RemoteViews(context.packageName, R.layout.widget_time).apply {
             setChronometer(R.id.widget_elapsed, base, null, running)
@@ -626,6 +626,15 @@ data class WidgetState(
     val id: String = "",
     val shuffle: Boolean = false,
 ) {
+    /**
+     * Playing, and the song can't have ended yet. If the system killed the app mid-song, nothing
+     * wrote "paused", so without the end check the disc span and the clock counted on forever.
+     */
+    fun live(now: Long = android.os.SystemClock.elapsedRealtime()): Boolean {
+        if (!playing || capturedAt !in 1..now) return false
+        return durationMs <= 0L || now < capturedAt - positionMs + durationMs + 5_000L
+    }
+
     /** Same song and state, and the clock would show the same time (within half a second). */
     private fun sameAs(other: WidgetState): Boolean {
         if (copy(positionMs = 0L, capturedAt = 0L) != other.copy(positionMs = 0L, capturedAt = 0L)) return false
@@ -687,6 +696,15 @@ data class WidgetState(
         }
 
         /** Redraws every Ampli widget from the saved state (also used when Lite mode is switched). */
+        /**
+         * Redraws only the Glass Cassette widgets (tape tick, sticker ready). Bumps [changes] too:
+         * a running widget session re-reads its state only when that moves.
+         */
+        suspend fun redrawCassette(context: Context) {
+            _changes.update { it + 1 }
+            runCatching { CassetteWidget().updateAll(context) }
+        }
+
         suspend fun redraw(context: Context) {
             _changes.update { it + 1 }
             runCatching { AmpliWidget().updateAll(context) }

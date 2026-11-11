@@ -34,7 +34,6 @@ import com.vikash.mp3player.data.RADIO_HLS_PREFIX
 import com.vikash.mp3player.data.RADIO_PREFIX
 import com.vikash.mp3player.data.Song
 import com.vikash.mp3player.widget.WidgetState
-import androidx.glance.appwidget.updateAll
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -257,7 +256,7 @@ class PlaybackService : MediaLibraryService() {
                 runCatching {
                     val ids = androidx.glance.appwidget.GlanceAppWidgetManager(this@PlaybackService)
                         .getGlanceIds(com.vikash.mp3player.widget.CassetteWidget::class.java)
-                    if (ids.isNotEmpty()) com.vikash.mp3player.widget.CassetteWidget().updateAll(this@PlaybackService)
+                    if (ids.isNotEmpty()) com.vikash.mp3player.widget.WidgetState.redrawCassette(this@PlaybackService)
                 }
             }
         }
