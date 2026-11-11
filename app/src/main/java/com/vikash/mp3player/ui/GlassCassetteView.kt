@@ -3,6 +3,8 @@ package com.vikash.mp3player.ui
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -15,6 +17,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
+import com.vikash.mp3player.widget.CassetteSticker
 import com.vikash.mp3player.widget.GlassCassette
 
 /**
@@ -30,18 +33,25 @@ fun GlassCassetteView(
     progress: () -> Float,
     hubAngle: () -> Float,
     modifier: Modifier = Modifier,
+    artwork: String? = null,
 ) {
     val context = LocalContext.current
     val back = ImageBitmap.imageResource(look.back)
     val front = ImageBitmap.imageResource(look.front)
     val hub = ImageBitmap.imageResource(look.hub.still)
     val pen = GlassCassette.penColor(look, -1)
+    // The song's photo as a worn sticker on the corner, when it has one.
+    val sticker by produceState(artwork?.let { CassetteSticker.cached(it) }, artwork) {
+        value = artwork?.let { CassetteSticker.load(context, it) }
+    }
+    val seed = remember(artwork) { CassetteSticker.seed(artwork.orEmpty()) }
+    val room = if (sticker != null) CassetteSticker.ROOM else 1f
     // The writing is drawn once per song into its own small picture, at a fixed size in picture units.
-    val writing = remember(title, artist, pen) {
+    val writing = remember(title, artist, pen, room) {
         val w = (GlassCassette.TEXT_W * 1.5f).toInt()
         val h = (GlassCassette.TEXT_H * 1.5f).toInt()
         val bmp = android.graphics.Bitmap.createBitmap(w, h, android.graphics.Bitmap.Config.ARGB_8888)
-        GlassCassette.drawWriting(context, android.graphics.Canvas(bmp), title, artist, pen, w, h)
+        GlassCassette.drawWriting(context, android.graphics.Canvas(bmp), title, artist, pen, w, h, room)
         bmp
     }
     Canvas(modifier.aspectRatio(GlassCassette.BODY_W / GlassCassette.BODY_H)) {
@@ -51,6 +61,7 @@ fun GlassCassetteView(
             drawImage(back, dstSize = full)
             drawIntoCanvas { GlassCassette.drawTape(it.nativeCanvas, progress(), look.window) }
             drawImage(front, dstSize = full)
+            sticker?.let { st -> drawIntoCanvas { CassetteSticker.draw(it.nativeCanvas, st, seed) } }
             val a = hubAngle()
             val h = GlassCassette.HUB.toInt()
             for (c in listOf(GlassCassette.HUB_L, GlassCassette.HUB_R)) {

@@ -420,8 +420,14 @@ class CassetteWidget : StyleWidget(pro = true) {
                 // The tape follows the song: the service redraws this widget about every 30 s while playing.
                 val pos = if (s.playing && s.capturedAt > 0L) s.positionMs + (android.os.SystemClock.elapsedRealtime() - s.capturedAt) else s.positionMs
                 val progress = if (s.durationMs > 0L) pos.toFloat() / s.durationMs else 0f
-                setImageViewBitmap(R.id.glass_body, GlassCassette.body(context, look, progress, (cw.value * density).toInt()))
-                setImageViewBitmap(R.id.glass_writing, GlassCassette.writing(context, title, artist, pen, writeW, writeH))
+                // The song's photo as a worn sticker (loaded once per song; the widget redraws when it is ready).
+                val sticker = CassetteSticker.cached(s.art)
+                if (sticker == null && s.art.isNotEmpty()) {
+                    CassetteSticker.request(context, s.art) { CassetteWidget().updateAll(context) }
+                }
+                val room = if (sticker != null) CassetteSticker.ROOM else 1f
+                setImageViewBitmap(R.id.glass_body, GlassCassette.body(context, look, progress, (cw.value * density).toInt(), sticker, CassetteSticker.seed(s.art)))
+                setImageViewBitmap(R.id.glass_writing, GlassCassette.writing(context, title, artist, pen, writeW, writeH, room))
                 setContentDescription(R.id.glass_writing, title)
                 for (h in GlassCassette.Hub.values()) {
                     val on = x.animate && h == look.hub
