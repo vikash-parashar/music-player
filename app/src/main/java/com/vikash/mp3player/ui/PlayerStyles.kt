@@ -96,7 +96,7 @@ fun PlayerPicture(
     when (style) {
         PlayerStyle.Car -> CarBeatView(isPlaying, isPro, onGetPro, modifier)
         PlayerStyle.Record -> RecordPlayerView(artworkUri, title, artist, isPlaying, progress, modifier, intro)
-        PlayerStyle.Cassette -> GlassCassettePlayer(title, artist, isPlaying, progress, modifier)
+        PlayerStyle.Cassette -> GlassCassettePlayer(artworkUri, title, artist, isPlaying, progress, modifier)
         PlayerStyle.Boombox -> BoomboxView(artworkUri, title, isPlaying, modifier)
         PlayerStyle.Jukebox -> JukeboxView(artworkUri, title, artist, isPlaying, modifier)
         PlayerStyle.ReelToReel -> ReelToReelView(artworkUri, isPlaying, progress, modifier)
@@ -178,7 +178,7 @@ private fun DrawScope.hub(c: Offset, r: Float, angle: Float, color: Color, teeth
  * The arrows under it switch between the 17 looks; the choice is shared with Car mode.
  */
 @Composable
-private fun GlassCassettePlayer(title: String, artist: String, isPlaying: Boolean, progress: () -> Float, modifier: Modifier) {
+private fun GlassCassettePlayer(artworkUri: Uri?, title: String, artist: String, isPlaying: Boolean, progress: () -> Float, modifier: Modifier) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val spin = LocalDiscAngle.current
     var lookIndex by remember { androidx.compose.runtime.mutableIntStateOf(com.vikash.mp3player.widget.GlassCassette.playerLook(context)) }
@@ -195,6 +195,7 @@ private fun GlassCassettePlayer(title: String, artist: String, isPlaying: Boolea
             looks[lookIndex], title, artist, progress,
             hubAngle = { if (isPlaying) spin.value * 2f else spin.value },
             modifier = Modifier.fillMaxWidth(),
+            artwork = artworkUri?.toString(),
         )
         androidx.compose.foundation.layout.Row(
             Modifier.padding(top = 10.dp), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,

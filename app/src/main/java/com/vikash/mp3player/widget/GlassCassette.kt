@@ -146,11 +146,11 @@ object GlassCassette {
      * The widget's cassette picture: back, tape at [progress] and front, [widthPx] wide. The tape is
      * rounded to 1/60 of the song so the picture is only redrawn when the reels visibly change.
      */
-    fun body(context: Context, look: Look, progress: Float, widthPx: Int): Bitmap {
+    fun body(context: Context, look: Look, progress: Float, widthPx: Int, sticker: Bitmap? = null, seed: Int = 0): Bitmap {
         val w = widthPx.coerceIn(160, 640)
         val h = (w * BODY_H / BODY_W).toInt()
         val step = (progress.coerceIn(0f, 1f) * 60).toInt()
-        val key = "${look.back}|$step|$w"
+        val key = "${look.back}|$step|$w|${sticker?.let { System.identityHashCode(it) }}"
         bodyCache?.let { if (key == bodyKey && !it.isRecycled) return it }
         val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bmp)
@@ -160,6 +160,7 @@ object GlassCassette {
         android.graphics.BitmapFactory.decodeResource(context.resources, look.back)?.let { canvas.drawBitmap(it, null, dst, paint); it.recycle() }
         drawTape(canvas, step / 60f, look.window)
         android.graphics.BitmapFactory.decodeResource(context.resources, look.front)?.let { canvas.drawBitmap(it, null, dst, paint); it.recycle() }
+        sticker?.let { CassetteSticker.draw(canvas, it, seed) }
         bodyKey = key
         bodyCache = bmp
         return bmp
@@ -196,14 +197,14 @@ object GlassCassette {
      * The song name (and artist under it) as if written on the strip with a ball pen.
      * [widthPx] x [heightPx] is the strip's writing area on screen, so the bitmap stays small.
      */
-    fun writing(context: Context, title: String, artist: String, pen: Int, widthPx: Int, heightPx: Int): Bitmap {
+    fun writing(context: Context, title: String, artist: String, pen: Int, widthPx: Int, heightPx: Int, room: Float = 1f): Bitmap {
         val w = widthPx.coerceIn(60, 720)
         val h = heightPx.coerceIn(16, 160)
-        val key = "$title|$artist|$pen|$w|$h"
+        val key = "$title|$artist|$pen|$w|$h|$room"
         cache?.let { if (key == cacheKey && !it.isRecycled) return it }
 
         val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
-        drawWriting(context, Canvas(bmp), title, artist, pen, w, h)
+        drawWriting(context, Canvas(bmp), title, artist, pen, w, h, room)
         cacheKey = key
         cache = bmp
         return bmp
@@ -212,7 +213,7 @@ object GlassCassette {
     private var hand: android.graphics.Typeface? = null
 
     /** Writes the song on [canvas] in a [w] x [h] box from its top left, as [writing] does. */
-    fun drawWriting(context: Context, canvas: Canvas, title: String, artist: String, pen: Int, w: Int, h: Int) {
+    fun drawWriting(context: Context, canvas: Canvas, title: String, artist: String, pen: Int, w: Int, h: Int, room: Float = 1f) {
         val hand = hand ?: runCatching { ResourcesCompat.getFont(context, R.font.kalam_regular) }.getOrNull().also { this.hand = it }
         val big = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
             color = pen
@@ -223,11 +224,11 @@ object GlassCassette {
         canvas.save()
         // A real hand never writes quite straight.
         canvas.rotate(-1.2f, w / 2f, h / 2f)
-        val room = w * 0.97f
-        val line1 = TextUtils.ellipsize(title, big, room, TextUtils.TruncateAt.END).toString()
+        val space = w * 0.97f * room
+        val line1 = TextUtils.ellipsize(title, big, space, TextUtils.TruncateAt.END).toString()
         canvas.drawText(line1, 0f, h * 0.56f, big)
         if (artist.isNotEmpty()) {
-            val line2 = TextUtils.ellipsize(artist, small, room, TextUtils.TruncateAt.END).toString()
+            val line2 = TextUtils.ellipsize(artist, small, space, TextUtils.TruncateAt.END).toString()
             canvas.drawText(line2, 2f, h * 0.92f, small)
         }
         canvas.restore()

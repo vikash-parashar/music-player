@@ -255,6 +255,7 @@ fun CarModeScreen(
                         progress = { progress },
                         hubAngle = { if (state.isPlaying && !lite) spin.value * 2f else 0f },
                         modifier = Modifier.width(w),
+                        artwork = current?.artworkUri?.toString(),
                     )
                     Text(
                         "${fmtTime(positionMs)} / ${fmtTime(state.durationMs)}",
