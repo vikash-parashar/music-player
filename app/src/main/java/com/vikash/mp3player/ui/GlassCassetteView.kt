@@ -4,7 +4,9 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -41,9 +43,9 @@ fun GlassCassetteView(
     val hub = ImageBitmap.imageResource(look.hub.still)
     val pen = GlassCassette.penColor(look, -1)
     // The song's photo as a worn sticker on the corner, when it has one.
-    val sticker by produceState(artwork?.let { CassetteSticker.cached(it) }, artwork) {
-        value = artwork?.let { CassetteSticker.load(context, it) }
-    }
+    // Keyed on the song, so the last song's photo never shows on the new one while it loads.
+    var sticker by remember(artwork) { mutableStateOf(artwork?.let { CassetteSticker.cached(it) }) }
+    LaunchedEffect(artwork) { sticker = artwork?.let { CassetteSticker.load(context, it) } }
     val seed = remember(artwork) { CassetteSticker.seed(artwork.orEmpty()) }
     val room = if (sticker != null) CassetteSticker.ROOM else 1f
     // The writing is drawn once per song into its own small picture, at a fixed size in picture units.

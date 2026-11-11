@@ -445,7 +445,8 @@ fun LibraryScreen(
                 }
             }
             current == LibraryTab.Songs || openGroup != null -> {
-                val songs = if (openGroup == null) filtered else filtered.filter { current.key(it) == openGroup }
+                // Case-blind, like the group list: "ARIJIT SINGH" and "Arijit Singh" open as one artist.
+                val songs = if (openGroup == null) filtered else filtered.filter { current.key(it).equals(openGroup, ignoreCase = true) }
                 // An album's screen also offers "Find album art" (opt-in, asks before the first lookup).
                 val albumActions: @Composable () -> Unit = {
                     sortMenu()
@@ -474,7 +475,10 @@ fun LibraryScreen(
             }
             else -> {
                 val groups = remember(filtered, current) {
-                    filtered.groupBy(current.key).toSortedMap(String.CASE_INSENSITIVE_ORDER)
+                    // Group case-blind and keep each group's first spelling, so no variant's songs get dropped.
+                    filtered.groupBy { current.key(it).lowercase() }.values
+                        .associateBy { current.key(it.first()) }
+                        .toSortedMap(String.CASE_INSENSITIVE_ORDER)
                 }
                 LazyColumn(Modifier.fillMaxSize()) {
                     items(groups.entries.toList(), key = { it.key }) { (name, songs) ->

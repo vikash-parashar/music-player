@@ -1,5 +1,6 @@
 package com.vikash.mp3player.ui
 
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -84,7 +85,8 @@ fun ProScreen(
     BackHandler(onBack = onClose)
     val price = playPrice ?: stringResource(R.string.pro_display_price)
 
-    Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).systemBarsPadding()) {
+    // pointerInput: taps on empty space must not reach the screen underneath.
+    Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).pointerInput(Unit) {}.systemBarsPadding()) {
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) {
             // Hero
             Box(Modifier.fillMaxWidth().background(Ampli.Gradient)) {

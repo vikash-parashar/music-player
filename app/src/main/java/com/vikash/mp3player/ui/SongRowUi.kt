@@ -237,6 +237,7 @@ fun PlayingBars(playing: Boolean, modifier: Modifier = Modifier, color: Color = 
 fun SongActionsSheet(song: Song, actions: List<SongAction>, onDismiss: () -> Unit) {
     val sheet = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
+    var fired by remember { mutableStateOf(false) }
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheet) {
         Column(Modifier.fillMaxWidth().navigationBarsPadding().padding(bottom = 16.dp)) {
             Row(Modifier.padding(horizontal = 20.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -256,6 +257,9 @@ fun SongActionsSheet(song: Song, actions: List<SongAction>, onDismiss: () -> Uni
             ) {
                 actions.forEachIndexed { i, action ->
                     RoundActionButton(action, index = i, modifier = Modifier.weight(1f)) {
+                        // A second tap while the sheet slides away must not run an action twice.
+                        if (fired) return@RoundActionButton
+                        fired = true
                         scope.launch { sheet.hide() }.invokeOnCompletion {
                             onDismiss()
                             action.onClick()
@@ -334,7 +338,7 @@ fun MiniPlayer(
                 )
             }
             IconButton(onClick = onPrevious) { Icon(Icons.Default.SkipPrevious, stringResource(R.string.common_previous)) }
-            GradientPlayButton(state.isPlaying, 40.dp, onToggle)
+            GradientPlayButton(state.isPlaying, 48.dp, onToggle)
             IconButton(onClick = onNext) { Icon(Icons.Default.SkipNext, stringResource(R.string.common_next)) }
         }
     }

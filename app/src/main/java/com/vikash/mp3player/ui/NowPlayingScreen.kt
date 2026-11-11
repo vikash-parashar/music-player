@@ -306,12 +306,12 @@ fun NowPlayingScreen(
 
             val duration = state.durationMs.coerceAtLeast(1)
             AnimatedSeekBar(
-                progress = if (dragging) dragValue else (position.toFloat() / duration).coerceIn(0f, 1f),
+                progress = if (dragging) dragValue else if (state.durationMs <= 0) 0f else (position.toFloat() / duration).coerceIn(0f, 1f),
                 playing = state.isPlaying && !dragging,
                 style = seekStyle,
                 onSeek = { dragging = true; dragValue = it },
                 onSeekFinished = {
-                    if (dragging) {
+                    if (dragging && state.durationMs > 0) {
                         val target = (dragValue * duration).toLong()
                         player.seekTo(target)
                         position = target
@@ -320,7 +320,8 @@ fun NowPlayingScreen(
                 },
             )
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(formatDuration(position).ifEmpty { "0:00" }, style = MaterialTheme.typography.bodySmall)
+                // While dragging, the time follows the finger.
+                Text(formatDuration(if (dragging) (dragValue * duration).toLong() else position).ifEmpty { "0:00" }, style = MaterialTheme.typography.bodySmall)
                 Text(formatDuration(state.durationMs), style = MaterialTheme.typography.bodySmall)
             }
 

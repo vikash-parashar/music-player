@@ -129,6 +129,9 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
 
     var hasPermission by remember { mutableStateOf(context.hasAudioPermission()) }
     var tab by rememberSaveable { mutableIntStateOf(0) }
+    val tabState = androidx.compose.runtime.saveable.rememberSaveableStateHolder()
+    // Back on another tab goes Home first instead of closing the app (overlays register later, so they still win).
+    androidx.activity.compose.BackHandler(enabled = tab != 0) { tab = 0 }
     // Ringtone maker: the song stays set while the panel slides away.
     var ringtoneSong by remember { mutableStateOf<Song?>(null) }
     var tagSong by remember { mutableStateOf<Song?>(null) }
@@ -323,88 +326,91 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
             },
         ) { padding ->
             Box(Modifier.padding(padding)) {
-                when (tab) {
-                    0 -> HomeScreen(
-                        songs = library.songs,
-                        stats = stats,
-                        favorites = favorites,
-                        isPro = proUnlocked,
-                        onPlay = playWithDisc,
-                        onGetPro = openPro,
-                        onOpenStories = { tab = 2 },
-                    )
-                    1 -> LibraryScreen(
-                        state = library,
-                        hasPermission = hasPermission,
-                        currentId = currentId,
-                        onRequestPermission = { permissionLauncher.launch(launchPermissions) },
-                        onPlay = playWithDisc,
-                        onPlayNext = { vm.player.playNext(it); vm.notify(context.getString(R.string.msg_playing_next, it.title)) },
-                        onAddToQueue = { vm.player.addToQueue(it); vm.notify(context.getString(R.string.msg_added_to_queue)) },
-                        favorites = favorites,
-                        onToggleFavorite = { vm.toggleFavorite(it.id, it.title) },
-                        onSetRingtone = { ringtoneSong = it; showRingtone = true },
-                        onMakeStatus = { statusSong = it; showStatus = true },
-                        onEditTags = { tagSong = it },
-                        onDelete = { if (it.isNotEmpty()) deleteSongs = it },
-                        onMove = { if (it.isNotEmpty()) moveSongs = it },
-                        stats = stats,
-                        onOpenStats = { showStats = true },
-                        playlists = playlists,
-                        playlistActions = playlistActions,
-                        onAddAllToQueue = vm::addAllToQueue,
-                        onAddFavorites = vm::addFavorites,
-                        sort = songSort,
-                        onSort = vm.prefs::setSongSort,
-                    )
-                    2 -> DiscoverScreen(
-                        currentId = currentId,
-                        actions = discoverActions,
-                        showMusic = online.configured,
-                        stories = {
-                            StoriesSection(
-                                currentId = currentId,
-                                pass = storiesPass,
-                                passPrice = passPrice,
-                                onPlay = vm.player::play,
-                                onBuyPass = onBuyPass,
-                            )
-                        },
-                    ) {
-                        OnlineScreen(
-                            state = online,
-                            currentId = currentId,
-                            onQueryChange = { vm.searchOnline(it) },
-                            onLoadPopular = { vm.searchOnline("", debounce = false) },
+                // Each tab keeps its scroll, open album, sub-tab and search when you switch away and back.
+                tabState.SaveableStateProvider(tab) {
+                    when (tab) {
+                        0 -> HomeScreen(
+                            songs = library.songs,
+                            stats = stats,
+                            favorites = favorites,
+                            isPro = proUnlocked,
                             onPlay = playWithDisc,
-                            onPlayNext = discoverActions.playNext,
-                            onAddToQueue = discoverActions.addToQueue,
-                            onDownload = { vm.download(it) },
+                            onGetPro = openPro,
+                            onOpenStories = { tab = 2 },
+                        )
+                        1 -> LibraryScreen(
+                            state = library,
+                            hasPermission = hasPermission,
+                            currentId = currentId,
+                            onRequestPermission = { permissionLauncher.launch(launchPermissions) },
+                            onPlay = playWithDisc,
+                            onPlayNext = { vm.player.playNext(it); vm.notify(context.getString(R.string.msg_playing_next, it.title)) },
+                            onAddToQueue = { vm.player.addToQueue(it); vm.notify(context.getString(R.string.msg_added_to_queue)) },
+                            favorites = favorites,
+                            onToggleFavorite = { vm.toggleFavorite(it.id, it.title) },
+                            onSetRingtone = { ringtoneSong = it; showRingtone = true },
+                            onMakeStatus = { statusSong = it; showStatus = true },
+                            onEditTags = { tagSong = it },
+                            onDelete = { if (it.isNotEmpty()) deleteSongs = it },
+                            onMove = { if (it.isNotEmpty()) moveSongs = it },
+                            stats = stats,
+                            onOpenStats = { showStats = true },
+                            playlists = playlists,
+                            playlistActions = playlistActions,
+                            onAddAllToQueue = vm::addAllToQueue,
+                            onAddFavorites = vm::addFavorites,
+                            sort = songSort,
+                            onSort = vm.prefs::setSongSort,
+                        )
+                        2 -> DiscoverScreen(
+                            currentId = currentId,
+                            actions = discoverActions,
+                            showMusic = online.configured,
+                            stories = {
+                                StoriesSection(
+                                    currentId = currentId,
+                                    pass = storiesPass,
+                                    passPrice = passPrice,
+                                    onPlay = vm.player::play,
+                                    onBuyPass = onBuyPass,
+                                )
+                            },
+                        ) {
+                            OnlineScreen(
+                                state = online,
+                                currentId = currentId,
+                                onQueryChange = { vm.searchOnline(it) },
+                                onLoadPopular = { vm.searchOnline("", debounce = false) },
+                                onPlay = playWithDisc,
+                                onPlayNext = discoverActions.playNext,
+                                onAddToQueue = discoverActions.addToQueue,
+                                onDownload = { vm.download(it) },
+                            )
+                        }
+                        3 -> if (featurePro) VideosScreen(videos, onLoad = vm::loadVideos)
+                             else LockedVideos(price = price, onGetPro = openPro)
+                        else -> SettingsScreen(
+                            adsRemoved = adsRemoved, price = price, onRemoveAds = openPro,
+                            onTestPro = vm.billing::setTestPro,
+                            seekStyle = seekStyle, onSeekStyle = { vm.prefs.setSeekStyle(it.name) },
+                            themeMode = themeMode, onThemeMode = vm.prefs::setThemeMode,
+                            onBackup = vm::exportBackup, onRestore = vm::restoreBackup,
+                            onOpenTransfer = { showTransfer = true },
+                            onOpenNetwork = { showNetwork = true },
+                            onOpenCarMode = { showCarMode = true },
+                            onOpenDuplicates = { showDuplicates = true },
+                            folders = folders,
+                            hiddenFolders = hiddenFolders,
+                            onFolderHidden = vm.prefs::setFolderHidden,
+                            onLibraryChanged = vm::loadLibrary,
+                            onOpenHelp = { showHelp = true },
+                            proUnlocked = proUnlocked,
+                            tipPrices = tipPrices,
+                            tipsReceived = tipsReceived,
+                            onTip = onTip,
+                            songs = library.songs,
                         )
                     }
-                    3 -> if (featurePro) VideosScreen(videos, onLoad = vm::loadVideos)
-                         else LockedVideos(price = price, onGetPro = openPro)
-                    else -> SettingsScreen(
-                        adsRemoved = adsRemoved, price = price, onRemoveAds = openPro,
-                        onTestPro = vm.billing::setTestPro,
-                        seekStyle = seekStyle, onSeekStyle = { vm.prefs.setSeekStyle(it.name) },
-                        themeMode = themeMode, onThemeMode = vm.prefs::setThemeMode,
-                        onBackup = vm::exportBackup, onRestore = vm::restoreBackup,
-                        onOpenTransfer = { showTransfer = true },
-                        onOpenNetwork = { showNetwork = true },
-                        onOpenCarMode = { showCarMode = true },
-                        onOpenDuplicates = { showDuplicates = true },
-                        folders = folders,
-                        hiddenFolders = hiddenFolders,
-                        onFolderHidden = vm.prefs::setFolderHidden,
-                        onLibraryChanged = vm::loadLibrary,
-                        onOpenHelp = { showHelp = true },
-                        proUnlocked = proUnlocked,
-                        tipPrices = tipPrices,
-                        tipsReceived = tipsReceived,
-                        onTip = onTip,
-                        songs = library.songs,
-                    )
                 }
             }
         }

@@ -174,7 +174,7 @@ fun CarModeScreen(
             volume = audio.getStreamVolume(android.media.AudioManager.STREAM_MUSIC)
             muted = audio.isStreamMute(android.media.AudioManager.STREAM_MUSIC)
             positionMs = player.positionMs()
-            progress = (positionMs.toFloat() / state.durationMs.coerceAtLeast(1)).coerceIn(0f, 1f)
+            progress = if (state.durationMs <= 0) 0f else (positionMs.toFloat() / state.durationMs).coerceIn(0f, 1f)
             delay(500)
         }
     }
@@ -253,7 +253,7 @@ fun CarModeScreen(
                     GlassCassetteView(
                         look, current?.title.orEmpty(), current?.artist.orEmpty(),
                         progress = { progress },
-                        hubAngle = { if (state.isPlaying && !lite) spin.value * 2f else 0f },
+                        hubAngle = { if (lite) 0f else spin.value * 2f },
                         modifier = Modifier.width(w),
                         artwork = current?.artworkUri?.toString(),
                     )
