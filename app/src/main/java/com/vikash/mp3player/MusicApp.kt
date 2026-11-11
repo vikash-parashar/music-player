@@ -35,10 +35,22 @@ class MusicApp : Application(), SingletonImageLoader.Factory {
 
     private val appScope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.SupervisorJob() + kotlinx.coroutines.Dispatchers.Main)
 
-    /** Pro features: bought, inside the 24-hour trial, or a closed-test tester. Ad removal still needs the purchase. */
+    /** Pro features: bought, inside the 14-day welcome or 24-hour ad trial, or a closed-test tester. */
     val proUnlocked: kotlinx.coroutines.flow.StateFlow<Boolean> by lazy {
         kotlinx.coroutines.flow.combine(billing.adsRemoved, com.vikash.mp3player.monetization.ProTrial.active) { bought, trial -> bought || trial || billing.testerPro }
             .stateIn(appScope, kotlinx.coroutines.flow.SharingStarted.Eagerly, billing.adsRemoved.value || billing.testerPro || com.vikash.mp3player.monetization.ProTrial.isActive())
+    }
+
+    /** The Pro looks (widgets, cassettes, themes, seek bars): Pro, or the Cassette & Themes Pack on its own. */
+    val looksUnlocked: kotlinx.coroutines.flow.StateFlow<Boolean> by lazy {
+        kotlinx.coroutines.flow.combine(proUnlocked, billing.looksPack) { pro, pack -> pro || pack }
+            .stateIn(appScope, kotlinx.coroutines.flow.SharingStarted.Eagerly, proUnlocked.value || billing.looksPack.value)
+    }
+
+    /** No ads: Pro bought, or any free Pro trial running. Closed-test testers still see ads. */
+    val adFree: kotlinx.coroutines.flow.StateFlow<Boolean> by lazy {
+        kotlinx.coroutines.flow.combine(billing.adsRemoved, com.vikash.mp3player.monetization.ProTrial.active) { bought, trial -> bought || trial }
+            .stateIn(appScope, kotlinx.coroutines.flow.SharingStarted.Eagerly, billing.adsRemoved.value || com.vikash.mp3player.monetization.ProTrial.isActive())
     }
 
     override fun onCreate() {
@@ -55,7 +67,7 @@ class MusicApp : Application(), SingletonImageLoader.Factory {
         // The style widgets show the heart, the sleep timer and Pro state: redraw when those change in the app.
         appScope.launch { prefs.favorites.drop(1).collect { com.vikash.mp3player.widget.WidgetState.redraw(this@MusicApp) } }
         appScope.launch { com.vikash.mp3player.playback.SleepTimer.endsAtMillis.drop(1).collect { com.vikash.mp3player.widget.WidgetState.redraw(this@MusicApp) } }
-        appScope.launch { proUnlocked.drop(1).collect { com.vikash.mp3player.widget.WidgetState.redraw(this@MusicApp) } }
+        appScope.launch { looksUnlocked.drop(1).collect { com.vikash.mp3player.widget.WidgetState.redraw(this@MusicApp) } }
     }
 
     // Lite mode: covers appear at once instead of fading in (read when the loader is first made).

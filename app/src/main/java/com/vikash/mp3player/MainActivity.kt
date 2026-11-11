@@ -59,7 +59,8 @@ class MainActivity : ComponentActivity() {
         setContent {
             val app = application as MusicApp
             val themeMode by app.prefs.themeMode.collectAsState()
-            val pro by app.proUnlocked.collectAsState()
+            // The looks follow the Cassette & Themes Pack as well as Pro.
+            val pro by app.looksUnlocked.collectAsState()
             val amoled by app.prefs.amoledBlack.collectAsState()
             val wallpaper by app.prefs.wallpaperColors.collectAsState()
             val profile by app.prefs.colorProfile.collectAsState()
@@ -77,8 +78,13 @@ class MainActivity : ComponentActivity() {
                 keyColor = if (pro) keyColor else com.vikash.mp3player.data.KeyColor.Theme,
             ) {
                 CompositionLocalProvider(LocalLiteMode provides lite) {
-                MusicPlayerApp(vm, onRemoveAds = {
-                    when (billing.purchaseRemoveAds(this)) {
+                MusicPlayerApp(vm, onBuy = { product ->
+                    val result = when (product) {
+                        BillingManager.SUPPORTER_ID -> billing.purchaseSupporter(this)
+                        BillingManager.LOOKS_PACK_ID -> billing.purchaseLooksPack(this)
+                        else -> billing.purchaseRemoveAds(this)
+                    }
+                    when (result) {
                         BillingManager.Buy.OPENED -> Unit
                         BillingManager.Buy.LOADING -> Toast.makeText(this, R.string.billing_loading, Toast.LENGTH_SHORT).show()
                         BillingManager.Buy.UNAVAILABLE -> Toast.makeText(
