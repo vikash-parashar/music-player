@@ -56,6 +56,8 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.material.icons.filled.ChevronLeft
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.ui.unit.sp
 import com.vikash.mp3player.R
 import com.vikash.mp3player.data.Lyrics
@@ -94,7 +96,7 @@ fun PlayerPicture(
     when (style) {
         PlayerStyle.Car -> CarBeatView(isPlaying, isPro, onGetPro, modifier)
         PlayerStyle.Record -> RecordPlayerView(artworkUri, title, artist, isPlaying, progress, modifier, intro)
-        PlayerStyle.Cassette -> CassetteView(artworkUri, title, artist, isPlaying, progress, modifier)
+        PlayerStyle.Cassette -> GlassCassettePlayer(title, artist, isPlaying, progress, modifier)
         PlayerStyle.Boombox -> BoomboxView(artworkUri, title, isPlaying, modifier)
         PlayerStyle.Jukebox -> JukeboxView(artworkUri, title, artist, isPlaying, modifier)
         PlayerStyle.ReelToReel -> ReelToReelView(artworkUri, isPlaying, progress, modifier)
@@ -171,50 +173,43 @@ private fun DrawScope.hub(c: Offset, r: Float, angle: Float, color: Color, teeth
 
 // ---------------------------------------------------------------- Cassette
 
+/**
+ * The Glass Cassette (approved 11 Nov 2026): the tape winds from left to right as the song plays.
+ * The arrows under it switch between the 17 looks; the choice is shared with Car mode.
+ */
 @Composable
-private fun CassetteView(uri: Uri?, title: String, artist: String, isPlaying: Boolean, progress: () -> Float, modifier: Modifier) {
-    val art = rememberStickerPainter(uri, 320)
+private fun GlassCassettePlayer(title: String, artist: String, isPlaying: Boolean, progress: () -> Float, modifier: Modifier) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     val spin = LocalDiscAngle.current
-    val text = rememberTextMeasurer()
-    Canvas(modifier) {
-        val w = min(size.width * 0.94f, size.height / 0.64f)
-        val h = w * 0.64f
-        val o = Offset((size.width - w) / 2f, (size.height - h) / 2f)
-        drawRoundRect(Color(0xFF2B2230), o, Size(w, h), CornerRadius(w * 0.05f))
-        drawRoundRect(Color(0xFF3A2F40), o + Offset(w * 0.03f, h * 0.04f), Size(w * 0.94f, h * 0.92f), CornerRadius(w * 0.04f))
-        // Label: the cover on the left, the song on the right.
-        val lo = o + Offset(w * 0.07f, h * 0.08f)
-        val ls = Size(w * 0.86f, h * 0.36f)
-        drawRoundRect(Color(0xFFFFF7ED), lo, ls, CornerRadius(w * 0.02f))
-        val artSide = ls.height * 0.84f
-        val ao = lo + Offset(ls.height * 0.08f, ls.height * 0.08f)
-        drawArt(art, ao, Size(artSide, artSide), roundRect(ao, Size(artSide, artSide), w * 0.015f))
-        val tx = ao.x + artSide + w * 0.03f
-        val tw = lo.x + ls.width - tx - w * 0.02f
-        label(text, title, Offset(tx, lo.y + ls.height * 0.14f), tw, 15, Color(0xFF1C1622), bold = true)
-        label(text, artist, Offset(tx, lo.y + ls.height * 0.52f), tw, 12, Color(0xFF6B6375))
-        // Window with the two reels; tape moves from the left reel to the right one.
-        val wo = o + Offset(w * 0.22f, h * 0.52f)
-        val ws = Size(w * 0.56f, h * 0.28f)
-        drawRoundRect(Color(0xFF120C16), wo, ws, CornerRadius(ws.height / 2f))
-        val p = progress().coerceIn(0f, 1f)
-        val maxR = ws.height * 0.46f
-        val lc = Offset(wo.x + ws.height * 0.55f, wo.y + ws.height / 2f)
-        val rc = Offset(wo.x + ws.width - ws.height * 0.55f, wo.y + ws.height / 2f)
-        drawCircle(Color(0xFF5B4636), maxR * (0.45f + 0.55f * (1f - p)), lc)
-        drawCircle(Color(0xFF5B4636), maxR * (0.45f + 0.55f * p), rc)
-        val a = if (isPlaying) spin.value * 2f else spin.value
-        hub(lc, maxR * 0.42f, a, Color(0xFFF5F2F6))
-        hub(rc, maxR * 0.42f, a, Color(0xFFF5F2F6))
-        // Screws and the bottom trapezoid.
-        listOf(Offset(0.05f, 0.08f), Offset(0.95f, 0.08f), Offset(0.05f, 0.92f), Offset(0.95f, 0.92f)).forEach {
-            drawCircle(Color(0xFF6B5F70), w * 0.012f, o + Offset(it.x * w, it.y * h))
+    var lookIndex by remember { androidx.compose.runtime.mutableIntStateOf(com.vikash.mp3player.widget.GlassCassette.playerLook(context)) }
+    val looks = com.vikash.mp3player.widget.GlassCassette.LOOKS
+    fun pick(i: Int) {
+        lookIndex = i.mod(looks.size)
+        com.vikash.mp3player.widget.GlassCassette.setPlayerLook(context, lookIndex)
+    }
+    androidx.compose.foundation.layout.Column(
+        modifier, verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center,
+        horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
+    ) {
+        GlassCassetteView(
+            looks[lookIndex], title, artist, progress,
+            hubAngle = { if (isPlaying) spin.value * 2f else spin.value },
+            modifier = Modifier.fillMaxWidth(),
+        )
+        androidx.compose.foundation.layout.Row(
+            Modifier.padding(top = 10.dp), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+        ) {
+            androidx.compose.material3.IconButton(onClick = { pick(lookIndex - 1) }) {
+                androidx.compose.material3.Icon(androidx.compose.material.icons.Icons.Default.ChevronLeft, androidx.compose.ui.res.stringResource(com.vikash.mp3player.R.string.common_previous))
+            }
+            androidx.compose.material3.Text(
+                "${lookIndex + 1}/${looks.size} · ${looks[lookIndex].name}",
+                style = androidx.compose.material3.MaterialTheme.typography.labelLarge,
+            )
+            androidx.compose.material3.IconButton(onClick = { pick(lookIndex + 1) }) {
+                androidx.compose.material3.Icon(androidx.compose.material.icons.Icons.Default.ChevronRight, androidx.compose.ui.res.stringResource(com.vikash.mp3player.R.string.common_next))
+            }
         }
-        val trap = Path().apply {
-            moveTo(o.x + w * 0.25f, o.y + h); lineTo(o.x + w * 0.3f, o.y + h * 0.86f)
-            lineTo(o.x + w * 0.7f, o.y + h * 0.86f); lineTo(o.x + w * 0.75f, o.y + h); close()
-        }
-        drawPath(trap, Color(0xFF1F1823))
     }
 }
 

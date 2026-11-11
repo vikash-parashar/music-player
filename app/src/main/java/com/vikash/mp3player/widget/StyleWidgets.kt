@@ -385,7 +385,7 @@ class QuickMixesWidget : StyleWidget(pro = true) {
 }
 
 /**
- * 6. Glass Cassette (Pro): a see-through classic cassette in one of 14 looks ([GlassCassette.LOOKS]),
+ * 6. Glass Cassette (Pro): a see-through classic cassette in one of 17 looks ([GlassCassette.LOOKS]),
  * chosen per widget in [CassetteStyleActivity]. The hubs turn while music plays and the song name is
  * hand-written on the label strip. Previous / play / next / shuffle / heart keys underneath.
  */
@@ -417,7 +417,10 @@ class CassetteWidget : StyleWidget(pro = true) {
             val writeW = (cw.value * density * GlassCassette.TEXT_W / GlassCassette.BODY_W).toInt()
             val writeH = (ch.value * density * GlassCassette.TEXT_H / GlassCassette.BODY_H).toInt()
             val views = RemoteViews(context.packageName, R.layout.widget_glass_cassette).apply {
-                setImageViewResource(R.id.glass_body, look.body)
+                // The tape follows the song: the service redraws this widget about every 30 s while playing.
+                val pos = if (s.playing && s.capturedAt > 0L) s.positionMs + (android.os.SystemClock.elapsedRealtime() - s.capturedAt) else s.positionMs
+                val progress = if (s.durationMs > 0L) pos.toFloat() / s.durationMs else 0f
+                setImageViewBitmap(R.id.glass_body, GlassCassette.body(context, look, progress, (cw.value * density).toInt()))
                 setImageViewBitmap(R.id.glass_writing, GlassCassette.writing(context, title, artist, pen, writeW, writeH))
                 setContentDescription(R.id.glass_writing, title)
                 for (h in GlassCassette.Hub.values()) {

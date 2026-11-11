@@ -34,6 +34,7 @@ import com.vikash.mp3player.data.RADIO_HLS_PREFIX
 import com.vikash.mp3player.data.RADIO_PREFIX
 import com.vikash.mp3player.data.Song
 import com.vikash.mp3player.widget.WidgetState
+import androidx.glance.appwidget.updateAll
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -245,6 +246,21 @@ class PlaybackService : MediaLibraryService() {
                 }
             }
         })
+
+        // The Glass Cassette widget's tape winds with the song; redraw it about every 30 s while
+        // music plays, and only when one is on the home screen.
+        scope.launch {
+            while (true) {
+                delay(30_000)
+                val playing = session?.player?.isPlaying == true
+                if (!playing) continue
+                runCatching {
+                    val ids = androidx.glance.appwidget.GlanceAppWidgetManager(this@PlaybackService)
+                        .getGlanceIds(com.vikash.mp3player.widget.CassetteWidget::class.java)
+                    if (ids.isNotEmpty()) com.vikash.mp3player.widget.CassetteWidget().updateAll(this@PlaybackService)
+                }
+            }
+        }
 
         scope.launch {
             SleepTimer.endsAtMillis.collectLatest { endsAt ->

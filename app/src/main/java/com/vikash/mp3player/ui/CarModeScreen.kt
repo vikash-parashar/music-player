@@ -1,10 +1,18 @@
 package com.vikash.mp3player.ui
 
+import androidx.compose.material.icons.filled.Shuffle
+import androidx.compose.material.icons.filled.Repeat
+import androidx.compose.material.icons.filled.RepeatOne
+import androidx.compose.material.icons.filled.VolumeDown
+import androidx.compose.material.icons.filled.VolumeUp
+import androidx.compose.material.icons.filled.VolumeOff
+import androidx.compose.material.icons.filled.VolumeMute
 import android.view.HapticFeedbackConstants
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.semantics.Role
 import android.app.Activity
@@ -89,13 +97,17 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import kotlinx.coroutines.delay
 
-// Crimson Night: red, black and green only.
-private val CarBg = Color(0xFF06110C)
+// Dashboard Gauge (picked 11 Nov 2026): night-dash navy with one sky-blue accent, like a lit speedometer.
+private val CarBg = Color(0xFF0A0C10)
+private val CarKey = Color(0xFF121822)
+private val CarKeyEdge = Color(0xFF1E2A3A)
+private val CarSky = Color(0xFF38BDF8)
+private val CarSkyDeep = Color(0xFF0284C7)
+private val CarPale = Color(0xFFCFE3FF)
+private val CarMuted = Color(0xFF6B7C93)
+// Kept for the Car Hub card.
 private val CarRed = Color(0xFFA31C1B)
 private val CarGreen = Color(0xFF1F5C3F)
-private val CarPale = Color(0xFFC9DDD0)
-// The ring of a key while it is held down.
-private val CarGreenLit = Color(0xFF3FBF7F)
 
 /**
  * Car mode: a screen you can use without looking. Huge buttons, swipe anywhere left or right
@@ -145,9 +157,24 @@ fun CarModeScreen(
     var promoClosed by remember { mutableStateOf(CarHubPromo.isClosed(context)) }
     // Song progress for the ring and the thin bar; twice a second is plenty for a glance.
     var progress by remember { mutableFloatStateOf(0f) }
+    var positionMs by remember { mutableStateOf(0L) }
+    val audio = remember { context.getSystemService(android.content.Context.AUDIO_SERVICE) as android.media.AudioManager }
+    val maxVolume = remember { audio.getStreamMaxVolume(android.media.AudioManager.STREAM_MUSIC).coerceAtLeast(1) }
+    var volume by remember { mutableStateOf(audio.getStreamVolume(android.media.AudioManager.STREAM_MUSIC)) }
+    var muted by remember { mutableStateOf(audio.isStreamMute(android.media.AudioManager.STREAM_MUSIC)) }
+    fun changeVolume(direction: Int) {
+        // FLAG_SHOW_UI is left out: the bar on this screen shows the level, big enough to read at a glance.
+        runCatching { audio.adjustStreamVolume(android.media.AudioManager.STREAM_MUSIC, direction, 0) }
+        volume = audio.getStreamVolume(android.media.AudioManager.STREAM_MUSIC)
+        muted = audio.isStreamMute(android.media.AudioManager.STREAM_MUSIC)
+    }
     LaunchedEffect(current?.mediaId, state.isPlaying, state.durationMs) {
         while (true) {
-            progress = (player.positionMs().toFloat() / state.durationMs.coerceAtLeast(1)).coerceIn(0f, 1f)
+            // Also picks up the car's own volume knob.
+            volume = audio.getStreamVolume(android.media.AudioManager.STREAM_MUSIC)
+            muted = audio.isStreamMute(android.media.AudioManager.STREAM_MUSIC)
+            positionMs = player.positionMs()
+            progress = (positionMs.toFloat() / state.durationMs.coerceAtLeast(1)).coerceIn(0f, 1f)
             delay(500)
         }
     }
@@ -188,200 +215,178 @@ fun CarModeScreen(
         }
         val topBar: @Composable () -> Unit = {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(clock, color = CarPale, fontSize = 24.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
+                Text(clock, color = CarPale, fontSize = 22.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
                 CarIconButton(Icons.Default.Close, stringResource(R.string.car_exit), onClick = onClose)
             }
         }
-        val stage: @Composable (Modifier) -> Unit = { m ->
-            BoxWithConstraints(m, contentAlignment = Alignment.Center) {
-                // The CD shrinks to fit when the cards and the Car Hub card take room.
-                val ring = min(min(maxWidth, maxHeight) - 12.dp, 320.dp).coerceAtLeast(48.dp)
-                // Thin ring that fills as the song plays.
-                Canvas(Modifier.size(ring)) {
-                    val w = 2.dp.toPx()
-                    drawCircle(CarGreen.copy(alpha = 0.5f), style = Stroke(w))
-                    drawArc(CarRed, -90f, 360f * progress, false, style = Stroke(w, cap = StrokeCap.Round))
-                }
-                // A CD with the album art as its label. It stays put and only spins with the music.
-                SpinningCd(current?.artworkUri, ring * 0.88f, spinning = !lite)
-            }
-        }
-        val info: @Composable () -> Unit = {
-            // Left-aligned under the DRIVE headline; Oswald is narrow and bold, easy to read at a glance.
+        val names: @Composable () -> Unit = {
             Column {
                 if (activeMood != null) {
                     Text(
-                        stringResource(R.string.car_playing_from, activeLabel).uppercase(), color = Color.White.copy(alpha = 0.5f),
-                        fontSize = 11.sp, letterSpacing = 1.2.sp, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                        stringResource(R.string.car_playing_from, activeLabel).uppercase(), color = CarSky,
+                        fontFamily = CarTitleFont, fontWeight = FontWeight.Medium,
+                        fontSize = 11.sp, letterSpacing = 2.sp, maxLines = 1, overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.padding(bottom = 2.dp),
                     )
                 }
                 Text(
-                    current?.title ?: stringResource(R.string.car_nothing_playing),
-                    color = CarPale, fontFamily = CarTitleFont, fontWeight = FontWeight.Bold,
-                    fontSize = 30.sp, lineHeight = 34.sp, maxLines = 2, overflow = TextOverflow.Ellipsis,
+                    (current?.title ?: stringResource(R.string.car_nothing_playing)).uppercase(),
+                    color = Color.White, fontFamily = CarTitleFont, fontWeight = FontWeight.Bold,
+                    fontSize = 28.sp, lineHeight = 32.sp, maxLines = 2, overflow = TextOverflow.Ellipsis,
                 )
                 Text(
                     (heard ?: current?.artist ?: stringResource(if (voiceAvailable) R.string.car_tap_mic else R.string.car_swipe_short)).uppercase(),
-                    color = if (heard != null) Color(0xFFE57373) else CarPale.copy(alpha = 0.65f),
-                    fontFamily = CarTitleFont, fontWeight = FontWeight.Medium, fontSize = 14.sp, letterSpacing = 1.5.sp,
-                    maxLines = 1, overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(top = 4.dp),
+                    color = if (heard != null) Color(0xFFFF8A80) else CarMuted,
+                    fontFamily = CarTitleFont, fontWeight = FontWeight.Medium, fontSize = 13.sp, letterSpacing = 2.sp,
+                    maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(top = 2.dp),
                 )
-                Box(
-                    Modifier.fillMaxWidth().padding(top = 12.dp).height(4.dp)
-                        .clip(CircleShape).background(CarGreen.copy(alpha = 0.45f)),
-                ) {
-                    Box(Modifier.fillMaxWidth(progress).fillMaxHeight().clip(CircleShape).background(CarRed))
+            }
+        }
+        val gauge: @Composable (Modifier) -> Unit = { m ->
+            // The glass cassette in the middle (no car picture, no spinning disc, no arc, 11 Nov 2026):
+            // its tape winds from left to right as the song plays.
+            val spin = LocalDiscAngle.current
+            val look = remember { com.vikash.mp3player.widget.GlassCassette.LOOKS[com.vikash.mp3player.widget.GlassCassette.playerLook(context)] }
+            BoxWithConstraints(m, contentAlignment = Alignment.Center) {
+                val w = min(maxWidth, (maxHeight - 28.dp) * (640f / 402f)).coerceAtLeast(80.dp)
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    GlassCassetteView(
+                        look, current?.title.orEmpty(), current?.artist.orEmpty(),
+                        progress = { progress },
+                        hubAngle = { if (state.isPlaying && !lite) spin.value * 2f else 0f },
+                        modifier = Modifier.width(w),
+                    )
+                    Text(
+                        "${fmtTime(positionMs)} / ${fmtTime(state.durationMs)}",
+                        color = CarSky, fontFamily = CarTitleFont, fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp, letterSpacing = 2.sp, modifier = Modifier.padding(top = 8.dp),
+                    )
                 }
             }
         }
-        val dock: @Composable (Dp) -> Unit = { playSize ->
-            // One dock: previous, play/pause, next.
-            Row(
-                Modifier.fillMaxWidth().clip(CircleShape).background(Color(0xCC0B0B0B))
-                    .border(1.dp, CarGreen.copy(alpha = 0.55f), CircleShape)
-                    .padding(horizontal = 14.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                DockKey(Icons.Default.SkipPrevious, stringResource(R.string.common_previous)) { player.previous() }
-                BoldRoundButton(
+        val dock: @Composable (Dp) -> Unit = { keyHeight ->
+            // Three big square keys; play is the widest and lit.
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                GaugeKey(Icons.Default.SkipPrevious, stringResource(R.string.common_previous), keyHeight, Modifier.weight(1f)) { player.previous() }
+                GaugeKey(
                     if (state.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
                     stringResource(if (state.isPlaying) R.string.common_pause else R.string.common_play),
-                    playSize, highlight = true,
+                    keyHeight, Modifier.weight(1.3f), lit = true,
                 ) { player.togglePlay() }
-                DockKey(Icons.Default.SkipNext, stringResource(R.string.common_next)) { player.next() }
+                GaugeKey(Icons.Default.SkipNext, stringResource(R.string.common_next), keyHeight, Modifier.weight(1f)) { player.next() }
+            }
+        }
+        val extras: @Composable (Dp) -> Unit = { keyHeight ->
+            // Shuffle, repeat (off, all, one) and the volume keys, with a bar showing the level.
+            Column {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    GaugeKey(Icons.Default.Shuffle, stringResource(R.string.player_shuffle), keyHeight, Modifier.weight(1f), on = state.shuffle) { player.toggleShuffle() }
+                    GaugeKey(
+                        if (state.repeatMode == androidx.media3.common.Player.REPEAT_MODE_ONE) Icons.Default.RepeatOne else Icons.Default.Repeat,
+                        stringResource(R.string.player_repeat), keyHeight, Modifier.weight(1f),
+                        on = state.repeatMode != androidx.media3.common.Player.REPEAT_MODE_OFF,
+                    ) { player.cycleRepeat() }
+                    GaugeKey(Icons.Default.VolumeDown, stringResource(R.string.car_volume_down), keyHeight, Modifier.weight(1f)) {
+                        changeVolume(android.media.AudioManager.ADJUST_LOWER)
+                    }
+                    GaugeKey(
+                        if (muted) Icons.Default.VolumeOff else Icons.Default.VolumeMute,
+                        stringResource(R.string.car_volume_mute), keyHeight, Modifier.weight(1f), on = muted,
+                    ) { changeVolume(android.media.AudioManager.ADJUST_TOGGLE_MUTE) }
+                    GaugeKey(Icons.Default.VolumeUp, stringResource(R.string.car_volume_up), keyHeight, Modifier.weight(1f)) {
+                        changeVolume(android.media.AudioManager.ADJUST_RAISE)
+                    }
+                }
+                Row(Modifier.fillMaxWidth().padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text(stringResource(R.string.car_volume).uppercase(), color = CarMuted, fontFamily = CarTitleFont, fontSize = 10.sp, letterSpacing = 2.sp)
+                    Spacer(Modifier.width(8.dp))
+                    val level = if (muted) 0f else volume.toFloat() / maxVolume
+                    Box(Modifier.weight(1f).height(5.dp).clip(CircleShape).background(CarKeyEdge)) {
+                        Box(Modifier.fillMaxWidth(level).fillMaxHeight().clip(CircleShape).background(CarSky))
+                    }
+                    Text(
+                        if (muted) stringResource(R.string.car_volume_mute).uppercase() else "${(level * 100).toInt()}%",
+                        color = CarSky, fontFamily = CarTitleFont, fontWeight = FontWeight.Bold, fontSize = 11.sp,
+                        textAlign = TextAlign.End, modifier = Modifier.width(48.dp),
+                    )
+                }
             }
         }
         val mic: @Composable () -> Unit = {
             // Hidden where the phone or head unit has no speech engine, so there's no dead button.
-            val (micSource, micPressed, micScale) = rememberCarPress()
-            if (voiceAvailable) Row(
-                Modifier.fillMaxWidth().height(64.dp).graphicsLayer { scaleX = micScale; scaleY = micScale }
-                    .clip(CircleShape)
-                    .background(Brush.verticalGradient(if (micPressed) listOf(CarGreen, Color(0xFF143D2A)) else listOf(Color(0xFF2A7A54), CarGreen)))
-                    .border(2.dp, if (micPressed) CarGreenLit else Color(0xFF2E7D57), CircleShape)
-                    .clickable(interactionSource = micSource, indication = null, role = Role.Button) { listen() },
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Icon(Icons.Default.Mic, null, tint = CarPale, modifier = Modifier.size(26.dp))
-                Spacer(Modifier.width(10.dp))
-                Text(stringResource(R.string.car_say_song), color = CarPale, fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
-            }
-        }
-        val headline: @Composable (Float) -> Unit = { scale ->
-            Column {
-                Text(
-                    stringResource(R.string.car_headline_top), color = CarRed, fontFamily = androidx.compose.ui.text.font.FontFamily.Serif,
-                    fontWeight = FontWeight.Black, fontSize = (54 * scale).sp, lineHeight = (52 * scale).sp, maxLines = 1,
-                )
-                Text(
-                    stringResource(R.string.car_headline_bottom).uppercase(), color = CarPale,
-                    fontFamily = androidx.compose.ui.text.font.FontFamily.Serif, fontWeight = FontWeight.Bold,
-                    fontSize = (24 * scale).sp, lineHeight = (26 * scale).sp, maxLines = 1,
-                )
-            }
-        }
-        BoxWithConstraints(Modifier.fillMaxSize()) {
-            val landscape = maxWidth > maxHeight * 1.15f
-            // A green coupe under a red light beam; the controls sit on the dark side of the picture.
-            // Landscape: the car fills the left side behind everything. Portrait draws it in its own
-            // clear area at the top instead (below), so no cards ever sit on top of it.
-            if (landscape) {
-                Image(
-                    painterResource(R.drawable.car_hero), null,
-                    contentScale = ContentScale.Crop,
-                    alignment = Alignment.CenterStart,
-                    modifier = Modifier.fillMaxHeight().fillMaxWidth(0.72f),
-                )
-                Box(
-                    Modifier.fillMaxSize().background(
-                        Brush.horizontalGradient(0f to Color.Transparent, 0.42f to CarBg.copy(alpha = 0.55f), 0.62f to CarBg.copy(alpha = 0.92f), 1f to CarBg),
-                    ),
-                )
+            if (voiceAvailable) {
+                val (micSource, micPressed, micScale) = rememberCarPress()
+                Row(
+                    Modifier.fillMaxWidth().height(56.dp).graphicsLayer { scaleX = micScale; scaleY = micScale }
+                        .clip(RoundedCornerShape(18.dp)).background(CarKey)
+                        .border(1.5.dp, if (micPressed) CarSky else CarKeyEdge, RoundedCornerShape(18.dp))
+                        .clickable(interactionSource = micSource, indication = null, role = Role.Button) { listen() },
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(Icons.Default.Mic, null, tint = CarSky, modifier = Modifier.size(24.dp))
+                    Spacer(Modifier.width(10.dp))
+                    Text(stringResource(R.string.car_say_song), color = CarPale, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                }
             }
         }
         BoxWithConstraints(Modifier.fillMaxSize().systemBarsPadding()) {
             val shortScreen = maxHeight < 480.dp
             if (maxWidth > maxHeight * 1.15f) {
-                // Landscape (car head units, tablets): the car on the left, everything you press on the right.
+                // Landscape (car head units, tablets): the dial on the left, everything you press on the right.
                 Row(Modifier.fillMaxSize().padding(horizontal = 24.dp, vertical = 14.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Spacer(Modifier.weight(0.44f))
-                    Column(Modifier.weight(0.56f).fillMaxHeight()) {
+                    gauge(Modifier.weight(0.46f).fillMaxHeight())
+                    Spacer(Modifier.width(20.dp))
+                    Column(Modifier.weight(0.54f).fillMaxHeight()) {
                         topBar()
-                        if (!shortScreen) headline(0.9f)
+                        Spacer(Modifier.height(6.dp))
+                        names()
                         if (moods.isNotEmpty()) {
-                            Spacer(Modifier.height(10.dp))
+                            Spacer(Modifier.height(12.dp))
                             CarMoodRow(moods, activeMood, bleed = 0.dp, onPick = pickMood)
                         }
                         Spacer(Modifier.weight(1f))
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            stage(Modifier.size(if (shortScreen) 84.dp else 112.dp))
-                            Spacer(Modifier.width(14.dp))
-                            Box(Modifier.weight(1f)) { info() }
-                        }
-                        Spacer(Modifier.height(14.dp))
-                        dock(if (shortScreen) 72.dp else 88.dp)
-                        if (voiceAvailable) Spacer(Modifier.height(12.dp))
+                        dock(if (shortScreen) 64.dp else 76.dp)
+                        Spacer(Modifier.height(10.dp))
+                        extras(if (shortScreen) 44.dp else 52.dp)
+                        if (voiceAvailable) Spacer(Modifier.height(10.dp))
                         mic()
                     }
                 }
             } else {
                 Column(Modifier.fillMaxSize().padding(horizontal = 20.dp, vertical = 12.dp)) {
-                    // The car gets the whole top of the screen, edge to edge, with only the clock,
-                    // the close button and the headline on it.
-                    Box(Modifier.fillMaxWidth().weight(1f).bleed(20.dp).clip(RoundedCornerShape(bottomStart = 28.dp, bottomEnd = 28.dp))) {
-                        Image(
-                            painterResource(R.drawable.car_hero), null,
-                            contentScale = ContentScale.Crop,
-                            // The car sits left of centre in the picture; keep its nose in frame on narrow phones.
-                            alignment = androidx.compose.ui.BiasAlignment(-0.55f, 0.2f),
-                            modifier = Modifier.matchParentSize(),
-                        )
-                        Box(
-                            Modifier.matchParentSize().background(
-                                Brush.verticalGradient(
-                                    0f to CarBg.copy(alpha = 0.6f), 0.2f to Color.Transparent,
-                                    0.62f to Color.Transparent, 1f to CarBg,
-                                ),
-                            ),
-                        )
-                        Column(Modifier.fillMaxSize().padding(horizontal = 20.dp)) {
-                            topBar()
-                            Spacer(Modifier.weight(1f))
-                            headline(1f)
-                        }
-                    }
+                    topBar()
+                    Spacer(Modifier.height(8.dp))
+                    names()
+                    gauge(Modifier.fillMaxWidth().weight(1f).padding(vertical = 8.dp))
                     if (moods.isNotEmpty()) {
-                        Spacer(Modifier.height(14.dp))
                         CarMoodRow(moods, activeMood, bleed = 20.dp, onPick = pickMood)
+                        Spacer(Modifier.height(14.dp))
                     }
-                    Spacer(Modifier.height(16.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        stage(Modifier.size(96.dp))
-                        Spacer(Modifier.width(16.dp))
-                        Box(Modifier.weight(1f)) { info() }
-                    }
-                    Spacer(Modifier.height(16.dp))
-                    dock(88.dp)
-                    if (voiceAvailable) Spacer(Modifier.height(12.dp))
+                    dock(78.dp)
+                    Spacer(Modifier.height(10.dp))
+                    extras(50.dp)
+                    if (voiceAvailable) Spacer(Modifier.height(10.dp))
                     mic()
                     if (!promoClosed) {
-                        Spacer(Modifier.height(12.dp))
+                        Spacer(Modifier.height(10.dp))
                         CarHubPromoCard(
                             onOpen = { CarHubPromo.open(context) },
                             onClose = { promoClosed = true; CarHubPromo.close(context) },
                         )
                     } else Text(
-                        stringResource(R.string.car_swipe_short), color = Color.White.copy(alpha = 0.35f), fontSize = 12.sp,
+                        stringResource(R.string.car_swipe_short), color = CarMuted, fontSize = 12.sp,
                         textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
                     )
                 }
             }
         }
     }
+}
+
+private fun fmtTime(ms: Long): String {
+    val s = (ms.coerceAtLeast(0) / 1000).toInt()
+    return "%d:%02d".format(s / 60, s % 60)
 }
 
 /** Narrow, bold display face for the song in Car mode (Oswald, SIL Open Font License). */
@@ -410,62 +415,36 @@ private fun rememberCarPress(): Triple<MutableInteractionSource, Boolean, Float>
     return Triple(source, pressed, scale)
 }
 
-private fun ringColor(pressed: Boolean) = if (pressed) CarGreenLit else CarRed
-
-/** Round dark key in the top bar (buddy, close). */
+/** Round dark key in the top bar (close). Its edge lights up sky blue while held. */
 @Composable
 private fun CarIconButton(icon: ImageVector, label: String, onClick: () -> Unit) {
     val (source, pressed, scale) = rememberCarPress()
     Box(
-        Modifier.size(56.dp).graphicsLayer { scaleX = scale; scaleY = scale }
-            .clip(CircleShape).background(Brush.verticalGradient(listOf(Color(0xFF1C1C1C), Color(0xFF080808))))
-            .border(2.dp, ringColor(pressed), CircleShape)
+        Modifier.size(52.dp).graphicsLayer { scaleX = scale; scaleY = scale }
+            .clip(CircleShape).background(CarKey)
+            .border(1.5.dp, if (pressed) CarSky else CarKeyEdge, CircleShape)
             .clickable(interactionSource = source, indication = null, role = Role.Button, onClick = onClick),
         contentAlignment = Alignment.Center,
-    ) { Icon(icon, label, tint = CarPale, modifier = Modifier.size(26.dp)) }
-}
-
-/** Previous / next inside the dock: a raised round key, smaller than play, with the same feel. */
-@Composable
-private fun DockKey(icon: ImageVector, label: String, onClick: () -> Unit) {
-    BoldRoundButton(icon, label, 68.dp, iconTint = CarPale, onClick = onClick)
+    ) { Icon(icon, label, tint = CarPale, modifier = Modifier.size(24.dp)) }
 }
 
 /**
- * A big round key with a darker rim underneath, so it looks raised; it sinks onto the rim when pressed,
- * with a spring, a haptic tick and the red ring turning green. [highlight] is the red play button.
+ * A big rounded-square dash key. [lit] is the sky-blue play key with a soft glow. Every key springs in,
+ * ticks, and its edge lights up while it is held.
  */
 @Composable
-private fun BoldRoundButton(
-    icon: ImageVector,
-    label: String,
-    size: Dp,
-    highlight: Boolean = false,
-    iconTint: Color = Color.White,
-    onClick: () -> Unit,
-) {
+private fun GaugeKey(icon: ImageVector, label: String, height: Dp, modifier: Modifier, lit: Boolean = false, on: Boolean = false, onClick: () -> Unit) {
     val (source, pressed, scale) = rememberCarPress()
-    val rim = 6.dp
-    val sink by animateDpAsState(if (pressed) rim - 1.dp else 0.dp, spring(dampingRatio = 0.5f, stiffness = 1200f), label = "carSink")
+    val shape = RoundedCornerShape(20.dp)
     Box(
-        Modifier.size(size, size + rim).graphicsLayer { scaleX = scale; scaleY = scale }
+        modifier.height(height).graphicsLayer { scaleX = scale; scaleY = scale }
+            .then(if (lit) Modifier.shadow(if (pressed) 6.dp else 16.dp, shape, ambientColor = CarSky, spotColor = CarSky) else Modifier)
+            .clip(shape)
+            .background(if (lit) Brush.verticalGradient(listOf(CarSky, CarSkyDeep)) else Brush.verticalGradient(listOf(CarKey, CarKey)))
+            .border(1.5.dp, if (pressed) (if (lit) Color.White else CarSky) else (if (lit) Color.Transparent else if (on) CarSky else CarKeyEdge), shape)
             .clickable(interactionSource = source, indication = null, role = Role.Button, onClick = onClick),
-    ) {
-        // The rim the key sits on.
-        Box(
-            Modifier.align(Alignment.BottomCenter).size(size).clip(CircleShape)
-                .background(if (highlight) Color(0xFF3A0808) else Color(0xFF000000)),
-        )
-        Box(
-            Modifier.offset(y = sink).size(size).clip(CircleShape)
-                .background(
-                    if (highlight) Brush.radialGradient(listOf(Color(0xFFD42A27), CarRed, Color(0xFF6E1010)), center = Offset.Unspecified)
-                    else Brush.verticalGradient(listOf(Color(0xFF222222), Color(0xFF0B0B0B))),
-                )
-                .border(if (highlight) 3.dp else 2.dp, if (highlight) (if (pressed) CarGreenLit else Color(0x55FFFFFF)) else ringColor(pressed), CircleShape),
-            contentAlignment = Alignment.Center,
-        ) { Icon(icon, label, tint = iconTint, modifier = Modifier.size(size * 0.46f)) }
-    }
+        contentAlignment = Alignment.Center,
+    ) { Icon(icon, label, tint = if (lit) Color(0xFF04111C) else if (on) CarSky else CarPale, modifier = Modifier.size(height * 0.46f)) }
 }
 
 /** Small card telling drivers about Ampli Car Hub. Closing it keeps it closed. */

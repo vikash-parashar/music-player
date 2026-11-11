@@ -53,7 +53,7 @@ import kotlinx.coroutines.launch
 
 /**
  * Opens when a Glass Cassette widget is added, and again when it is long-pressed and reconfigured
- * (Android 12+). The person picks one of the 14 looks and the pen colour for the song name.
+ * (Android 12+). The person picks one of the 17 looks and the pen colour for the song name.
  */
 class CassetteStyleActivity : ComponentActivity() {
 
@@ -142,11 +142,10 @@ private fun Picker(startLook: Int, startPen: Int, onDone: (Int, Int) -> Unit) {
                             Brush.linearGradient(listOf(Color(0xFFFF9A6B), Color(0xFF7A5A8E), Color(0xFF5AD1C2))),
                         ).padding(6.dp),
                     ) {
-                        Image(
-                            painterResource(item.body), item.name,
-                            Modifier.fillMaxWidth().aspectRatio(GlassCassette.BODY_W / GlassCassette.BODY_H),
-                            contentScale = ContentScale.Fit,
-                        )
+                        Box(Modifier.fillMaxWidth().aspectRatio(GlassCassette.BODY_W / GlassCassette.BODY_H)) {
+                            Image(painterResource(item.back), null, Modifier.fillMaxSize(), contentScale = ContentScale.Fit)
+                            Image(painterResource(item.front), item.name, Modifier.fillMaxSize(), contentScale = ContentScale.Fit)
+                        }
                     }
                     Text(
                         "${i + 1}. ${item.name}", color = Color.White, fontSize = 13.sp,
