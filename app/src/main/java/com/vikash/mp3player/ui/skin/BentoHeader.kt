@@ -23,6 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.vikash.mp3player.R
 import com.vikash.mp3player.data.StatsData
 import java.text.SimpleDateFormat
@@ -48,19 +49,28 @@ fun BentoHeader(songs: Int, favourites: Int, playlists: Int, stats: StatsData, o
         }.reversed()
         keys.map { stats.monthMs[it] ?: 0L }
     }
+    val monthLetters = remember {
+        val fmt = SimpleDateFormat("MMM", Locale.getDefault())
+        val cal = Calendar.getInstance()
+        (0 until 6).map { i ->
+            val c = cal.clone() as Calendar
+            c.add(Calendar.MONTH, -i)
+            fmt.format(Date(c.timeInMillis)).take(1).uppercase()
+        }.reversed()
+    }
     val thisMonth = months.last()
     val top = remember(stats) { stats.songs.values.maxByOrNull { it.plays }?.takeIf { it.plays > 0 } }
     val hours = thisMonth / 3_600_000
     val mins = (thisMonth / 60_000) % 60
     val tileShape = RoundedCornerShape(s.corner)
-    val tile = Modifier.background(s.card, tileShape).border(1.dp, s.edge, tileShape).padding(12.dp)
+    val tile = Modifier.background(s.card, tileShape).border(1.dp, s.edge, tileShape).padding(horizontal = 12.dp, vertical = 10.dp)
     val mut = MaterialTheme.colorScheme.onSurfaceVariant
 
     Column(
         Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp).clickable(onClick = onOpenStats),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Row(Modifier.fillMaxWidth().height(116.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(Modifier.fillMaxWidth().height(136.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             // Hero tile: listening time + bars
             Column(
                 Modifier.weight(2f).fillMaxHeight().background(s.tactileAccent, tileShape).padding(12.dp),
@@ -68,13 +78,23 @@ fun BentoHeader(songs: Int, favourites: Int, playlists: Int, stats: StatsData, o
             ) {
                 Text(stringResource(R.string.bento_listened), style = MaterialTheme.typography.labelSmall, color = Color.White.copy(alpha = 0.85f))
                 Text("${hours}h ${mins}m", style = MaterialTheme.typography.headlineSmall, color = Color.White, fontWeight = FontWeight.Bold)
+                // Last six months as white bars on the accent: this month solid, earlier ones soft.
                 val max = (months.maxOrNull() ?: 0L).coerceAtLeast(1L)
-                Row(Modifier.fillMaxWidth().height(30.dp), horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.Bottom) {
-                    months.forEach { ms ->
-                        Box(
-                            Modifier.weight(1f).fillMaxHeight((0.12f + 0.88f * ms / max.toFloat()).coerceIn(0.12f, 1f))
-                                .background(Color(0xFF3B82F6), RoundedCornerShape(3.dp)),
-                        )
+                Row(Modifier.fillMaxWidth().height(34.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.Bottom) {
+                    months.forEachIndexed { i, ms ->
+                        val now = i == months.lastIndex
+                        Column(Modifier.weight(1f).fillMaxHeight(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Bottom) {
+                            Box(
+                                Modifier.fillMaxWidth(0.55f).weight(1f, fill = false)
+                                    .fillMaxHeight((0.1f + 0.9f * ms / max.toFloat()).coerceIn(0.1f, 1f))
+                                    .background(Color.White.copy(alpha = if (now) 1f else 0.4f), RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp)),
+                            )
+                            Text(
+                                monthLetters[i], fontSize = 9.sp, lineHeight = 10.sp,
+                                color = Color.White.copy(alpha = if (now) 1f else 0.7f),
+                                modifier = Modifier.padding(top = 2.dp),
+                            )
+                        }
                     }
                 }
             }
@@ -83,7 +103,7 @@ fun BentoHeader(songs: Int, favourites: Int, playlists: Int, stats: StatsData, o
                 StatTile(stringResource(R.string.bento_favourites), favourites.toString(), tile.weight(1f).fillMaxWidth(), mut)
             }
         }
-        Row(Modifier.fillMaxWidth().height(64.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(Modifier.fillMaxWidth().height(72.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             StatTile(stringResource(R.string.bento_playlists), playlists.toString(), tile.weight(1f).fillMaxHeight(), mut)
             Column(tile.weight(2f).fillMaxHeight(), verticalArrangement = Arrangement.SpaceBetween) {
                 Text(stringResource(R.string.bento_top), style = MaterialTheme.typography.labelSmall, color = mut)
@@ -101,6 +121,10 @@ fun BentoHeader(songs: Int, favourites: Int, playlists: Int, stats: StatsData, o
 private fun StatTile(label: String, value: String, modifier: Modifier, muted: Color) {
     Column(modifier, verticalArrangement = Arrangement.SpaceBetween) {
         Text(label, style = MaterialTheme.typography.labelSmall, color = muted, maxLines = 1)
-        Text(value, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+        // A fixed line height so the number always fits the tile instead of being clipped at the top.
+        Text(
+            value, style = MaterialTheme.typography.titleLarge.copy(lineHeight = 26.sp),
+            fontWeight = FontWeight.Bold, maxLines = 1,
+        )
     }
 }
