@@ -385,7 +385,7 @@ class QuickMixesWidget : StyleWidget(pro = true) {
 }
 
 /**
- * 6. Glass Cassette (Pro): a see-through classic cassette in one of 14 looks ([GlassCassette.LOOKS]),
+ * 6. Glass Cassette (Pro): a see-through classic cassette in one of 17 looks ([GlassCassette.LOOKS]),
  * chosen per widget in [CassetteStyleActivity]. The hubs turn while music plays and the song name is
  * hand-written on the label strip. Previous / play / next / shuffle / heart keys underneath.
  */

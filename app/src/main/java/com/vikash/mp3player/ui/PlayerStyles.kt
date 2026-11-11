@@ -175,7 +175,7 @@ private fun DrawScope.hub(c: Offset, r: Float, angle: Float, color: Color, teeth
 
 /**
  * The Glass Cassette (approved 11 Nov 2026): the tape winds from left to right as the song plays.
- * The arrows under it switch between the 14 looks; the choice is shared with Car mode.
+ * The arrows under it switch between the 17 looks; the choice is shared with Car mode.
  */
 @Composable
 private fun GlassCassettePlayer(title: String, artist: String, isPlaying: Boolean, progress: () -> Float, modifier: Modifier) {

@@ -53,7 +53,7 @@ import kotlinx.coroutines.launch
 
 /**
  * Opens when a Glass Cassette widget is added, and again when it is long-pressed and reconfigured
- * (Android 12+). The person picks one of the 14 looks and the pen colour for the song name.
+ * (Android 12+). The person picks one of the 17 looks and the pen colour for the song name.
  */
 class CassetteStyleActivity : ComponentActivity() {
 

@@ -11,7 +11,8 @@ import com.vikash.mp3player.R
 
 /**
  * The 14 Glass Cassette looks (Pro), approved by Vikash on 9 Nov 2026 from the preview at
- * https://claude.ai/artifact/61AEKysWe8P1U22HJSUkRa.
+ * https://claude.ai/artifact/61AEKysWe8P1U22HJSUkRa, plus 3 solid looks (Chrome Silver, Cream Vintage,
+ * Matte White) he picked on 11 Nov 2026 from https://claude.ai/artifact/UUKrC8R5F7kn4ShhWDM498.
  *
  * Each look is drawn in two layers, 640x402: widget_glass_back_N (the glass under the tape) and
  * widget_glass_front_N (reel flanges, window, printing, screws, gloss and the blank white label).
@@ -32,6 +33,11 @@ object GlassCassette {
         val hub: Hub,
         /** Index into [PENS] used when the person keeps the look's own pen. */
         val pen: Int,
+        /**
+         * For a solid shell, the tape window in picture units: the reels are only seen through it, so
+         * a full reel must not peek out under the label.
+         */
+        val window: android.graphics.RectF? = null,
     )
 
     /** The still hub picture, and the spinning ProgressBars for it in widget_glass_cassette.xml. */
@@ -46,6 +52,8 @@ object GlassCassette {
     private const val BLUE = 0
     private const val GREEN = 1
     private const val RED = 2
+
+    private val SOLID_WINDOW get() = android.graphics.RectF(132f, 156f, 508f, 276f)
 
     val LOOKS = listOf(
         Look("Crystal Clear", R.drawable.widget_glass_back_1, R.drawable.widget_glass_front_1, 0x29FFFFFF, 0xFFFFFFFF, Hub.WHITE, BLUE),
@@ -62,6 +70,9 @@ object GlassCassette {
         Look("Gold Edge", R.drawable.widget_glass_back_12, R.drawable.widget_glass_front_12, 0x2EE6B84F, 0xFFFFFFFF, Hub.GOLD, RED),
         Look("Rainbow", R.drawable.widget_glass_back_13, R.drawable.widget_glass_front_13, 0x26FFFFFF, 0xFFFFFFFF, Hub.WHITE, BLUE),
         Look("Sticker Mixtape", R.drawable.widget_glass_back_14, R.drawable.widget_glass_front_14, 0x29FFFFFF, 0xFFFFFFFF, Hub.WHITE, RED),
+        Look("Chrome Silver", R.drawable.widget_glass_back_15, R.drawable.widget_glass_front_15, 0x7396A0AF, 0xFFFFFFFF, Hub.WHITE, RED, SOLID_WINDOW),
+        Look("Cream Vintage", R.drawable.widget_glass_back_16, R.drawable.widget_glass_front_16, 0x8CEFE4CC, 0xFF4A2F1A, Hub.WHITE, BLUE, SOLID_WINDOW),
+        Look("Matte White", R.drawable.widget_glass_back_17, R.drawable.widget_glass_front_17, 0x8CFFFFFF, 0xFF111111, Hub.WHITE, BLUE, SOLID_WINDOW),
     )
 
     // The pictures are 640x402. widget_glass_cassette.xml places the writing (380x74, from 150,42)
@@ -98,7 +109,7 @@ object GlassCassette {
      * The brown tape: both packs and the strip running round the bottom guides, for [progress]
      * 0..1 of the song. [canvas] is in the pictures' 640x402 units.
      */
-    fun drawTape(canvas: Canvas, progress: Float) {
+    fun drawTape(canvas: Canvas, progress: Float, window: android.graphics.RectF? = null) {
         val p = progress.coerceIn(0f, 1f)
         val rl = packRadius(1f - p)
         val rr = packRadius(p)
@@ -108,8 +119,11 @@ object GlassCassette {
             lineTo(HUB_R[0] + rr - 4f, HUB_R[1] + 24f)
         }
         canvas.drawPath(path, tapePaint)
+        val saved = canvas.save()
+        window?.let { canvas.clipRect(it) }
         pack(canvas, HUB_L[0], HUB_L[1], rl)
         pack(canvas, HUB_R[0], HUB_R[1], rr)
+        canvas.restoreToCount(saved)
     }
 
     private fun pack(canvas: Canvas, x: Float, y: Float, r: Float) {
@@ -144,7 +158,7 @@ object GlassCassette {
         val dst = android.graphics.RectF(0f, 0f, BODY_W, BODY_H)
         val paint = Paint(Paint.FILTER_BITMAP_FLAG or Paint.ANTI_ALIAS_FLAG)
         android.graphics.BitmapFactory.decodeResource(context.resources, look.back)?.let { canvas.drawBitmap(it, null, dst, paint); it.recycle() }
-        drawTape(canvas, step / 60f)
+        drawTape(canvas, step / 60f, look.window)
         android.graphics.BitmapFactory.decodeResource(context.resources, look.front)?.let { canvas.drawBitmap(it, null, dst, paint); it.recycle() }
         bodyKey = key
         bodyCache = bmp

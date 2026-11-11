@@ -49,7 +49,7 @@ fun GlassCassetteView(
         scale(k, k, Offset.Zero) {
             val full = IntSize(GlassCassette.BODY_W.toInt(), GlassCassette.BODY_H.toInt())
             drawImage(back, dstSize = full)
-            drawIntoCanvas { GlassCassette.drawTape(it.nativeCanvas, progress()) }
+            drawIntoCanvas { GlassCassette.drawTape(it.nativeCanvas, progress(), look.window) }
             drawImage(front, dstSize = full)
             val a = hubAngle()
             val h = GlassCassette.HUB.toInt()
