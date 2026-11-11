@@ -1,5 +1,12 @@
 package com.vikash.mp3player.ui
 
+import android.view.HapticFeedbackConstants
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.semantics.Role
 import android.app.Activity
 import android.content.Context
 import android.content.ActivityNotFoundException
@@ -87,6 +94,8 @@ private val CarBg = Color(0xFF06110C)
 private val CarRed = Color(0xFFA31C1B)
 private val CarGreen = Color(0xFF1F5C3F)
 private val CarPale = Color(0xFFC9DDD0)
+// The ring of a key while it is held down.
+private val CarGreenLit = Color(0xFF3FBF7F)
 
 /**
  * Car mode: a screen you can use without looking. Huge buttons, swipe anywhere left or right
@@ -247,10 +256,13 @@ fun CarModeScreen(
         }
         val mic: @Composable () -> Unit = {
             // Hidden where the phone or head unit has no speech engine, so there's no dead button.
+            val (micSource, micPressed, micScale) = rememberCarPress()
             if (voiceAvailable) Row(
-                Modifier.fillMaxWidth().height(60.dp).clip(CircleShape)
-                    .background(CarGreen).border(1.dp, Color(0xFF2E7D57), CircleShape)
-                    .clickable { listen() },
+                Modifier.fillMaxWidth().height(64.dp).graphicsLayer { scaleX = micScale; scaleY = micScale }
+                    .clip(CircleShape)
+                    .background(Brush.verticalGradient(if (micPressed) listOf(CarGreen, Color(0xFF143D2A)) else listOf(Color(0xFF2A7A54), CarGreen)))
+                    .border(2.dp, if (micPressed) CarGreenLit else Color(0xFF2E7D57), CircleShape)
+                    .clickable(interactionSource = micSource, indication = null, role = Role.Button) { listen() },
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -378,26 +390,50 @@ internal val CarTitleFont = androidx.compose.ui.text.font.FontFamily(
     androidx.compose.ui.text.font.Font(R.font.oswald_bold, FontWeight.Bold),
 )
 
+/**
+ * How every Car mode key feels under the thumb: it squashes a little with a spring, the phone gives a
+ * short tick, and its ring turns from red to green while it is held, so you know it took the press
+ * without looking.
+ */
+@Composable
+private fun rememberCarPress(): Triple<MutableInteractionSource, Boolean, Float> {
+    val source = remember { MutableInteractionSource() }
+    val pressed by source.collectIsPressedAsState()
+    val view = LocalView.current
+    LaunchedEffect(pressed) {
+        if (pressed) view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+    }
+    val scale by animateFloatAsState(
+        if (pressed) 0.92f else 1f,
+        spring(dampingRatio = 0.45f, stiffness = 900f), label = "carPress",
+    )
+    return Triple(source, pressed, scale)
+}
+
+private fun ringColor(pressed: Boolean) = if (pressed) CarGreenLit else CarRed
+
 /** Round dark key in the top bar (buddy, close). */
 @Composable
 private fun CarIconButton(icon: ImageVector, label: String, onClick: () -> Unit) {
+    val (source, pressed, scale) = rememberCarPress()
     Box(
-        Modifier.size(52.dp).clip(CircleShape).background(Color(0xCC0B0B0B)).border(1.dp, CarGreen.copy(alpha = 0.55f), CircleShape).clickable(onClick = onClick),
+        Modifier.size(56.dp).graphicsLayer { scaleX = scale; scaleY = scale }
+            .clip(CircleShape).background(Brush.verticalGradient(listOf(Color(0xFF1C1C1C), Color(0xFF080808))))
+            .border(2.dp, ringColor(pressed), CircleShape)
+            .clickable(interactionSource = source, indication = null, role = Role.Button, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) { Icon(icon, label, tint = CarPale, modifier = Modifier.size(26.dp)) }
 }
 
-/** Previous / next inside the dock: a big icon with a large touch area, no extra chrome. */
+/** Previous / next inside the dock: a raised round key, smaller than play, with the same feel. */
 @Composable
 private fun DockKey(icon: ImageVector, label: String, onClick: () -> Unit) {
-    Box(Modifier.size(76.dp).clip(CircleShape).clickable(onClick = onClick), contentAlignment = Alignment.Center) {
-        Icon(icon, label, tint = CarPale, modifier = Modifier.size(42.dp))
-    }
+    BoldRoundButton(icon, label, 68.dp, iconTint = CarPale, onClick = onClick)
 }
 
 /**
- * A big round key with a darker rim underneath, so it looks raised; it sinks a little when pressed.
- * [highlight] is the rose play button.
+ * A big round key with a darker rim underneath, so it looks raised; it sinks onto the rim when pressed,
+ * with a spring, a haptic tick and the red ring turning green. [highlight] is the red play button.
  */
 @Composable
 private fun BoldRoundButton(
@@ -408,22 +444,25 @@ private fun BoldRoundButton(
     iconTint: Color = Color.White,
     onClick: () -> Unit,
 ) {
-    val source = remember { MutableInteractionSource() }
-    val pressed by source.collectIsPressedAsState()
-    val rim = 5.dp
-    val sink = if (pressed) 3.dp else 0.dp
-    Box(Modifier.size(size, size + rim)) {
+    val (source, pressed, scale) = rememberCarPress()
+    val rim = 6.dp
+    val sink by animateDpAsState(if (pressed) rim - 1.dp else 0.dp, spring(dampingRatio = 0.5f, stiffness = 1200f), label = "carSink")
+    Box(
+        Modifier.size(size, size + rim).graphicsLayer { scaleX = scale; scaleY = scale }
+            .clickable(interactionSource = source, indication = null, role = Role.Button, onClick = onClick),
+    ) {
+        // The rim the key sits on.
         Box(
             Modifier.align(Alignment.BottomCenter).size(size).clip(CircleShape)
-                .background(if (highlight) Color(0xFF4A0B0B) else Color(0xFF050505)),
+                .background(if (highlight) Color(0xFF3A0808) else Color(0xFF000000)),
         )
         Box(
             Modifier.offset(y = sink).size(size).clip(CircleShape)
                 .background(
                     if (highlight) Brush.radialGradient(listOf(Color(0xFFD42A27), CarRed, Color(0xFF6E1010)), center = Offset.Unspecified)
-                    else Brush.verticalGradient(listOf(Color(0xFF1A1A1A), Color(0xFF0B0B0B))),
+                    else Brush.verticalGradient(listOf(Color(0xFF222222), Color(0xFF0B0B0B))),
                 )
-                .clickable(interactionSource = source, indication = null, onClick = onClick),
+                .border(if (highlight) 3.dp else 2.dp, if (highlight) (if (pressed) CarGreenLit else Color(0x55FFFFFF)) else ringColor(pressed), CircleShape),
             contentAlignment = Alignment.Center,
         ) { Icon(icon, label, tint = iconTint, modifier = Modifier.size(size * 0.46f)) }
     }
