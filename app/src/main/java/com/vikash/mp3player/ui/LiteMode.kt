@@ -34,3 +34,20 @@ fun screenFadeIn(): EnterTransition = if (LocalLiteMode.current) fadeIn(tween(LI
 
 @Composable
 fun screenFadeOut(): ExitTransition = if (LocalLiteMode.current) fadeOut(tween(LITE_ANIM_MS)) else fadeOut()
+
+/** Now Playing: grows out of the mini player (bottom left) while sliding up; plain slide in Lite mode. */
+@Composable
+fun playerEnter(): EnterTransition =
+    if (LocalLiteMode.current) slideInVertically(tween(LITE_ANIM_MS)) { it }
+    else slideInVertically(tween(420, easing = androidx.compose.animation.core.FastOutSlowInEasing)) { it / 3 } +
+        androidx.compose.animation.scaleIn(tween(420, easing = androidx.compose.animation.core.FastOutSlowInEasing), initialScale = 0.6f,
+            transformOrigin = androidx.compose.ui.graphics.TransformOrigin(0.12f, 1f)) +
+        fadeIn(tween(220))
+
+@Composable
+fun playerExit(): ExitTransition =
+    if (LocalLiteMode.current) slideOutVertically(tween(LITE_ANIM_MS)) { it }
+    else slideOutVertically(tween(320)) { it / 3 } +
+        androidx.compose.animation.scaleOut(tween(320), targetScale = 0.6f,
+            transformOrigin = androidx.compose.ui.graphics.TransformOrigin(0.12f, 1f)) +
+        fadeOut(tween(260, delayMillis = 60))

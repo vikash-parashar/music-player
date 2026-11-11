@@ -344,6 +344,9 @@ fun MusicPlayerApp(vm: MainViewModel, onBuy: (String) -> Unit) {
                             onPlay = playWithDisc,
                             onGetPro = openPro,
                             onOpenStories = { tab = 2 },
+                            loading = library.loading,
+                            hasPermission = hasPermission,
+                            onRequestPermission = { permissionLauncher.launch(launchPermissions) },
                         )
                         1 -> LibraryScreen(
                             state = library,
@@ -426,8 +429,9 @@ fun MusicPlayerApp(vm: MainViewModel, onBuy: (String) -> Unit) {
 
         AnimatedVisibility(
             visible = showPlayer && player.current != null,
-            enter = screenEnter(),
-            exit = screenExit(),
+            // The player grows up out of the mini player's corner and shrinks back into it.
+            enter = playerEnter(),
+            exit = playerExit(),
         ) {
             NowPlayingScreen(
                 player, vm.player, favorites, onToggleFavorite = vm::toggleFavorite, seekStyle = seekStyle,

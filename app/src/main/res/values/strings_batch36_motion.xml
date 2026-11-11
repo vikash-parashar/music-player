@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="queue_drag">Hold and drag to move</string>
+    <string name="queue_removed">Removed from queue</string>
+    <string name="queue_undo">Undo</string>
+    <string name="home_scanning">Finding your songs…</string>
+    <string name="home_need_access">Allow Ampli to see your music to play it.</string>
+    <string name="home_allow">Allow</string>
+</resources>

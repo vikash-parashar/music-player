@@ -319,9 +319,12 @@ fun MiniPlayer(
     onPrevious: () -> Unit = {},
 ) {
     val current = state.current ?: return
-    // A frosted card floating just above the dock, in the same luxury style.
+    val haptics = rememberHaptics()
+    // A frosted card floating just above the dock, in the same luxury style. Swipe it sideways
+    // for the next or previous song, or up to open the player.
     Box(
         Modifier.fillMaxWidth().padding(start = 14.dp, end = 14.dp, top = 6.dp)
+            .swipeToSkip(onNext = onNext, onPrevious = onPrevious, onUp = onOpen)
             .luxGlass(RoundedCornerShape(22.dp), elevation = 10.dp).clickable(onClick = onOpen),
     ) {
         Row(Modifier.padding(start = 9.dp, end = 4.dp, top = 6.dp, bottom = 6.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -338,7 +341,7 @@ fun MiniPlayer(
                 )
             }
             IconButton(onClick = onPrevious) { Icon(Icons.Default.SkipPrevious, stringResource(R.string.common_previous)) }
-            GradientPlayButton(state.isPlaying, 48.dp, onToggle)
+            GradientPlayButton(state.isPlaying, 48.dp) { haptics.tick(); onToggle() }
             IconButton(onClick = onNext) { Icon(Icons.Default.SkipNext, stringResource(R.string.common_next)) }
         }
     }

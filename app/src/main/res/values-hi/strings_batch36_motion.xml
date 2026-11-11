@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="queue_drag">पकड़कर खिसकाएँ</string>
+    <string name="queue_removed">Queue से हटाया गया</string>
+    <string name="queue_undo">वापस लाएँ</string>
+    <string name="home_scanning">आपके गाने ढूँढ रहे हैं…</string>
+    <string name="home_need_access">गाने चलाने के लिए Ampli को अपना संगीत देखने दें।</string>
+    <string name="home_allow">अनुमति दें</string>
+</resources>

@@ -79,6 +79,10 @@ fun HomeScreen(
     onGetPro: () -> Unit,
     /** Opens the Stories tab (Ampli Stories row). */
     onOpenStories: () -> Unit = {},
+    /** The library scan is still running: shimmer rows instead of the "add songs" message. */
+    loading: Boolean = false,
+    hasPermission: Boolean = true,
+    onRequestPermission: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val allStories by com.vikash.mp3player.data.StoriesRepository.series.collectAsStateWithLifecycle()
@@ -118,7 +122,13 @@ fun HomeScreen(
     }
 
     if (songs.none { !it.isOnline }) {
-        EmptyMessage(stringResource(R.string.home_empty))
+        when {
+            !hasPermission -> EmptyMessage(stringResource(R.string.home_need_access)) {
+                androidx.compose.material3.Button(onClick = onRequestPermission) { Text(stringResource(R.string.home_allow)) }
+            }
+            loading -> LoadingRows()
+            else -> EmptyMessage(stringResource(R.string.home_empty))
+        }
         return
     }
 
@@ -324,3 +334,23 @@ private fun Collage(songs: List<Song>, size: Dp, shape: RoundedCornerShape) {
 
 /** Same size as the cover below it (a Box child can't use matchParentSize outside BoxScope helpers here). */
 private fun Modifier.matchParentSizeCompat(size: Dp): Modifier = this.size(size)
+
+/** Shimmer rows while the songs are being found. */
+@Composable
+private fun LoadingRows() {
+    val base = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.07f)
+    val shine = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.14f)
+    Column(Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+        Text(stringResource(R.string.home_scanning), style = MaterialTheme.typography.titleMedium)
+        repeat(7) { i ->
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                androidx.compose.foundation.layout.Box(Modifier.size(48.dp).clip(RoundedCornerShape(10.dp)).shimmer(base, shine))
+                Spacer(Modifier.width(12.dp))
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    androidx.compose.foundation.layout.Box(Modifier.fillMaxWidth(if (i % 2 == 0) 0.8f else 0.6f).height(12.dp).clip(RoundedCornerShape(6.dp)).shimmer(base, shine))
+                    androidx.compose.foundation.layout.Box(Modifier.fillMaxWidth(0.4f).height(10.dp).clip(RoundedCornerShape(5.dp)).shimmer(base, shine))
+                }
+            }
+        }
+    }
+}
