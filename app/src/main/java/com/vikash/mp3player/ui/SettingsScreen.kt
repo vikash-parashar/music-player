@@ -100,6 +100,8 @@ fun SettingsScreen(
     onTip: (String) -> Unit = {},
     songs: List<com.vikash.mp3player.data.Song> = emptyList(),
     onOpenNetwork: () -> Unit = {},
+    menuStyle: MenuStyle = MenuStyle.Raised,
+    onMenuStyle: (MenuStyle) -> Unit = {},
 ) {
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
@@ -112,6 +114,7 @@ fun SettingsScreen(
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) LanguageCard()
         com.vikash.mp3player.ui.skin.SkinPickerCard(looksUnlocked, onRemoveAds)
         AppearanceCard(themeMode, onThemeMode)
+        MenuStyleCard(menuStyle, onMenuStyle)
         LiteModeCard()
         LibraryCleanCard(onLibraryChanged)
         ShakeToSkipCard()
@@ -248,6 +251,31 @@ private fun SeekStyleCard(current: SeekStyle, isPro: Boolean, onPick: (SeekStyle
                             modifier = Modifier.alpha(if (locked) 0.55f else 1f),
                         )
                     }
+                }
+            }
+        }
+    }
+}
+
+/** Pick how the song menu's buttons look: soft raised circles or compact pills. */
+@Composable
+private fun MenuStyleCard(current: MenuStyle, onPick: (MenuStyle) -> Unit) {
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(vertical = 16.dp)) {
+            Text(stringResource(R.string.settings_menu_style), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(horizontal = 16.dp))
+            Text(
+                stringResource(R.string.settings_menu_style_desc),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 16.dp),
+            )
+            Spacer(Modifier.height(6.dp))
+            MenuStyle.entries.forEach { style ->
+                Row(
+                    Modifier.fillMaxWidth().clickable { onPick(style) }.padding(horizontal = 8.dp, vertical = 2.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    RadioButton(selected = style == current, onClick = { onPick(style) })
+                    Text(stringResource(style.labelRes), style = MaterialTheme.typography.bodyLarge)
                 }
             }
         }

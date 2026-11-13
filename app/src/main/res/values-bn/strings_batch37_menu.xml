@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_menu_style">গানের মেনুর বোতাম</string>
+    <string name="settings_menu_style_desc">গানের ⋮ বোতাম থেকে খোলা মেনুতে বোতাম কেমন দেখাবে।</string>
+    <string name="menu_style_raised">উঁচু গোল বোতাম</string>
+    <string name="menu_style_pills">পিল চিপস</string>
+</resources>

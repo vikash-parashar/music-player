@@ -128,6 +128,8 @@ fun MusicPlayerApp(vm: MainViewModel, onBuy: (String) -> Unit) {
     val favorites by vm.prefs.favorites.collectAsStateWithLifecycle()
     val themeMode by vm.prefs.themeMode.collectAsStateWithLifecycle()
     val seekStyleName by vm.prefs.seekStyle.collectAsStateWithLifecycle()
+    val menuStyleName by vm.prefs.menuStyle.collectAsStateWithLifecycle()
+    val menuStyle = MenuStyle.entries.firstOrNull { it.name == menuStyleName } ?: MenuStyle.Raised
     val stats by vm.stats.collectAsStateWithLifecycle()
     val abLoop by vm.abLoop.collectAsStateWithLifecycle()
     // Pro styles fall back to Classic if Pro is turned off.
@@ -297,7 +299,7 @@ fun MusicPlayerApp(vm: MainViewModel, onBuy: (String) -> Unit) {
 
     // Lite mode: the CDs stand still, so no frame loop runs while music plays.
     val discAngle: State<Float> = if (liteMode) remember { mutableFloatStateOf(0f) } else rememberDiscSpin(vm.player)
-    CompositionLocalProvider(com.vikash.mp3player.monetization.LocalListAds provides false, LocalIsPlaying provides player.isPlaying, LocalDiscAngle provides discAngle, LocalStartRadio provides { s: Song -> vm.startRadio(s); vm.notify(context.getString(R.string.radio_started, s.title)) }) {
+    CompositionLocalProvider(com.vikash.mp3player.monetization.LocalListAds provides false, LocalMenuStyle provides menuStyle, LocalIsPlaying provides player.isPlaying, LocalDiscAngle provides discAngle, LocalStartRadio provides { s: Song -> vm.startRadio(s); vm.notify(context.getString(R.string.radio_started, s.title)) }) {
     Box(Modifier.fillMaxSize().skinBackdrop()) {
         Scaffold(
             containerColor = skinScreenColor(),
@@ -403,6 +405,7 @@ fun MusicPlayerApp(vm: MainViewModel, onBuy: (String) -> Unit) {
                             adsRemoved = adsRemoved, price = price, onRemoveAds = openPro,
                             onTestPro = vm.billing::setTestPro,
                             seekStyle = seekStyle, onSeekStyle = { vm.prefs.setSeekStyle(it.name) },
+                            menuStyle = menuStyle, onMenuStyle = { vm.prefs.setMenuStyle(it.name) },
                             themeMode = themeMode, onThemeMode = vm.prefs::setThemeMode,
                             onBackup = vm::exportBackup, onRestore = vm::restoreBackup,
                             onOpenTransfer = { showTransfer = true },
