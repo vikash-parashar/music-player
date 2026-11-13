@@ -17,6 +17,9 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.border
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -72,7 +75,6 @@ import androidx.compose.ui.unit.sp
 import com.vikash.mp3player.R
 import com.vikash.mp3player.data.Song
 import com.vikash.mp3player.playback.PlayerUiState
-import com.vikash.mp3player.ui.theme.Ampli
 import com.vikash.mp3player.ui.theme.Lux
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -228,16 +230,42 @@ fun PlayingBars(playing: Boolean, modifier: Modifier = Modifier, color: Color = 
     }
 }
 
+/** How the song menu's buttons look; picked in Settings (Vikash chose C and H on 13 Nov 2026). */
+enum class MenuStyle(@androidx.annotation.StringRes val labelRes: Int) {
+    /** Soft raised circles that sink into the sheet when tapped. */
+    Raised(R.string.menu_style_raised),
+    /** Compact pills that wrap, so more fits on a short phone. */
+    Pills(R.string.menu_style_pills),
+}
+
+val LocalMenuStyle = compositionLocalOf { MenuStyle.Raised }
+
 /**
- * The song menu as a bottom sheet of round buttons: a gradient circle with an icon and a label
- * under it, popping in one after another.
+ * The song menu as a bottom sheet: soft raised round buttons, or wrapping pills, popping in one
+ * after another.
  */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun SongActionsSheet(song: Song, actions: List<SongAction>, onDismiss: () -> Unit) {
     val sheet = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
-    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheet) {
+    val style = LocalMenuStyle.current
+    val haptics = rememberHaptics()
+    var fired by remember { mutableStateOf(false) }
+    val run: (SongAction) -> Unit = { action ->
+        // A second tap while the sheet slides away must not run an action twice.
+        if (!fired) {
+            fired = true
+            haptics.tick()
+            scope.launch { sheet.hide() }.invokeOnCompletion {
+                onDismiss()
+                action.onClick()
+            }
+        }
+    }
+    // The raised buttons get their light and shadow from the sheet colour itself.
+    val base = MaterialTheme.colorScheme.surfaceContainerLow
+    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheet, containerColor = base) {
         Column(Modifier.fillMaxWidth().navigationBarsPadding().padding(bottom = 16.dp)) {
             Row(Modifier.padding(horizontal = 20.dp), verticalAlignment = Alignment.CenterVertically) {
                 Artwork(song.artworkUri, 52.dp)
@@ -248,51 +276,117 @@ fun SongActionsSheet(song: Song, actions: List<SongAction>, onDismiss: () -> Uni
                 }
             }
             Spacer(Modifier.height(18.dp))
-            FlowRow(
-                Modifier.fillMaxWidth().padding(horizontal = 8.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalArrangement = Arrangement.spacedBy(14.dp),
-                maxItemsInEachRow = 4,
-            ) {
-                actions.forEachIndexed { i, action ->
-                    RoundActionButton(action, index = i, modifier = Modifier.weight(1f)) {
-                        scope.launch { sheet.hide() }.invokeOnCompletion {
-                            onDismiss()
-                            action.onClick()
-                        }
+            when (style) {
+                MenuStyle.Raised -> FlowRow(
+                    Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    maxItemsInEachRow = 4,
+                ) {
+                    actions.forEachIndexed { i, action ->
+                        RaisedActionButton(action, index = i, base = base, modifier = Modifier.weight(1f)) { run(action) }
                     }
+                    // Keep the last row's buttons the same width as the others.
+                    repeat((4 - actions.size % 4) % 4) { Spacer(Modifier.weight(1f)) }
                 }
-                // Keep the last row's buttons the same width as the others.
-                repeat((4 - actions.size % 4) % 4) { Spacer(Modifier.weight(1f)) }
+                MenuStyle.Pills -> FlowRow(
+                    Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    actions.forEachIndexed { i, action -> PillActionButton(action, index = i) { run(action) } }
+                }
             }
         }
     }
 }
 
+/** Springs each button in a little after the one before it. */
 @Composable
-private fun RoundActionButton(action: SongAction, index: Int, modifier: Modifier = Modifier, onClick: () -> Unit) {
+private fun rememberAppear(index: Int): Animatable<Float, androidx.compose.animation.core.AnimationVector1D> {
     val appear = remember { Animatable(0f) }
+    val lite = LocalLiteMode.current
     LaunchedEffect(Unit) {
-        delay(40L * index)
+        if (lite) { appear.snapTo(1f); return@LaunchedEffect }
+        delay(35L * index)
         appear.animateTo(1f, spring(dampingRatio = 0.5f, stiffness = 380f))
     }
-    val circle = if (action.danger) Brush.linearGradient(listOf(Color(0xFFEF4444), Color(0xFFB91C1C))) else Ampli.Gradient
+    return appear
+}
+
+private fun Modifier.appearAndPress(appear: Float, pressed: Float): Modifier = graphicsLayer {
+    alpha = appear.coerceIn(0f, 1f)
+    val s = (0.6f + 0.4f * appear) * (1f - 0.06f * pressed)
+    scaleX = s; scaleY = s
+}
+
+private fun lerpColor(a: Color, b: Color, t: Float) = Color(
+    red = a.red + (b.red - a.red) * t,
+    green = a.green + (b.green - a.green) * t,
+    blue = a.blue + (b.blue - a.blue) * t,
+    alpha = 1f,
+)
+
+/** Style C: a soft raised circle in the sheet's own colour; it sinks in while held. */
+@Composable
+private fun RaisedActionButton(action: SongAction, index: Int, base: Color, modifier: Modifier = Modifier, onClick: () -> Unit) {
+    val appear = rememberAppear(index)
+    val source = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+    val held by source.collectIsPressedAsState()
+    val press by androidx.compose.animation.core.animateFloatAsState(if (held) 1f else 0f, tween(140), label = "raisedPress")
+    val dark = lerpColor(base, Color.Black, 0.38f)
+    val light = lerpColor(base, Color.White, 0.55f)
+    val ink = if (action.danger) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
     Column(
         modifier
-            .graphicsLayer {
-                alpha = appear.value.coerceIn(0f, 1f)
-                val s = 0.6f + 0.4f * appear.value
-                scaleX = s; scaleY = s
-            }
-            .clip(RoundedCornerShape(16.dp))
-            .clickable(onClick = onClick)
-            .padding(vertical = 6.dp),
+            .appearAndPress(appear.value, press)
+            // No clip here: the soft shadow spreads past the button's own box.
+            .clickable(interactionSource = source, indication = null, onClick = onClick)
+            .padding(vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Box(Modifier.size(54.dp).clip(CircleShape).background(circle), contentAlignment = Alignment.Center) {
-            Icon(action.icon ?: Icons.Default.MoreHoriz, null, tint = Color.White, modifier = Modifier.size(24.dp))
+        Box(
+            Modifier.size(56.dp).drawBehind {
+                val r = size.minDimension / 2
+                val spread = 9.dp.toPx()
+                val lift = (1f - press)
+                val edge = r / (r + spread)
+                if (lift > 0.01f) {
+                    // Shadow below right, light above left: the circle seems to rise out of the sheet.
+                    val off = 5.dp.toPx() * lift
+                    drawCircle(
+                        Brush.radialGradient(
+                            0f to dark.copy(alpha = 0.7f * lift), edge to dark.copy(alpha = 0.7f * lift), 1f to Color.Transparent,
+                            center = center + androidx.compose.ui.geometry.Offset(off, off), radius = r + spread,
+                        ),
+                        radius = r + spread, center = center + androidx.compose.ui.geometry.Offset(off, off),
+                    )
+                    drawCircle(
+                        Brush.radialGradient(
+                            0f to light.copy(alpha = 0.55f * lift), edge to light.copy(alpha = 0.55f * lift), 1f to Color.Transparent,
+                            center = center - androidx.compose.ui.geometry.Offset(off, off), radius = r + spread,
+                        ),
+                        radius = r + spread, center = center - androidx.compose.ui.geometry.Offset(off, off),
+                    )
+                }
+                drawCircle(base, radius = r)
+                if (press > 0.01f) {
+                    // Pressed in: dark on the top left, light on the bottom right.
+                    drawCircle(
+                        Brush.linearGradient(
+                            listOf(dark.copy(alpha = 0.55f * press), Color.Transparent, light.copy(alpha = 0.45f * press)),
+                            start = androidx.compose.ui.geometry.Offset.Zero,
+                            end = androidx.compose.ui.geometry.Offset(size.width, size.height),
+                        ),
+                        radius = r,
+                    )
+                }
+            },
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(action.icon ?: Icons.Default.MoreHoriz, null, tint = ink, modifier = Modifier.size(24.dp))
         }
-        Spacer(Modifier.height(6.dp))
+        Spacer(Modifier.height(8.dp))
         Text(
             action.label,
             fontSize = 11.sp,
@@ -300,7 +394,43 @@ private fun RoundActionButton(action: SongAction, index: Int, modifier: Modifier
             textAlign = TextAlign.Center,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
+            color = if (action.danger) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.padding(horizontal = 2.dp),
+        )
+    }
+}
+
+/** Style H: a compact pill with the icon and label side by side. */
+@Composable
+private fun PillActionButton(action: SongAction, index: Int, onClick: () -> Unit) {
+    val appear = rememberAppear(index)
+    val source = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+    val held by source.collectIsPressedAsState()
+    val press by androidx.compose.animation.core.animateFloatAsState(if (held) 1f else 0f, tween(120), label = "pillPress")
+    val on = MaterialTheme.colorScheme.onSurface
+    val tint = if (action.danger) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+    val fill = if (action.danger) tint.copy(alpha = 0.12f + 0.08f * press) else on.copy(alpha = 0.07f + 0.07f * press)
+    val line = if (action.danger) tint.copy(alpha = 0.35f) else on.copy(alpha = 0.12f)
+    val shape = RoundedCornerShape(percent = 50)
+    Row(
+        Modifier
+            .appearAndPress(appear.value, press)
+            .clip(shape)
+            .background(fill, shape)
+            .border(1.dp, line, shape)
+            .clickable(interactionSource = source, indication = null, onClick = onClick)
+            .heightIn(min = 44.dp)
+            .padding(start = 12.dp, end = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(action.icon ?: Icons.Default.MoreHoriz, null, tint = tint, modifier = Modifier.size(20.dp))
+        Spacer(Modifier.width(8.dp))
+        Text(
+            action.label,
+            fontSize = 13.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            color = if (action.danger) tint else on,
         )
     }
 }
@@ -315,9 +445,12 @@ fun MiniPlayer(
     onPrevious: () -> Unit = {},
 ) {
     val current = state.current ?: return
-    // A frosted card floating just above the dock, in the same luxury style.
+    val haptics = rememberHaptics()
+    // A frosted card floating just above the dock, in the same luxury style. Swipe it sideways
+    // for the next or previous song, or up to open the player.
     Box(
         Modifier.fillMaxWidth().padding(start = 14.dp, end = 14.dp, top = 6.dp)
+            .swipeToSkip(onNext = onNext, onPrevious = onPrevious, onUp = onOpen)
             .luxGlass(RoundedCornerShape(22.dp), elevation = 10.dp).clickable(onClick = onOpen),
     ) {
         Row(Modifier.padding(start = 9.dp, end = 4.dp, top = 6.dp, bottom = 6.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -334,7 +467,7 @@ fun MiniPlayer(
                 )
             }
             IconButton(onClick = onPrevious) { Icon(Icons.Default.SkipPrevious, stringResource(R.string.common_previous)) }
-            GradientPlayButton(state.isPlaying, 40.dp, onToggle)
+            GradientPlayButton(state.isPlaying, 48.dp) { haptics.tick(); onToggle() }
             IconButton(onClick = onNext) { Icon(Icons.Default.SkipNext, stringResource(R.string.common_next)) }
         }
     }

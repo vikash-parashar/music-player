@@ -1,5 +1,6 @@
 package com.vikash.mp3player.ui
 
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -54,7 +55,8 @@ fun DuplicatesScreen(songs: List<Song>, onDelete: (List<Song>) -> Unit, onClose:
     val freed = toDelete.sumOf { it.sizeBytes }
     val sizeUnknown = stringResource(R.string.dup_size_unknown)
 
-    Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).systemBarsPadding()) {
+    // pointerInput: taps on empty space must not reach the screen underneath.
+    Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).pointerInput(Unit) {}.systemBarsPadding()) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onClose) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.common_back)) }
             Text(stringResource(R.string.dup_title), style = MaterialTheme.typography.titleLarge)

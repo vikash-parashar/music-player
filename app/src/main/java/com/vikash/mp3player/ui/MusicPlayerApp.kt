@@ -81,7 +81,7 @@ private val launchPermissions = buildList {
 }.toTypedArray()
 
 @Composable
-fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
+fun MusicPlayerApp(vm: MainViewModel, onBuy: (String) -> Unit) {
     val context = LocalContext.current
     val library by vm.library.collectAsStateWithLifecycle()
     val online by vm.online.collectAsStateWithLifecycle()
@@ -95,6 +95,13 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     val fewerAds = remember { com.vikash.mp3player.monetization.AdRegion.fewerAds(context) }
     val app = context.applicationContext as com.vikash.mp3player.MusicApp
     val proUnlocked by app.proUnlocked.collectAsStateWithLifecycle()
+    val looksUnlocked by app.looksUnlocked.collectAsStateWithLifecycle()
+    // No ads for Pro buyers and during any free Pro trial (the 14-day welcome, or 24 h after a rewarded ad).
+    val adFree by app.adFree.collectAsStateWithLifecycle()
+    val supporter by vm.billing.supporter.collectAsStateWithLifecycle()
+    val looksPack by vm.billing.looksPack.collectAsStateWithLifecycle()
+    val supporterPrice by vm.billing.supporterPrice.collectAsStateWithLifecycle()
+    val packPrice by vm.billing.packPrice.collectAsStateWithLifecycle()
     val trialUntil by com.vikash.mp3player.monetization.ProTrial.until.collectAsStateWithLifecycle()
     val tipPrices by vm.billing.tipPrices.collectAsStateWithLifecycle()
     val tipsReceived by vm.billing.tipsReceived.collectAsStateWithLifecycle()
@@ -121,14 +128,19 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
     val favorites by vm.prefs.favorites.collectAsStateWithLifecycle()
     val themeMode by vm.prefs.themeMode.collectAsStateWithLifecycle()
     val seekStyleName by vm.prefs.seekStyle.collectAsStateWithLifecycle()
+    val menuStyleName by vm.prefs.menuStyle.collectAsStateWithLifecycle()
+    val menuStyle = MenuStyle.entries.firstOrNull { it.name == menuStyleName } ?: MenuStyle.Raised
     val stats by vm.stats.collectAsStateWithLifecycle()
     val abLoop by vm.abLoop.collectAsStateWithLifecycle()
     // Pro styles fall back to Classic if Pro is turned off.
     val seekStyle = SeekStyle.entries.firstOrNull { it.name == seekStyleName }
-        ?.takeIf { !it.pro || featurePro } ?: SeekStyle.Classic
+        ?.takeIf { !it.pro || featurePro || looksUnlocked } ?: SeekStyle.Classic
 
     var hasPermission by remember { mutableStateOf(context.hasAudioPermission()) }
     var tab by rememberSaveable { mutableIntStateOf(0) }
+    val tabState = androidx.compose.runtime.saveable.rememberSaveableStateHolder()
+    // Back on another tab goes Home first instead of closing the app (overlays register later, so they still win).
+    androidx.activity.compose.BackHandler(enabled = tab != 0) { tab = 0 }
     // Ringtone maker: the song stays set while the panel slides away.
     var ringtoneSong by remember { mutableStateOf<Song?>(null) }
     var tagSong by remember { mutableStateOf<Song?>(null) }
@@ -287,17 +299,17 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
 
     // Lite mode: the CDs stand still, so no frame loop runs while music plays.
     val discAngle: State<Float> = if (liteMode) remember { mutableFloatStateOf(0f) } else rememberDiscSpin(vm.player)
-    CompositionLocalProvider(com.vikash.mp3player.monetization.LocalListAds provides (!adsRemoved && adsReady && !fewerAds), LocalIsPlaying provides player.isPlaying, LocalDiscAngle provides discAngle, LocalStartRadio provides { s: Song -> vm.startRadio(s); vm.notify(context.getString(R.string.radio_started, s.title)) }) {
+    CompositionLocalProvider(com.vikash.mp3player.monetization.LocalListAds provides false, LocalMenuStyle provides menuStyle, LocalIsPlaying provides player.isPlaying, LocalDiscAngle provides discAngle, LocalStartRadio provides { s: Song -> vm.startRadio(s); vm.notify(context.getString(R.string.radio_started, s.title)) }) {
     Box(Modifier.fillMaxSize().skinBackdrop()) {
         Scaffold(
             containerColor = skinScreenColor(),
-            topBar = { BrandHeader(showAdFreePill = !adsRemoved, onAdFreeClick = openPro, onRecognize = { showRecognize = true }, onHelp = { showHelp = true }) },
+            topBar = { BrandHeader(showAdFreePill = !adFree, onAdFreeClick = openPro, onRecognize = { showRecognize = true }, onHelp = { showHelp = true }) },
             snackbarHost = { SnackbarHost(snackbar) },
             bottomBar = {
                 Column {
                     // Banner sits above the mini player with clear space, never touching playback buttons
                     // or the nav bar (AdMob's accidental-click guidance).
-                    if (!adsRemoved && adsReady && !fewerAds) {
+                    if (!adFree && adsReady && !fewerAds) {
                         androidx.compose.material3.HorizontalDivider(color = androidx.compose.material3.MaterialTheme.colorScheme.outlineVariant)
                         BannerAd(Modifier.padding(top = 8.dp, bottom = 10.dp))
                     }
@@ -323,96 +335,106 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
             },
         ) { padding ->
             Box(Modifier.padding(padding)) {
-                when (tab) {
-                    0 -> HomeScreen(
-                        songs = library.songs,
-                        stats = stats,
-                        favorites = favorites,
-                        isPro = proUnlocked,
-                        onPlay = playWithDisc,
-                        onGetPro = openPro,
-                        onOpenStories = { tab = 2 },
-                    )
-                    1 -> LibraryScreen(
-                        state = library,
-                        hasPermission = hasPermission,
-                        currentId = currentId,
-                        onRequestPermission = { permissionLauncher.launch(launchPermissions) },
-                        onPlay = playWithDisc,
-                        onPlayNext = { vm.player.playNext(it); vm.notify(context.getString(R.string.msg_playing_next, it.title)) },
-                        onAddToQueue = { vm.player.addToQueue(it); vm.notify(context.getString(R.string.msg_added_to_queue)) },
-                        favorites = favorites,
-                        onToggleFavorite = { vm.toggleFavorite(it.id, it.title) },
-                        onSetRingtone = { ringtoneSong = it; showRingtone = true },
-                        onMakeStatus = { statusSong = it; showStatus = true },
-                        onEditTags = { tagSong = it },
-                        onDelete = { if (it.isNotEmpty()) deleteSongs = it },
-                        onMove = { if (it.isNotEmpty()) moveSongs = it },
-                        stats = stats,
-                        onOpenStats = { showStats = true },
-                        playlists = playlists,
-                        playlistActions = playlistActions,
-                        onAddAllToQueue = vm::addAllToQueue,
-                        onAddFavorites = vm::addFavorites,
-                        sort = songSort,
-                        onSort = vm.prefs::setSongSort,
-                    )
-                    2 -> DiscoverScreen(
-                        currentId = currentId,
-                        actions = discoverActions,
-                        showMusic = online.configured,
-                        stories = {
-                            StoriesSection(
-                                currentId = currentId,
-                                pass = storiesPass,
-                                passPrice = passPrice,
-                                onPlay = vm.player::play,
-                                onBuyPass = onBuyPass,
-                            )
-                        },
-                    ) {
-                        OnlineScreen(
-                            state = online,
-                            currentId = currentId,
-                            onQueryChange = { vm.searchOnline(it) },
-                            onLoadPopular = { vm.searchOnline("", debounce = false) },
+                // Each tab keeps its scroll, open album, sub-tab and search when you switch away and back.
+                tabState.SaveableStateProvider(tab) {
+                    when (tab) {
+                        0 -> HomeScreen(
+                            songs = library.songs,
+                            stats = stats,
+                            favorites = favorites,
+                            isPro = proUnlocked,
                             onPlay = playWithDisc,
-                            onPlayNext = discoverActions.playNext,
-                            onAddToQueue = discoverActions.addToQueue,
-                            onDownload = { vm.download(it) },
+                            onGetPro = openPro,
+                            onOpenStories = { tab = 2 },
+                            loading = library.loading,
+                            hasPermission = hasPermission,
+                            onRequestPermission = { permissionLauncher.launch(launchPermissions) },
+                        )
+                        1 -> LibraryScreen(
+                            state = library,
+                            hasPermission = hasPermission,
+                            currentId = currentId,
+                            onRequestPermission = { permissionLauncher.launch(launchPermissions) },
+                            onPlay = playWithDisc,
+                            onPlayNext = { vm.player.playNext(it); vm.notify(context.getString(R.string.msg_playing_next, it.title)) },
+                            onAddToQueue = { vm.player.addToQueue(it); vm.notify(context.getString(R.string.msg_added_to_queue)) },
+                            favorites = favorites,
+                            onToggleFavorite = { vm.toggleFavorite(it.id, it.title) },
+                            onSetRingtone = { ringtoneSong = it; showRingtone = true },
+                            onMakeStatus = { statusSong = it; showStatus = true },
+                            onEditTags = { tagSong = it },
+                            onDelete = { if (it.isNotEmpty()) deleteSongs = it },
+                            onMove = { if (it.isNotEmpty()) moveSongs = it },
+                            stats = stats,
+                            onOpenStats = { showStats = true },
+                            playlists = playlists,
+                            playlistActions = playlistActions,
+                            onAddAllToQueue = vm::addAllToQueue,
+                            onAddFavorites = vm::addFavorites,
+                            sort = songSort,
+                            onSort = vm.prefs::setSongSort,
+                        )
+                        2 -> DiscoverScreen(
+                            currentId = currentId,
+                            actions = discoverActions,
+                            showMusic = online.configured,
+                            stories = {
+                                StoriesSection(
+                                    currentId = currentId,
+                                    pass = storiesPass,
+                                    passPrice = passPrice,
+                                    onPlay = vm.player::play,
+                                    onBuyPass = onBuyPass,
+                                )
+                            },
+                        ) {
+                            OnlineScreen(
+                                state = online,
+                                currentId = currentId,
+                                onQueryChange = { vm.searchOnline(it) },
+                                onLoadPopular = { vm.searchOnline("", debounce = false) },
+                                onPlay = playWithDisc,
+                                onPlayNext = discoverActions.playNext,
+                                onAddToQueue = discoverActions.addToQueue,
+                                onDownload = { vm.download(it) },
+                            )
+                        }
+                        3 -> if (featurePro) VideosScreen(videos, onLoad = vm::loadVideos)
+                             else LockedVideos(price = price, onGetPro = openPro)
+                        else -> SettingsScreen(
+                            adsRemoved = adsRemoved, price = price, onRemoveAds = openPro,
+                            onTestPro = vm.billing::setTestPro,
+                            seekStyle = seekStyle, onSeekStyle = { vm.prefs.setSeekStyle(it.name) },
+                            menuStyle = menuStyle, onMenuStyle = { vm.prefs.setMenuStyle(it.name) },
+                            themeMode = themeMode, onThemeMode = vm.prefs::setThemeMode,
+                            onBackup = vm::exportBackup, onRestore = vm::restoreBackup,
+                            onOpenTransfer = { showTransfer = true },
+                            onOpenNetwork = { showNetwork = true },
+                            onOpenCarMode = { showCarMode = true },
+                            onOpenDuplicates = { showDuplicates = true },
+                            folders = folders,
+                            hiddenFolders = hiddenFolders,
+                            onFolderHidden = vm.prefs::setFolderHidden,
+                            onLibraryChanged = vm::loadLibrary,
+                            onOpenHelp = { showHelp = true },
+                            proUnlocked = proUnlocked,
+                            looksUnlocked = looksUnlocked,
+                            supporter = supporter,
+                            tipPrices = tipPrices,
+                            tipsReceived = tipsReceived,
+                            onTip = onTip,
+                            songs = library.songs,
                         )
                     }
-                    3 -> if (featurePro) VideosScreen(videos, onLoad = vm::loadVideos)
-                         else LockedVideos(price = price, onGetPro = openPro)
-                    else -> SettingsScreen(
-                        adsRemoved = adsRemoved, price = price, onRemoveAds = openPro,
-                        onTestPro = vm.billing::setTestPro,
-                        seekStyle = seekStyle, onSeekStyle = { vm.prefs.setSeekStyle(it.name) },
-                        themeMode = themeMode, onThemeMode = vm.prefs::setThemeMode,
-                        onBackup = vm::exportBackup, onRestore = vm::restoreBackup,
-                        onOpenTransfer = { showTransfer = true },
-                        onOpenNetwork = { showNetwork = true },
-                        onOpenCarMode = { showCarMode = true },
-                        onOpenDuplicates = { showDuplicates = true },
-                        folders = folders,
-                        hiddenFolders = hiddenFolders,
-                        onFolderHidden = vm.prefs::setFolderHidden,
-                        onLibraryChanged = vm::loadLibrary,
-                        onOpenHelp = { showHelp = true },
-                        proUnlocked = proUnlocked,
-                        tipPrices = tipPrices,
-                        tipsReceived = tipsReceived,
-                        onTip = onTip,
-                        songs = library.songs,
-                    )
                 }
             }
         }
 
         AnimatedVisibility(
             visible = showPlayer && player.current != null,
-            enter = screenEnter(),
-            exit = screenExit(),
+            // The player grows up out of the mini player's corner and shrinks back into it.
+            enter = playerEnter(),
+            exit = playerExit(),
         ) {
             NowPlayingScreen(
                 player, vm.player, favorites, onToggleFavorite = vm::toggleFavorite, seekStyle = seekStyle,
@@ -438,9 +460,10 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
                 introShown = introShown,
                 onIntroShown = { introShown = it },
                 playerStyle = playerStyle,
-                stylesUnlocked = proUnlocked,
+                stylesUnlocked = looksUnlocked,
                 onPickStyle = app.prefs::setPlayerStyle,
-                showAd = !adsRemoved && adsReady,
+                // No native ad in Now Playing any more: the player screen stays clean for everyone.
+                showAd = false,
                 onStartRadio = {
                     val song = library.songs.firstOrNull { it.id == player.current?.mediaId }
                     if (song != null) { vm.startRadio(song); vm.notify(context.getString(R.string.radio_started, song.title)) }
@@ -517,7 +540,11 @@ fun MusicPlayerApp(vm: MainViewModel, onRemoveAds: () -> Unit) {
             ProScreen(
                 isPro = adsRemoved,
                 playPrice = price,
-                onBuy = onRemoveAds,
+                onBuy = onBuy,
+                supporter = supporter,
+                looksPack = looksPack,
+                supporterPrice = supporterPrice,
+                packPrice = packPrice,
                 onRestore = {
                     vm.billing.restore()
                     Toast.makeText(context, context.getString(R.string.pro_restoring), Toast.LENGTH_SHORT).show()

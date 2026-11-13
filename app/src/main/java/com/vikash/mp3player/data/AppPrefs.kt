@@ -48,6 +48,15 @@ class AppPrefs(context: Context) {
         prefs.edit().putString(KEY_SEEK_STYLE, name).apply()
     }
 
+    /** Look of the song menu buttons: "Raised" (soft raised circles) or "Pills" (compact chips). */
+    private val _menuStyle = MutableStateFlow(prefs.getString(KEY_MENU_STYLE, null) ?: "Raised")
+    val menuStyle: StateFlow<String> = _menuStyle.asStateFlow()
+
+    fun setMenuStyle(name: String) {
+        _menuStyle.value = name
+        prefs.edit().putString(KEY_MENU_STYLE, name).apply()
+    }
+
     /** Song ids, most recently liked first. */
     private val _favorites = MutableStateFlow(
         prefs.getString(KEY_FAVORITES, "").orEmpty().split('\n').filter { it.isNotBlank() }
@@ -215,6 +224,7 @@ class AppPrefs(context: Context) {
     fun reloadAfterRestore(favorites: List<String>) {
         _themeMode.value = runCatching { ThemeMode.valueOf(prefs.getString(KEY_THEME, null) ?: "") }.getOrDefault(ThemeMode.System)
         _seekStyle.value = prefs.getString(KEY_SEEK_STYLE, null) ?: "Classic"
+        _menuStyle.value = prefs.getString(KEY_MENU_STYLE, null) ?: "Raised"
         _songSort.value = readSort()
         _hiddenFolders.value = readHidden()
         _favorites.value = favorites
@@ -225,6 +235,7 @@ class AppPrefs(context: Context) {
         const val KEY_THEME = "theme_mode"
         const val KEY_FAVORITES = "favorites"
         const val KEY_SEEK_STYLE = "seek_style"
+        const val KEY_MENU_STYLE = "menu_style"
         const val KEY_SORT = "song_sort"
         const val KEY_HIDDEN = "hidden_folders"
         const val KEY_WELCOME = "welcome_done"

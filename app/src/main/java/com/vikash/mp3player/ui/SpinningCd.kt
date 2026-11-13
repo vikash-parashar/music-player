@@ -81,7 +81,9 @@ fun rememberDiscSpin(player: PlayerConnection): State<Float> {
                 val target = if (st.isPlaying) DISC_MAX_SPEED * speedFactor(pos, st.durationMs) else 0f
                 val rate = if (target > speed) 1.6f else 1.2f
                 speed += (target - speed) * min(1f, dt * rate)
-                angle.floatValue = (angle.floatValue + speed * dt) % 360f
+                // Wrap at 3600, not 360: the reels, knobs and covers turn at 0.3x to 2x the disc, and at
+                // 360 their angle jumped back every turn (108 degrees for the Neon cover).
+                angle.floatValue = (angle.floatValue + speed * dt) % 3600f
             }
         }
     }

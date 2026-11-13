@@ -82,16 +82,22 @@ fun AnimatedSeekBar(
     if (onSeek != null) {
         m = m
             .pointerInput(Unit) {
-                detectTapGestures { seek?.invoke((it.x / size.width).coerceIn(0f, 1f)); finished() }
+                detectTapGestures { seek?.invoke(seekAt(it.x, size.width)); finished() }
             }
             .pointerInput(Unit) {
                 detectHorizontalDragGestures(
                     onDragEnd = { finished() },
                     onDragCancel = { finished() },
-                ) { change, _ -> seek?.invoke((change.position.x / size.width).coerceIn(0f, 1f)) }
+                ) { change, _ -> seek?.invoke(seekAt(change.position.x, size.width)) }
             }
     }
     Canvas(m) { drawSeek(style, progress.coerceIn(0f, 1f), time, track) }
+}
+
+/** Touch x to progress, matching the 10dp inset the bar is drawn with, so the knob stays under the finger. */
+private fun androidx.compose.ui.input.pointer.PointerInputScope.seekAt(x: Float, width: Int): Float {
+    val pad = 10.dp.toPx()
+    return ((x - pad) / (width - 2 * pad).coerceAtLeast(1f)).coerceIn(0f, 1f)
 }
 
 private val Rose = Ampli.Rose

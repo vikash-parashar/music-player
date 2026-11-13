@@ -1,5 +1,7 @@
 package com.vikash.mp3player.ui
 
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.runtime.LaunchedEffect
 import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -117,12 +119,28 @@ fun Artwork(uri: Uri?, size: Dp, modifier: Modifier = Modifier) {
 /** Heart toggle: filled rose when the song is in My Favorites. */
 @Composable
 fun FavoriteButton(isFavorite: Boolean, onToggle: () -> Unit, modifier: Modifier = Modifier) {
-    IconButton(onClick = onToggle, modifier = modifier) {
-        Icon(
-            if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-            stringResource(if (isFavorite) R.string.favorites_remove else R.string.favorites_add),
-            tint = if (isFavorite) Ampli.Rose else MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+    // The heart pops and throws a small burst when it turns on, with a light tap.
+    val haptics = rememberHaptics()
+    var burst by remember { androidx.compose.runtime.mutableIntStateOf(0) }
+    val pop = remember { androidx.compose.animation.core.Animatable(1f) }
+    LaunchedEffect(burst) {
+        if (burst == 0) return@LaunchedEffect
+        pop.snapTo(0.7f)
+        pop.animateTo(1f, androidx.compose.animation.core.spring(dampingRatio = 0.35f, stiffness = 500f))
+    }
+    androidx.compose.foundation.layout.Box(modifier, contentAlignment = Alignment.Center) {
+        HeartBurst(burst, Ampli.Rose, Modifier.matchParentSize())
+        IconButton(onClick = {
+            if (!isFavorite) { burst++; haptics.confirm() } else haptics.tick()
+            onToggle()
+        }) {
+            Icon(
+                if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                stringResource(if (isFavorite) R.string.favorites_remove else R.string.favorites_add),
+                tint = if (isFavorite) Ampli.Rose else MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.graphicsLayer { scaleX = pop.value; scaleY = pop.value },
+            )
+        }
     }
 }
 

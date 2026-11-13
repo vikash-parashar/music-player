@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_menu_style">పాట మెనూ బటన్లు</string>
+    <string name="settings_menu_style_desc">పాట ⋮ బటన్‌తో తెరుచుకునే మెనూలో బటన్లు ఎలా కనిపించాలి.</string>
+    <string name="menu_style_raised">ఎత్తైన గుండ్రని బటన్లు</string>
+    <string name="menu_style_pills">పిల్ చిప్స్</string>
+</resources>

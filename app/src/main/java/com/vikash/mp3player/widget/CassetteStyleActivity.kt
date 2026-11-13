@@ -9,6 +9,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -105,7 +107,8 @@ private fun Picker(startLook: Int, startPen: Int, onDone: (Int, Int) -> Unit) {
             fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 16.dp, bottom = 10.dp),
         )
         Text(stringResource(R.string.cassette_pen), color = Color(0xFFB9B1CC), fontSize = 13.sp)
-        Row(Modifier.padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        // Scrolls sideways on narrow phones and with longer Hindi/Tamil labels instead of squeezing "Red".
+        Row(Modifier.padding(vertical = 8.dp).horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             FilterChip(
                 selected = pen < 0, onClick = { pen = -1 },
                 label = { Text(stringResource(R.string.cassette_pen_auto)) },

@@ -68,6 +68,7 @@ import androidx.compose.foundation.background
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -81,6 +82,13 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.Player
 import com.vikash.mp3player.playback.PlayerConnection
 import com.vikash.mp3player.playback.PlayerUiState
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.material.icons.filled.DragHandle
+import androidx.compose.ui.zIndex
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import kotlinx.coroutines.delay
 
 @Composable
@@ -135,7 +143,16 @@ fun NowPlayingScreen(
     LaunchedEffect(stylesUnlocked) { if (stylesUnlocked) { previewStyle = null; lockedStyle = null } }
     val bookmarkStore = (androidx.compose.ui.platform.LocalContext.current.applicationContext as com.vikash.mp3player.MusicApp).bookmarks
     val allBookmarks by bookmarkStore.all.collectAsState()
-    BackHandler { if (showQueue) showQueue = false else onClose() }
+    // Predictive back (Android 14+): the player shrinks with the gesture so you see where it goes.
+    var backProgress by remember { mutableFloatStateOf(0f) }
+    androidx.activity.compose.PredictiveBackHandler { events ->
+        try {
+            events.collect { if (!showQueue) backProgress = it.progress }
+            if (showQueue) showQueue = false else onClose()
+        } finally {
+            backProgress = 0f
+        }
+    }
     // A song tapped in a list: the record drops onto the deck and the arm swings in, once per tap.
     // Keyed on the tap only, so marking it shown doesn't cut the animation short.
     val intro = remember { androidx.compose.animation.core.Animatable(1f) }
@@ -151,6 +168,9 @@ fun NowPlayingScreen(
         LaunchedEffect(Unit) { onClose() }
         return
     }
+    val haptics = rememberHaptics()
+    // The cover's own colour, washed softly behind the player.
+    val coverTint = rememberCoverTint(current.artworkUri, androidx.compose.ui.graphics.Color.Transparent)
 
     // Poll the position while visible; the controller doesn't push position updates.
     var position by remember { mutableLongStateOf(0L) }
@@ -164,11 +184,21 @@ fun NowPlayingScreen(
     }
 
     Surface(
-        Modifier.fillMaxSize().skinBackdrop(),
+        Modifier.fillMaxSize()
+            .graphicsLayer {
+                val k = backProgress
+                scaleX = 1f - k * 0.1f
+                scaleY = 1f - k * 0.1f
+                translationX = k * 24.dp.toPx()
+                shape = androidx.compose.foundation.shape.RoundedCornerShape((k * 28f).dp)
+                clip = k > 0f
+            }
+            .dragDownToClose(enabled = !showQueue, onClose = onClose)
+            .skinBackdrop(),
         color = skinScreenColor(),
         contentColor = MaterialTheme.colorScheme.onBackground,
     ) {
-        Column(Modifier.fillMaxSize().systemBarsPadding().padding(horizontal = 24.dp, vertical = 16.dp)) {
+        Column(Modifier.fillMaxSize().coverWash(coverTint).systemBarsPadding().padding(horizontal = 24.dp, vertical = 16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 IconButton(onClick = onClose) { Icon(Icons.Default.KeyboardArrowDown, stringResource(R.string.player_close)) }
                 Text(if (showQueue) stringResource(R.string.player_queue) else stringResource(R.string.player_now_playing), Modifier.weight(1f), style = MaterialTheme.typography.titleMedium)
@@ -215,12 +245,74 @@ fun NowPlayingScreen(
                         "${item.mediaId}#$n"
                     }
                 }
-                LazyColumn(Modifier.weight(1f), state = listState) {
+                // Hold a song and drag it to a new place (the others make room); swipe it away to remove, with Undo.
+                var dragFrom by remember { mutableIntStateOf(-1) }
+                var dragY by remember { mutableFloatStateOf(0f) }
+                var rowH by remember { mutableIntStateOf(1) }
+                var undo by remember { mutableStateOf<(() -> Unit)?>(null) }
+                LaunchedEffect(undo) { if (undo != null) { delay(4000); undo = null } }
+                val dragTo = if (dragFrom < 0) -1 else (dragFrom + kotlin.math.round(dragY / rowH).toInt()).coerceIn(0, state.queue.lastIndex)
+                LazyColumn(Modifier.weight(1f), state = listState, userScrollEnabled = dragFrom < 0) {
                     items(state.queue.size, key = { i -> queueKeys[i] }) { i ->
                         val item = state.queue[i]
                         val isCurrent = i == state.currentIndex
+                        val held = i == dragFrom
+                        // Rows between the dragged song and where it would land slide by one row to make room.
+                        val shift = when {
+                            dragFrom < 0 || held -> 0f
+                            dragFrom < i && i <= dragTo -> -rowH.toFloat()
+                            dragTo <= i && i < dragFrom -> rowH.toFloat()
+                            else -> 0f
+                        }
+                        val shiftAnim by androidx.compose.animation.core.animateFloatAsState(shift, androidx.compose.animation.core.spring(stiffness = androidx.compose.animation.core.Spring.StiffnessMediumLow), label = "queueShift")
+                        // The swipe state outlives a reorder, so it reads the row's index as it is now.
+                        val index by rememberUpdatedState(i)
+                        val nowPlaying by rememberUpdatedState(isCurrent)
+                        val swipe = androidx.compose.material3.rememberSwipeToDismissBoxState(
+                            confirmValueChange = { v ->
+                                if (v == androidx.compose.material3.SwipeToDismissBoxValue.EndToStart && !nowPlaying) {
+                                    haptics.tick()
+                                    undo = player.removeFromQueueWithUndo(index)
+                                }
+                                false
+                            },
+                            positionalThreshold = { it * 0.4f },
+                        )
+                        androidx.compose.material3.SwipeToDismissBox(
+                            state = swipe,
+                            enableDismissFromStartToEnd = false,
+                            enableDismissFromEndToStart = !isCurrent && dragFrom < 0,
+                            modifier = (if (held) Modifier else Modifier.animateItem())
+                                .zIndex(if (held) 1f else 0f)
+                                .graphicsLayer {
+                                    translationY = if (held) dragY else shiftAnim
+                                    if (held) { scaleX = 1.03f; scaleY = 1.03f; shadowElevation = 12.dp.toPx() }
+                                }
+                                .onSizeChanged { if (it.height > 0) rowH = it.height },
+                            backgroundContent = {
+                                if (swipe.dismissDirection != androidx.compose.material3.SwipeToDismissBoxValue.Settled) Row(
+                                    Modifier.fillMaxSize().background(MaterialTheme.colorScheme.errorContainer).padding(horizontal = 20.dp),
+                                    horizontalArrangement = Arrangement.End,
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) { Icon(Icons.Default.Close, null, tint = MaterialTheme.colorScheme.onErrorContainer) }
+                            },
+                        ) {
                         Row(
-                            Modifier.animateItem().fillMaxWidth().clickable { player.skipToQueueItem(i) }.padding(vertical = 6.dp),
+                            Modifier.fillMaxWidth().background(skinScreenColor()).clickable { player.skipToQueueItem(i) }
+                                .pointerInput(i, state.queue.size) {
+                                    detectDragGesturesAfterLongPress(
+                                        onDragStart = { haptics.confirm(); dragFrom = i; dragY = 0f },
+                                        onDragEnd = {
+                                            if (dragFrom >= 0) {
+                                                val to = (dragFrom + kotlin.math.round(dragY / rowH).toInt()).coerceIn(0, state.queue.lastIndex)
+                                                player.moveInQueue(dragFrom, to)
+                                            }
+                                            dragFrom = -1; dragY = 0f
+                                        },
+                                        onDragCancel = { dragFrom = -1; dragY = 0f },
+                                    ) { change, amount -> change.consume(); dragY += amount.y }
+                                }
+                                .padding(vertical = 6.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Artwork(item.artworkUri, 40.dp)
@@ -238,8 +330,24 @@ fun NowPlayingScreen(
                                 )
                                 Text(item.artist, maxLines = 1, style = MaterialTheme.typography.bodySmall)
                             }
-                            if (!isCurrent) IconButton(onClick = { player.removeFromQueue(i) }) {
-                                Icon(Icons.Default.Close, stringResource(R.string.player_remove_from_queue))
+                            Icon(
+                                Icons.Default.DragHandle, stringResource(R.string.queue_drag),
+                                Modifier.padding(horizontal = 8.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        }
+                    }
+                }
+                androidx.compose.animation.AnimatedVisibility(undo != null) {
+                    Surface(
+                        Modifier.fillMaxWidth().padding(top = 8.dp),
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(14.dp),
+                        color = MaterialTheme.colorScheme.inverseSurface,
+                    ) {
+                        Row(Modifier.padding(start = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Text(stringResource(R.string.queue_removed), Modifier.weight(1f), color = MaterialTheme.colorScheme.inverseOnSurface)
+                            androidx.compose.material3.TextButton(onClick = { undo?.invoke(); undo = null }) {
+                                Text(stringResource(R.string.queue_undo), color = MaterialTheme.colorScheme.inversePrimary)
                             }
                         }
                     }
@@ -260,7 +368,11 @@ fun NowPlayingScreen(
                     // except during a free user's short Pro preview (or its unlock card that follows).
                     val chosen = if (!playerStyle.pro || stylesUnlocked) playerStyle else com.vikash.mp3player.data.PlayerStyle.Car
                     val style = previewStyle ?: lockedStyle ?: chosen
-                    androidx.compose.foundation.layout.Box(Modifier.fillMaxWidth().weight(1f).padding(vertical = 8.dp)) {
+                    // Swipe the picture sideways for the next or previous song.
+                    androidx.compose.foundation.layout.Box(
+                        Modifier.fillMaxWidth().weight(1f).padding(vertical = 8.dp)
+                            .then(if (lockedStyle == null) Modifier.swipeToSkip(onNext = { player.next() }, onPrevious = { player.previous() }) else Modifier),
+                    ) {
                     PlayerPicture(
                         style = style,
                         artworkUri = current.artworkUri,
@@ -292,7 +404,7 @@ fun NowPlayingScreen(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
                         Text(current.title, style = MaterialTheme.typography.headlineSmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                        Text(current.artist, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(current.artist, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         HiResBadge()
                     }
                     FavoriteButton(
@@ -306,12 +418,13 @@ fun NowPlayingScreen(
 
             val duration = state.durationMs.coerceAtLeast(1)
             AnimatedSeekBar(
-                progress = if (dragging) dragValue else (position.toFloat() / duration).coerceIn(0f, 1f),
+                progress = if (dragging) dragValue else if (state.durationMs <= 0) 0f else (position.toFloat() / duration).coerceIn(0f, 1f),
                 playing = state.isPlaying && !dragging,
                 style = seekStyle,
                 onSeek = { dragging = true; dragValue = it },
                 onSeekFinished = {
-                    if (dragging) {
+                    if (dragging) haptics.tick()
+                    if (dragging && state.durationMs > 0) {
                         val target = (dragValue * duration).toLong()
                         player.seekTo(target)
                         position = target
@@ -320,7 +433,8 @@ fun NowPlayingScreen(
                 },
             )
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(formatDuration(position).ifEmpty { "0:00" }, style = MaterialTheme.typography.bodySmall)
+                // While dragging, the time follows the finger.
+                Text(formatDuration(if (dragging) (dragValue * duration).toLong() else position).ifEmpty { "0:00" }, style = MaterialTheme.typography.bodySmall)
                 Text(formatDuration(state.durationMs), style = MaterialTheme.typography.bodySmall)
             }
 
@@ -352,7 +466,7 @@ fun NowPlayingScreen(
                     Icon(Icons.Default.Shuffle, stringResource(R.string.player_shuffle), tint = if (state.shuffle) active else inactive)
                 }
                 IconButton(onClick = { player.previous() }) { Icon(Icons.Default.SkipPrevious, stringResource(R.string.common_previous), Modifier.size(36.dp)) }
-                GradientPlayButton(state.isPlaying, 76.dp, player::togglePlay)
+                GradientPlayButton(state.isPlaying, 76.dp) { haptics.tick(); player.togglePlay() }
                 IconButton(onClick = { player.next() }) { Icon(Icons.Default.SkipNext, stringResource(R.string.common_next), Modifier.size(36.dp)) }
                 IconButton(onClick = player::cycleRepeat) {
                     Icon(

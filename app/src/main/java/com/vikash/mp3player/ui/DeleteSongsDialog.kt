@@ -71,7 +71,11 @@ fun DeleteSongsDialog(songs: List<Song>, onDismiss: () -> Unit, onDeleted: (coun
                 SongDeleter.Result.NeedsStoragePermission ->
                     if (askedOnce) { working = false; error = context.getString(R.string.delete_needs_storage) }
                     else { askedOnce = true; storage.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE) }
-                is SongDeleter.Result.Failed -> if (SongDeleter.systemConfirms) onDismiss() else { working = false; error = result.message }
+                is SongDeleter.Result.Failed -> if (SongDeleter.systemConfirms) {
+                    // Say why (an online song can't be deleted) instead of closing silently.
+                    android.widget.Toast.makeText(context, result.message, android.widget.Toast.LENGTH_SHORT).show()
+                    onDismiss()
+                } else { working = false; error = result.message }
             }
         }
     }

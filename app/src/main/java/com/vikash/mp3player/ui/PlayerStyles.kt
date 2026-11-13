@@ -92,7 +92,8 @@ fun PlayerPicture(
     isPro: Boolean = false,
     onGetPro: () -> Unit = {},
 ) {
-    val progress = { positionMs.toFloat() / durationMs.coerceAtLeast(1) }
+    // Duration is 0 until a new song is ready: show 0 then, not a full bar for a moment.
+    val progress = { if (durationMs <= 0) 0f else positionMs.toFloat() / durationMs }
     when (style) {
         PlayerStyle.Car -> CarBeatView(isPlaying, isPro, onGetPro, modifier)
         PlayerStyle.Record -> RecordPlayerView(artworkUri, title, artist, isPlaying, progress, modifier, intro)
@@ -193,7 +194,7 @@ private fun GlassCassettePlayer(artworkUri: Uri?, title: String, artist: String,
     ) {
         GlassCassetteView(
             looks[lookIndex], title, artist, progress,
-            hubAngle = { if (isPlaying) spin.value * 2f else spin.value },
+            hubAngle = { spin.value * 2f },
             modifier = Modifier.fillMaxWidth(),
             artwork = artworkUri?.toString(),
         )
@@ -389,9 +390,15 @@ private fun NeonRingsView(uri: Uri?, isPlaying: Boolean, modifier: Modifier) {
 private fun LyricsFirstView(songId: String, positionMs: Long, onSeek: (Long) -> Unit, modifier: Modifier, fallback: @Composable () -> Unit) {
     val context = LocalContext.current
     var lyrics by remember(songId) { mutableStateOf<Lyrics?>(null) }
-    LaunchedEffect(songId) { lyrics = runCatching { LyricsRepository.load(context, songId) }.getOrNull() }
+    var loaded by remember(songId) { mutableStateOf(false) }
+    LaunchedEffect(songId) {
+        lyrics = runCatching { LyricsRepository.load(context, songId) }.getOrNull()
+        loaded = true
+    }
     val timed = lyrics?.takeIf { it.synced }?.lines?.filter { it.timeMs != null && it.text.isNotBlank() }.orEmpty()
     Box(modifier, contentAlignment = Alignment.Center) {
+        // Nothing until this song's lyrics are known, so the record player doesn't flash in between songs.
+        if (!loaded) return@Box
         if (timed.isEmpty()) {
             fallback()
             return@Box
@@ -466,7 +473,7 @@ private fun OldRadioView(uri: Uri?, title: String, artist: String, isPlaying: Bo
         listOf(0.18f, 0.48f).forEach { fx ->
             val kc = o + Offset(w * fx, h * 0.94f)
             drawCircle(Color(0xFFFBBF24), w * 0.035f, kc)
-            rotate(if (isPlaying) spin.value * 0.5f else 0f, kc) { drawLine(Color(0xFF78350F), kc, kc - Offset(0f, w * 0.03f), 4f, StrokeCap.Round) }
+            rotate(spin.value * 0.5f, kc) { drawLine(Color(0xFF78350F), kc, kc - Offset(0f, w * 0.03f), 4f, StrokeCap.Round) }
         }
     }
 }
@@ -537,7 +544,7 @@ private fun ClickWheelView(
         label(text, artist, Offset(so.x + w * 0.04f, ao.y + side + ss.height * 0.15f), ss.width - w * 0.08f, 11, Color(0xFF94A3B8), center = true)
         val barY = so.y + ss.height * 0.92f
         drawLine(Color(0xFF334155), Offset(so.x + w * 0.06f, barY), Offset(so.x + ss.width - w * 0.06f, barY), 5f, StrokeCap.Round)
-        val p = (positionMs.toFloat() / durationMs.coerceAtLeast(1)).coerceIn(0f, 1f)
+        val p = if (durationMs <= 0) 0f else (positionMs.toFloat() / durationMs).coerceIn(0f, 1f)
         drawLine(accent, Offset(so.x + w * 0.06f, barY), Offset(so.x + w * 0.06f + (ss.width - w * 0.12f) * p, barY), 5f, StrokeCap.Round)
         // Wheel.
         val wc = o + Offset(w / 2f, h * 0.72f)

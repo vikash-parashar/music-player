@@ -208,7 +208,8 @@ class SpokenRepository {
             }
             event = parser.next()
         }
-        return out
+        // Some feeds repeat an episode (same guid or audio link); a repeated id crashes the episode list.
+        return out.distinctBy { it.song.id }
     }
 
     /** Text of the current tag, or "" when it holds child tags instead. */

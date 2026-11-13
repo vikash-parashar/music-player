@@ -235,6 +235,22 @@ class PlayerConnection(private val context: Context) {
     fun seekTo(ms: Long) { controller?.seekTo(ms) }
     fun skipToQueueItem(index: Int) { controller?.seekTo(index, 0L) }
     fun removeFromQueue(index: Int) { controller?.removeMediaItem(index) }
+
+    /** Removes a queue song and returns how to put it back (the Undo after a swipe), or null. */
+    fun removeFromQueueWithUndo(index: Int): (() -> Unit)? {
+        val c = controller ?: return null
+        if (index !in 0 until c.mediaItemCount) return null
+        val item = c.getMediaItemAt(index)
+        c.removeMediaItem(index)
+        return { controller?.let { it.addMediaItem(index.coerceAtMost(it.mediaItemCount), item) } }
+    }
+
+    /** Drag to reorder in the queue: moves one song from [from] to [to]. */
+    fun moveInQueue(from: Int, to: Int) {
+        val c = controller ?: return
+        if (from == to || from !in 0 until c.mediaItemCount || to !in 0 until c.mediaItemCount) return
+        c.moveMediaItem(from, to)
+    }
     fun positionMs(): Long = controller?.currentPosition ?: 0L
 
     /** Playback speed and pitch, each 0.5x to 2x. Handy for practice, podcasts and audiobooks. */

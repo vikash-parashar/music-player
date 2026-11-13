@@ -83,9 +83,9 @@ abstract class StyleWidget(private val pro: Boolean) : GlanceAppWidget() {
             val s = remember(change) { WidgetState.read(context) }
             val app = context.applicationContext as? MusicApp
             val lite = runCatching { app?.prefs?.liteMode?.value }.getOrNull() ?: false
-            val unlocked = !pro || (runCatching { app?.proUnlocked?.value }.getOrNull() ?: false)
+            val unlocked = !pro || (runCatching { app?.looksUnlocked?.value }.getOrNull() ?: false)
             val favourite = s.id.isNotEmpty() && (runCatching { app?.prefs?.isFavorite(s.id) }.getOrNull() ?: false)
-            if (unlocked) Body(s, StyleExtras(animate = s.playing && !lite, favourite = favourite, widgetId = widgetId))
+            if (unlocked) Body(s, StyleExtras(animate = s.live() && !lite, favourite = favourite, widgetId = widgetId))
             else Locked()
         }
     }
@@ -167,7 +167,7 @@ abstract class StyleWidget(private val pro: Boolean) : GlanceAppWidget() {
     @Composable
     protected fun Progress(s: WidgetState, width: Dp, color: Color, track: Color) {
         val now = SystemClock.elapsedRealtime()
-        val pos = if (s.playing && s.capturedAt in 1..now) s.positionMs + (now - s.capturedAt) else s.positionMs
+        val pos = if (s.live(now)) s.positionMs + (now - s.capturedAt) else s.positionMs
         val f = if (s.durationMs > 0) (pos.toFloat() / s.durationMs).coerceIn(0f, 1f) else 0f
         Row(GlanceModifier.width(width).height(4.dp).cornerRadius(2.dp).background(track)) {
             if (f > 0f) Box(GlanceModifier.width(width * f).height(4.dp).cornerRadius(2.dp).background(color)) {}
@@ -180,7 +180,7 @@ abstract class StyleWidget(private val pro: Boolean) : GlanceAppWidget() {
         if (s.title.isEmpty()) return
         val context = LocalContext.current
         val now = SystemClock.elapsedRealtime()
-        val running = s.playing && s.capturedAt in 1..now
+        val running = s.live(now)
         val base = if (running) s.capturedAt - s.positionMs else now - s.positionMs
         val views = RemoteViews(context.packageName, R.layout.widget_time).apply {
             setChronometer(R.id.widget_elapsed, base, null, running)
@@ -423,7 +423,7 @@ class CassetteWidget : StyleWidget(pro = true) {
                 // The song's photo as a worn sticker (loaded once per song; the widget redraws when it is ready).
                 val sticker = CassetteSticker.cached(s.art)
                 if (sticker == null && s.art.isNotEmpty()) {
-                    CassetteSticker.request(context, s.art) { CassetteWidget().updateAll(context) }
+                    CassetteSticker.request(context, s.art) { WidgetState.redrawCassette(context) }
                 }
                 val room = if (sticker != null) CassetteSticker.ROOM else 1f
                 setImageViewBitmap(R.id.glass_body, GlassCassette.body(context, look, progress, (cw.value * density).toInt(), sticker, CassetteSticker.seed(s.art)))

@@ -221,6 +221,8 @@ private fun ShareBrowser(share: NetworkShare, onPlay: (List<Song>, Int, String) 
 
     LaunchedEffect(share.id, path, reload) {
         loading = true
+        // The old folder's list must not stay tappable while the new one loads.
+        entries = emptyList()
         error = null
         val result = withContext(Dispatchers.IO) { runCatching { NetworkShares.list(context, share, path) } }
         entries = result.getOrDefault(emptyList())

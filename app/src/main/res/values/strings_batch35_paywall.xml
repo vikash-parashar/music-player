@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tier_title">Pick your plan</string>
+    <string name="tier_best">Most popular</string>
+    <string name="tier_owned">Owned</string>
+    <string name="tier_buy">Get %1$s · %2$s</string>
+    <string name="tier_pack_name">Cassette &amp; Themes Pack</string>
+    <string name="tier_pack_desc">All Pro widgets, cassette looks, themes and seek bars</string>
+    <string name="tier_pack_price">₹49</string>
+    <string name="tier_pro_name">Ampli Pro</string>
+    <string name="tier_pro_desc">Everything below, no ads, forever</string>
+    <string name="tier_supporter_name">Pro + Supporter</string>
+    <string name="tier_supporter_desc">All of Pro, a supporter badge and a big thank-you from the Ampli team</string>
+    <string name="tier_supporter_price">₹599</string>
+    <string name="pro_supporter_badge">Ampli Supporter ❤</string>
+    <string name="supporter_thanks">You are one of the people keeping Ampli independent, ad-free and growing. Every new feature is partly yours. Thank you from all of us at Ampli.</string>
+    <plurals name="trial_welcome_left">
+        <item quantity="one">Free Pro: %d day left</item>
+        <item quantity="other">Free Pro: %d days left</item>
+    </plurals>
+    <string name="trial_welcome_desc">Every new Ampli gets 14 days of full Pro with no ads. Keep it forever with one payment.</string>
+</resources>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_menu_style">Song menu buttons</string>
+    <string name="settings_menu_style_desc">How the buttons look in the menu that opens from a song\'s ⋮ button.</string>
+    <string name="menu_style_raised">Soft raised circles</string>
+    <string name="menu_style_pills">Pill chips</string>
+</resources>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_menu_style">गाण्याच्या मेनूची बटणे</string>
+    <string name="settings_menu_style_desc">गाण्याच्या ⋮ बटणाने उघडणाऱ्या मेनूत बटणे कशी दिसावीत.</string>
+    <string name="menu_style_raised">उठावदार गोल बटणे</string>
+    <string name="menu_style_pills">पिल चिप्स</string>
+</resources>

@@ -55,6 +55,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -74,6 +75,10 @@ import com.vikash.mp3player.monetization.Ads
 import java.util.Locale
 
 private val Crimson = Color(0xFFA31C1B)
+
+/** Crimson for text and icons: a lighter red on dark backgrounds, where the deep one was hard to read. */
+private val CrimsonText: Color
+    @Composable get() = if (MaterialTheme.colorScheme.background.luminance() < 0.5f) Color(0xFFF2564F) else Crimson
 
 private fun StorySeries.blurb() =
     if (Locale.getDefault().language == "hi" || descriptionEn.isBlank()) description else descriptionEn
@@ -187,7 +192,7 @@ private fun StoriesHome(
                 Text(stringResource(R.string.stories_kicker).uppercase(), fontSize = 11.sp, letterSpacing = 2.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.SemiBold)
                 Text(stringResource(R.string.stories_title), fontFamily = FontFamily.Serif, fontWeight = FontWeight.Black,
-                    fontSize = 40.sp, lineHeight = 42.sp, color = Crimson)
+                    fontSize = 40.sp, lineHeight = 42.sp, color = CrimsonText)
                 Text(stringResource(R.string.stories_subtitle), color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
@@ -313,11 +318,11 @@ private fun SeriesDetail(
                 Modifier.fillMaxWidth().clickable { onPlay(e) }.padding(horizontal = 16.dp, vertical = 10.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text("%02d".format(e.n), fontWeight = FontWeight.Bold, color = if (playing) Crimson else MaterialTheme.colorScheme.onSurfaceVariant,
+                Text("%02d".format(e.n), fontWeight = FontWeight.Bold, color = if (playing) CrimsonText else MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.width(34.dp))
                 Column(Modifier.weight(1f)) {
                     Text(e.title, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis,
-                        color = if (playing) Crimson else MaterialTheme.colorScheme.onSurface)
+                        color = if (playing) CrimsonText else MaterialTheme.colorScheme.onSurface)
                     val mins = (e.durationSec + 30) / 60
                     Text(
                         buildString {
@@ -330,7 +335,7 @@ private fun SeriesDetail(
                 Icon(
                     if (open) Icons.Filled.PlayArrow else Icons.Filled.Lock,
                     if (open) stringResource(R.string.stories_play) else stringResource(R.string.stories_locked),
-                    tint = if (open) Crimson else MaterialTheme.colorScheme.onSurfaceVariant,
+                    tint = if (open) CrimsonText else MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }

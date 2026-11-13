@@ -166,7 +166,8 @@ private fun SyncedLines(
     val active = if (!lyrics.synced) -1 else lines.indexOfLast { (it.timeMs ?: Long.MAX_VALUE) <= positionMs }
     val listState = rememberLazyListState()
     LaunchedEffect(active) {
-        if (active >= 0) listState.animateScrollToItem((active - 2).coerceAtLeast(0))
+        // Don't pull the list back while the user is scrolling through the lyrics.
+        if (active >= 0 && !listState.isScrollInProgress) listState.animateScrollToItem((active - 2).coerceAtLeast(0))
     }
     LazyColumn(
         Modifier.fillMaxSize(),
