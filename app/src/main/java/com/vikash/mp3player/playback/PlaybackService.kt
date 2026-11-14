@@ -79,7 +79,9 @@ class PlaybackService : MediaLibraryService() {
         library = LocalMusicRepository(this)
         // The renderers factory adds a pass-through tap that feeds the Pro visualiser.
         // Hi-Res (Pro) changes the audio pipeline, so it is read once when the player is built.
-        val player = ExoPlayer.Builder(this, VisualizerTap.renderersFactory(this, hiRes = AudioOutput.hiResEnabled(this)))
+        // It needs Pro now, not just the saved switch: a trial or tester Pro may have ended.
+        val hiRes = AudioOutput.hiResEnabled(this) && (application as MusicApp).proUnlocked.value
+        val player = ExoPlayer.Builder(this, VisualizerTap.renderersFactory(this, hiRes = hiRes))
             // Network-folder (smb://) songs and internet radio need their own byte sources.
             .setMediaSourceFactory(DefaultMediaSourceFactory(StreamSourceFactory(this)))
             .setAudioAttributes(
@@ -115,7 +117,7 @@ class PlaybackService : MediaLibraryService() {
             .build()
         session = librarySession
         cast = CastSwitcher(this, player, librarySession, scope)
-        shake = ShakeToSkip(this, player)
+        shake = ShakeToSkip(this) { session?.player ?: player }
 
         // Keep the Shuffle/Repeat icons in sync wherever they are shown.
         player.addListener(object : Player.Listener {

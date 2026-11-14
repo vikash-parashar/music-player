@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.RepeatMode
@@ -155,7 +156,22 @@ fun RecognizeDialog(isPro: Boolean, onGetPro: () -> Unit, onDismiss: () -> Unit)
             val done = state is RecognizeState.Done || denied
             if (done) Button(onClick = { denied = false; state = RecognizeState.Idle; start() }) { Text(stringResource(R.string.recognize_listen_again)) }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.common_close)) } },
+        dismissButton = {
+            if (denied) {
+                // After "Don't allow" twice Android stops asking, so "Listen again" alone would fail
+                // at once: let the user turn the microphone on in the app's settings.
+                TextButton(onClick = {
+                    runCatching {
+                        context.startActivity(
+                            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + context.packageName))
+                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        )
+                    }
+                }) { Text(stringResource(R.string.ringtone_open_settings)) }
+            } else {
+                TextButton(onClick = onDismiss) { Text(stringResource(R.string.common_close)) }
+            }
+        },
     )
 }
 

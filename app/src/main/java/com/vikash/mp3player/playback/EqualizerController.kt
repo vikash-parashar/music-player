@@ -40,6 +40,8 @@ object EqualizerController {
     private var appContext: Context? = null
     private var audioManager: AudioManager? = null
     private var profile = Output("speaker", "Phone speaker")
+    // True while the Pro 10-band equaliser is on: two equalisers on one session add up and can clip.
+    private var suspended = false
     private val _state = MutableStateFlow(EqState())
     val state: StateFlow<EqState> = _state.asStateFlow()
 
@@ -66,7 +68,7 @@ object EqualizerController {
 
     fun setEnabled(context: Context, enabled: Boolean) {
         if (enabled) com.vikash.mp3player.data.OwnerHooks.event("feature_eq")
-        equalizer?.setEnabled(enabled)
+        equalizer?.setEnabled(enabled && !suspended)
         prefs(context).edit().putBoolean(key("enabled"), enabled).apply()
         publish()
     }
@@ -84,6 +86,23 @@ object EqualizerController {
         for (i in 0 until eq.numberOfBands) edit.putInt(key("band_$i"), eq.getBandLevel(i.toShort()).toInt())
         edit.apply()
         publish()
+    }
+
+    /**
+     * Pauses this equaliser while the Pro 10-band one is active, and brings back the user's own
+     * on/off choice when it is not. The saved setting is never changed.
+     */
+    fun setSuspended(value: Boolean) {
+        if (suspended == value) return
+        suspended = value
+        val eq = equalizer ?: return
+        runCatching { eq.setEnabled(savedEnabled() && !value) }
+        publish()
+    }
+
+    private fun savedEnabled(): Boolean {
+        val prefs = prefs(appContext ?: return false)
+        return prefs.getBoolean(key("enabled"), prefs.getBoolean("enabled", false))
     }
 
     /** Re-applies saved levels, e.g. after a restore from backup. */
@@ -113,7 +132,7 @@ object EqualizerController {
             val saved = prefs.getInt(key("band_$i"), prefs.getInt("band_$i", Int.MIN_VALUE))
             if (saved != Int.MIN_VALUE) eq.setBandLevel(i.toShort(), saved.toShort())
         }
-        eq.setEnabled(prefs.getBoolean(key("enabled"), prefs.getBoolean("enabled", false)))
+        eq.setEnabled(savedEnabled() && !suspended)
         publish()
     }
 
@@ -147,7 +166,7 @@ object EqualizerController {
         val range = eq.bandLevelRange
         _state.value = EqState(
             available = true,
-            enabled = eq.enabled,
+            enabled = savedEnabled(), // the user's choice, even while paused for the Pro equaliser
             minLevelMb = range[0],
             maxLevelMb = range[1],
             bands = (0 until eq.numberOfBands).map { i ->
