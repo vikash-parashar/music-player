@@ -65,7 +65,7 @@ export const products: Product[] = [
     short: "MP3 Player",
     tagline: "Your music, no monthly fee. Pay once, play forever.",
     icon: "mp3",
-    price: "Free · Pro ₹199 once",
+    price: "Free · Pro ₹299 once",
     status: "Testing on Google Play",
     statusTone: "test",
     accent: "#E11D48",
@@ -148,7 +148,7 @@ export const faqs = [
   },
   {
     q: "What does Ampli MP3 Player Pro add?",
-    a: "No ads, all 10 Now Playing styles and 10 car light shows, a 10-band equalizer with bass boost and 3D surround, network folders, Hi-Res output, Chromecast and the video player. ₹199 once.",
+    a: "No ads, all 10 Now Playing styles and 10 car light shows, a 10-band equalizer with bass boost and 3D surround, network folders, Hi-Res output, Chromecast and the video player. ₹299 once, and every new user gets 14 days of Pro free. There is also a ₹49 Cassette & Themes Pack and a ₹599 Pro + Supporter plan.",
   },
   {
     q: "Does Car Hub really speak Haryanvi?",
