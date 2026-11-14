@@ -180,12 +180,28 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
     }
 
     private fun launch(activity: Activity, details: ProductDetails) {
+        val item = BillingFlowParams.ProductDetailsParams.newBuilder().setProductDetails(details)
+        // Sell the same purchase option whose price the app shows.
+        details.mainOffer()?.offerToken?.let { item.setOfferToken(it) }
         val params = BillingFlowParams.newBuilder()
-            .setProductDetailsParamsList(
-                listOf(BillingFlowParams.ProductDetailsParams.newBuilder().setProductDetails(details).build())
-            )
+            .setProductDetailsParamsList(listOf(item.build()))
             .build()
         client.launchBillingFlow(activity, params)
+    }
+
+    /**
+     * The offer to show and sell for a one-time product. Play Console's new one-time products can
+     * have several purchase options; the old [ProductDetails.getOneTimePurchaseOfferDetails] only
+     * returns the "backwards compatible" one, which can still carry an old price (Ampli Pro showed
+     * ₹199 after the "lifetime" option was set to ₹299) or be missing (then the app fell back to its
+     * own ₹49 / ₹599 text). Prefer the "lifetime" option's full price, then any full-price option.
+     */
+    private fun ProductDetails.mainOffer(): ProductDetails.OneTimePurchaseOfferDetails? {
+        val all = oneTimePurchaseOfferDetailsList.orEmpty()
+        return all.firstOrNull { it.purchaseOptionId == PURCHASE_OPTION && it.offerId == null }
+            ?: all.firstOrNull { it.offerId == null }
+            ?: oneTimePurchaseOfferDetails
+            ?: all.firstOrNull()
     }
 
     private val timeout = android.os.Handler(android.os.Looper.getMainLooper())
@@ -261,9 +277,9 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
                 supporterDetails = byId[SUPPORTER_ID]
                 packDetails = byId[LOOKS_PACK_ID]
                 proQueried = true
-                _price.value = productDetails?.oneTimePurchaseOfferDetails?.formattedPrice
-                _supporterPrice.value = supporterDetails?.oneTimePurchaseOfferDetails?.formattedPrice
-                _packPrice.value = packDetails?.oneTimePurchaseOfferDetails?.formattedPrice
+                _price.value = productDetails?.mainOffer()?.formattedPrice
+                _supporterPrice.value = supporterDetails?.mainOffer()?.formattedPrice
+                _packPrice.value = packDetails?.mainOffer()?.formattedPrice
             }
             settleWaiting(forPro = true)
         }
@@ -297,7 +313,7 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
                 val list = found.productDetailsList
                 tipDetails = list.associateBy { it.productId }
                 tipsQueried = true
-                _tipPrices.value = list.mapNotNull { d -> d.oneTimePurchaseOfferDetails?.formattedPrice?.let { d.productId to it } }.toMap()
+                _tipPrices.value = list.mapNotNull { d -> d.mainOffer()?.formattedPrice?.let { d.productId to it } }.toMap()
             }
             settleWaiting(forPro = false)
         }
@@ -447,6 +463,8 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
         /** One-time products in Play Console (Monetize > In-app products). */
         const val SUPPORTER_ID = "ampli_pro_supporter"
         const val LOOKS_PACK_ID = "ampli_looks_pack"
+        /** Purchase option id set in Play Console for every one-time product. */
+        const val PURCHASE_OPTION = "lifetime"
         val UNLOCK_IDS = listOf(BuildConfig.REMOVE_ADS_PRODUCT_ID, SUPPORTER_ID, LOOKS_PACK_ID)
         private const val KEY_STORIES_PASS = "stories_pass"
         private const val KEY_SUPPORTER = "supporter"
