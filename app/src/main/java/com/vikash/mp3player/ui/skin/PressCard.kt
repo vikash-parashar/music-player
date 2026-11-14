@@ -15,11 +15,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -38,13 +41,20 @@ private val ease = CubicBezierEasing(0.23f, 1f, 0.32f, 1f)
 /**
  * Watches touches without taking them, so taps still reach the buttons and rows inside. A finger
  * that rests for a moment sinks the card; a quick tap gives a short dip; a scroll never sinks it.
+ *
+ * Distances are measured on the screen, not inside the card: while the list scrolls, the card moves
+ * along with the finger, so inside the card the finger seems to stand still and the card would stay
+ * sunk (with every button in it glowing as pressed) for the whole scroll.
  */
 @Composable
 private fun Modifier.watchPress(pressed: MutableState<Boolean>): Modifier {
     val scope = rememberCoroutineScope()
-    return pointerInput(Unit) {
+    val where = remember { arrayOfNulls<LayoutCoordinates>(1) }
+    return onGloballyPositioned { where[0] = it }.pointerInput(Unit) {
+        fun onScreen(p: Offset): Offset = where[0]?.takeIf { it.isAttached }?.localToRoot(p) ?: p
         awaitEachGesture {
             val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+            val start = onScreen(down.position)
             val slop = viewConfiguration.touchSlop
             var moved = false
             val ended = withTimeoutOrNull(90L) {
@@ -52,17 +62,20 @@ private fun Modifier.watchPress(pressed: MutableState<Boolean>): Modifier {
                 while (!done) {
                     val c = awaitPointerEvent(PointerEventPass.Initial).changes.firstOrNull { it.id == down.id }
                     if (c == null || !c.pressed) done = true
-                    else if ((c.position - down.position).getDistance() > slop) { moved = true; done = true }
+                    else if ((onScreen(c.position) - start).getDistance() > slop) { moved = true; done = true }
                 }
                 true
             }
             if (ended == null) {
                 pressed.value = true
-                while (true) {
-                    val c = awaitPointerEvent(PointerEventPass.Initial).changes.firstOrNull { it.id == down.id }
-                    if (c == null || !c.pressed || (c.position - down.position).getDistance() > slop * 2) break
+                try {
+                    while (true) {
+                        val c = awaitPointerEvent(PointerEventPass.Initial).changes.firstOrNull { it.id == down.id }
+                        if (c == null || !c.pressed || (onScreen(c.position) - start).getDistance() > slop) break
+                    }
+                } finally {
+                    pressed.value = false
                 }
-                pressed.value = false
             } else if (!moved) {
                 scope.launch { pressed.value = true; delay(120); pressed.value = false }
             }

@@ -154,6 +154,9 @@ fun proFeatures(): List<String> = listOf(
     stringResource(R.string.pro_feature_no_ads),
     stringResource(R.string.pro_feature_videos),
     stringResource(R.string.pro_feature_cast),
+    stringResource(R.string.pro_feature_sound),
+    stringResource(R.string.pro_feature_looks),
+    stringResource(R.string.pro_feature_styles),
     if (com.vikash.mp3player.recognize.SongRecognizer.isConfigured) stringResource(R.string.pro_feature_recognize)
     else stringResource(R.string.pro_feature_recognize_soon),
 )
