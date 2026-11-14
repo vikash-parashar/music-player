@@ -21,7 +21,7 @@ export const showcase: Showcase[] = [
     name: "Ampli MP3",
     short: "MP3",
     status: { tone: "test", label: "Testing on Google Play" },
-    price: "Free · Pro ₹199 once",
+    price: "Free · Pro ₹299 once",
     intro: "An offline music player that feels like vinyl. Your songs stay on your phone, there is no monthly fee, and there is a player look for every mood.",
     shots: [
       shot("mp3-0", "Record player with the song on the label"),
@@ -118,7 +118,7 @@ export const showcase: Showcase[] = [
 ];
 
 export const pricingRows = [
-  ["Ampli MP3", "Testing on Google Play", "Full player, Record and Car styles, Stories episodes 1-5", "₹199 once", "Android"],
+  ["Ampli MP3", "Testing on Google Play", "Full player, Record and Car styles, Stories episodes 1-5", "₹299 once · 14 days free", "Android"],
   ["Ampli Car Hub", "Testing in real cars", "Voice, navigation, CNG/EV finder, SOS", "₹1,499 launch price, then ₹2,500", "Android car screens"],
   ["Ampli Kavach", "In development", "Call warning, message check, loan-app shield", "₹149 once", "Android"],
   ["Ampli Naukri", "Built, launching soon", "Everything", "Not needed", "Android + web"],
