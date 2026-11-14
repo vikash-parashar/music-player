@@ -13,7 +13,10 @@ import kotlin.math.sqrt
  * Shake the phone to jump to the next song. Off by default (Settings). The accelerometer is only
  * listened to while music is playing, so it costs no battery when paused.
  */
-class ShakeToSkip(private val context: Context, private val player: Player) : SensorEventListener {
+class ShakeToSkip(private val context: Context, private val currentPlayer: () -> Player) : SensorEventListener {
+
+    // The session's player: the Chromecast one while casting, so a shake skips on the TV.
+    private val player: Player get() = currentPlayer()
 
     private val sensors = context.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
     private val accel = sensors?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)

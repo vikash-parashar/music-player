@@ -40,8 +40,8 @@ data class NetworkEntry(val name: String, val path: String, val isFolder: Boolea
 /**
  * Saved network folders and the SMB connections behind them. Songs from a share play through
  * `smb://<share id>/<path>` URIs that [com.vikash.mp3player.playback.SmbDataSource] opens.
- * Logins are kept in the app's private storage, which Android encrypts on modern phones and
- * which is excluded from backups (see backup_rules / data_extraction_rules).
+ * Logins are kept in the app's private storage, passwords encrypted with a Keystore key ([SecretBox]),
+ * and are excluded from backups (see backup_rules / data_extraction_rules).
  */
 object NetworkShares {
     private const val PREFS = "network_shares"
@@ -57,8 +57,11 @@ object NetworkShares {
     fun load(context: Context) {
         if (loaded) return
         val raw = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(KEY, null)
-        _shares.value = raw?.let { runCatching { json.decodeFromString<List<NetworkShare>>(it) }.getOrNull() }.orEmpty()
+        val stored = raw?.let { runCatching { json.decodeFromString<List<NetworkShare>>(it) }.getOrNull() }.orEmpty()
+        _shares.value = stored.map { it.copy(password = SecretBox.open(it.password)) }
         loaded = true
+        // Logins saved by older versions were plain text: save them again, encrypted.
+        if (stored.any { it.password.isNotEmpty() && !SecretBox.isSealed(it.password) }) persist(context)
     }
 
     fun find(context: Context, id: String): NetworkShare? { load(context); return _shares.value.firstOrNull { it.id == id } }
@@ -78,7 +81,7 @@ object NetworkShares {
 
     private fun persist(context: Context) {
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
-            .putString(KEY, json.encodeToString(_shares.value)).apply()
+            .putString(KEY, json.encodeToString(_shares.value.map { it.copy(password = SecretBox.seal(it.password)) })).apply()
     }
 
     /**

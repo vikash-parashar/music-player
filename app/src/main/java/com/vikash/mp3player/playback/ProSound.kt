@@ -136,11 +136,13 @@ object ProSound {
         bassBoost = null
         runCatching { virtualizer?.release() }
         virtualizer = null
+        EqualizerController.setSuspended(false)
     }
 
     private fun apply() {
         val s = _state.value
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) applyDynamics(s)
+        EqualizerController.setSuspended(s.unlocked && s.eqEnabled && dynamics != null)
         runCatching {
             bassBoost?.let {
                 it.setStrength(s.bass.toShort())
