@@ -9,4 +9,13 @@
     <string name="color_profile_snow">Snow</string>
     <string name="color_profile_water">Water</string>
     <string name="color_profile_air">Air</string>
+    <string name="color_profile_saffron">Saffron</string>
+    <string name="color_profile_mango">Mango</string>
+    <string name="color_profile_coral">Coral</string>
+    <string name="color_profile_cherry">Cherry</string>
+    <string name="color_profile_forest">Forest</string>
+    <string name="color_profile_lime">Lime</string>
+    <string name="color_profile_bubblegum">Bubblegum</string>
+    <string name="color_profile_midnight_gold">Midnight gold</string>
+    <string name="color_profile_graphite">Graphite</string>
 </resources>

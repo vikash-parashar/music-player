@@ -159,6 +159,51 @@ private fun palette(profile: ColorProfile): Palette? = when (profile) {
         Color(0xFFA5B4FC), Color(0xFF0C0E1A), Color(0xFF161A2E), Color(0xFFEEF0FF),
         Color(0xFFDDE1FE), Color(0xFF3730A3),
     )
+    ColorProfile.Saffron -> Palette(
+        Color(0xFFEA580C), Color(0xFFFFF7F0), Color(0xFFFFEDDD), Color(0xFF2B1608),
+        Color(0xFFFDBA74), Color(0xFF170C05), Color(0xFF26160C), Color(0xFFFDEEE2),
+        Color(0xFFFED7AA), Color(0xFF7C2D12),
+    )
+    ColorProfile.Mango -> Palette(
+        Color(0xFFD97706), Color(0xFFFFFBEB), Color(0xFFFEF3C7), Color(0xFF2A1C05),
+        Color(0xFFFCD34D), Color(0xFF151004), Color(0xFF241B08), Color(0xFFFEF6DC),
+        Color(0xFFFDE68A), Color(0xFF78350F),
+    )
+    ColorProfile.Coral -> Palette(
+        Color(0xFFE8604C), Color(0xFFFFF6F3), Color(0xFFFDE8E2), Color(0xFF2D1410),
+        Color(0xFFFDA48F), Color(0xFF180B08), Color(0xFF2A1611), Color(0xFFFDECE7),
+        Color(0xFFFBCFC3), Color(0xFF8A2E1E),
+    )
+    ColorProfile.Cherry -> Palette(
+        Color(0xFFDC2626), Color(0xFFFFF5F5), Color(0xFFFEE2E2), Color(0xFF2B0F0F),
+        Color(0xFFFCA5A5), Color(0xFF170707), Color(0xFF2A1010), Color(0xFFFDECEC),
+        Color(0xFFFECACA), Color(0xFF7F1D1D),
+    )
+    ColorProfile.Forest -> Palette(
+        Color(0xFF15803D), Color(0xFFF3FBF5), Color(0xFFDCF3E3), Color(0xFF0E2416),
+        Color(0xFF86EFAC), Color(0xFF06140B), Color(0xFF0F2416), Color(0xFFE6F8EC),
+        Color(0xFFBBF7D0), Color(0xFF14532D),
+    )
+    ColorProfile.Lime -> Palette(
+        Color(0xFF65A30D), Color(0xFFF8FCEF), Color(0xFFECF7D6), Color(0xFF1A2408),
+        Color(0xFFBEF264), Color(0xFF0D1405), Color(0xFF182509), Color(0xFFF1FADF),
+        Color(0xFFD9F99D), Color(0xFF3F6212),
+    )
+    ColorProfile.Bubblegum -> Palette(
+        Color(0xFFDB2777), Color(0xFFFFF5FA), Color(0xFFFCE7F3), Color(0xFF2D0F1F),
+        Color(0xFFF9A8D4), Color(0xFF18070F), Color(0xFF2A0F1D), Color(0xFFFDEAF4),
+        Color(0xFFFBCFE8), Color(0xFF831843),
+    )
+    ColorProfile.MidnightGold -> Palette(
+        Color(0xFFB8860B), Color(0xFFFAF8F2), Color(0xFFF1ECDD), Color(0xFF1F1A0D),
+        Color(0xFFE8B86B), Color(0xFF0B0F1A), Color(0xFF151B2B), Color(0xFFF3EEDF),
+        Color(0xFFEEDFB8), Color(0xFF6B4E12),
+    )
+    ColorProfile.Graphite -> Palette(
+        Color(0xFF404040), Color(0xFFFAFAFA), Color(0xFFEEEEEE), Color(0xFF171717),
+        Color(0xFFE5E5E5), Color(0xFF0A0A0A), Color(0xFF1A1A1A), Color(0xFFF5F5F5),
+        Color(0xFFE0E0E0), Color(0xFF3F3F3F),
+    )
 }
 
 /** The swatch shown in Settings: the profile's accent and day background. */

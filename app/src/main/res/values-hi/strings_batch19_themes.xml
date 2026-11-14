@@ -9,4 +9,13 @@
     <string name="color_profile_snow">बर्फ़</string>
     <string name="color_profile_water">पानी</string>
     <string name="color_profile_air">हवा</string>
+    <string name="color_profile_saffron">केसरिया</string>
+    <string name="color_profile_mango">आम</string>
+    <string name="color_profile_coral">कोरल</string>
+    <string name="color_profile_cherry">चेरी</string>
+    <string name="color_profile_forest">जंगल</string>
+    <string name="color_profile_lime">नींबू हरा</string>
+    <string name="color_profile_bubblegum">बबलगम</string>
+    <string name="color_profile_midnight_gold">रात सुनहरी</string>
+    <string name="color_profile_graphite">ग्रेफ़ाइट</string>
 </resources>
