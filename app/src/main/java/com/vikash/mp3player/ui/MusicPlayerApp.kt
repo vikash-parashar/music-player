@@ -90,6 +90,7 @@ fun MusicPlayerApp(vm: MainViewModel, onBuy: (String) -> Unit) {
     // Pro features without the ad removal: bought Pro, or a closed-test tester (ads stay on for testers).
     val featurePro = adsRemoved || vm.billing.testerPro
     val price by vm.billing.price.collectAsStateWithLifecycle()
+    val playReport by vm.billing.playReport.collectAsStateWithLifecycle()
     val adsReady by Ads.ready.collectAsStateWithLifecycle()
     // US/UK/EU and similar: no bottom banner (see AdRegion).
     val fewerAds = remember { com.vikash.mp3player.monetization.AdRegion.fewerAds(context) }
@@ -403,7 +404,7 @@ fun MusicPlayerApp(vm: MainViewModel, onBuy: (String) -> Unit) {
                              else LockedVideos(price = price, onGetPro = openPro)
                         else -> SettingsScreen(
                             adsRemoved = adsRemoved, price = price, onRemoveAds = openPro,
-                            onTestPro = vm.billing::setTestPro,
+                            onTestPro = vm.billing::setTestPro, playReport = playReport,
                             seekStyle = seekStyle, onSeekStyle = { vm.prefs.setSeekStyle(it.name) },
                             menuStyle = menuStyle, onMenuStyle = { vm.prefs.setMenuStyle(it.name) },
                             themeMode = themeMode, onThemeMode = vm.prefs::setThemeMode,

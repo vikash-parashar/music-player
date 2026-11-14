@@ -78,6 +78,7 @@ fun SettingsScreen(
     price: String?,
     onRemoveAds: () -> Unit,
     onTestPro: (Boolean) -> Unit,
+    playReport: String = "",
     themeMode: ThemeMode,
     onThemeMode: (ThemeMode) -> Unit,
     seekStyle: SeekStyle,
@@ -110,7 +111,7 @@ fun SettingsScreen(
         ProCard(adsRemoved, price, onRemoveAds, supporter = supporter)
         SupportDeveloperCard(tipPrices, tipsReceived, onTip)
         MoreFromAmpliCard()
-        if (BuildConfig.DEBUG) TestProCard(adsRemoved, onTestPro)
+        if (BuildConfig.DEBUG) TestProCard(adsRemoved, onTestPro, playReport)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) LanguageCard()
         com.vikash.mp3player.ui.skin.SkinPickerCard(looksUnlocked, onRemoveAds)
         AppearanceCard(themeMode, onThemeMode)
@@ -201,8 +202,9 @@ fun ProCard(isPro: Boolean, price: String?, onGetPro: () -> Unit, modifier: Modi
 }
 
 @Composable
-private fun TestProCard(isPro: Boolean, onTestPro: (Boolean) -> Unit) {
+private fun TestProCard(isPro: Boolean, onTestPro: (Boolean) -> Unit, playReport: String) {
     Card(Modifier.fillMaxWidth()) {
+      Column {
         Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 Text(stringResource(R.string.settings_test_pro), style = MaterialTheme.typography.titleMedium)
@@ -213,6 +215,11 @@ private fun TestProCard(isPro: Boolean, onTestPro: (Boolean) -> Unit) {
             }
             Switch(checked = isPro, onCheckedChange = onTestPro)
         }
+        if (playReport.isNotEmpty()) {
+            Text(playReport, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp))
+        }
+      }
     }
 }
 
