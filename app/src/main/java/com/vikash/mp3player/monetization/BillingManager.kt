@@ -51,6 +51,10 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
 
     private var productDetails: ProductDetails? = null
 
+    /** Test builds only: exactly what Play answered for the paid products, shown in Settings. */
+    private val _playReport = MutableStateFlow("")
+    val playReport: StateFlow<String> = _playReport.asStateFlow()
+
     /** "Pro + Supporter" (Pro plus a supporter badge and thank-you) and its localised price. */
     private val _supporter = MutableStateFlow(prefs.getBoolean(KEY_SUPPORTER, false))
     val supporter: StateFlow<Boolean> = _supporter.asStateFlow()
@@ -281,6 +285,21 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
                 _supporterPrice.value = supporterDetails?.mainOffer()?.formattedPrice
                 _packPrice.value = packDetails?.mainOffer()?.formattedPrice
             }
+            _playReport.value = buildString {
+                append("Play: ").append(result.responseCode).append(' ').append(result.debugMessage).append('\n')
+                val byId = found.productDetailsList.associateBy { it.productId }
+                UNLOCK_IDS.forEach { id ->
+                    val d = byId[id]
+                    append(id).append(": ")
+                    if (d == null) append("not returned") else {
+                        append("compat ").append(d.oneTimePurchaseOfferDetails?.formattedPrice ?: "none")
+                        d.oneTimePurchaseOfferDetailsList.orEmpty().forEach { o ->
+                            append(" | ").append(o.purchaseOptionId).append('/').append(o.offerId ?: "-").append(' ').append(o.formattedPrice)
+                        }
+                    }
+                    append('\n')
+                }
+            }.trim()
             settleWaiting(forPro = true)
         }
         val passParams = QueryProductDetailsParams.newBuilder()
