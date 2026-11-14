@@ -11,7 +11,16 @@ enum class ColorProfile(val id: String) {
     Electric("electric"),
     Snow("snow"),
     Water("water"),
-    Air("air");
+    Air("air"),
+    Saffron("saffron"),
+    Mango("mango"),
+    Coral("coral"),
+    Cherry("cherry"),
+    Forest("forest"),
+    Lime("lime"),
+    Bubblegum("bubblegum"),
+    MidnightGold("midnight_gold"),
+    Graphite("graphite");
 
     companion object {
         fun from(id: String?): ColorProfile = entries.firstOrNull { it.id == id } ?: Ampli

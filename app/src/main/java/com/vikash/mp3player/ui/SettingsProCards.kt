@@ -388,6 +388,15 @@ private fun profileLabel(p: ColorProfile): Int = when (p) {
     ColorProfile.Snow -> R.string.color_profile_snow
     ColorProfile.Water -> R.string.color_profile_water
     ColorProfile.Air -> R.string.color_profile_air
+    ColorProfile.Saffron -> R.string.color_profile_saffron
+    ColorProfile.Mango -> R.string.color_profile_mango
+    ColorProfile.Coral -> R.string.color_profile_coral
+    ColorProfile.Cherry -> R.string.color_profile_cherry
+    ColorProfile.Forest -> R.string.color_profile_forest
+    ColorProfile.Lime -> R.string.color_profile_lime
+    ColorProfile.Bubblegum -> R.string.color_profile_bubblegum
+    ColorProfile.MidnightGold -> R.string.color_profile_midnight_gold
+    ColorProfile.Graphite -> R.string.color_profile_graphite
 }
 
 /** Free: share the app with friends. */
