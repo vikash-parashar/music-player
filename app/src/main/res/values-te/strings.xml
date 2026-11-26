@@ -91,6 +91,8 @@
     <string name="library_never_played">ఎప్పుడూ వినలేదు</string>
     <string name="library_never_played_empty">మీరు అన్ని పాటలూ విన్నారు. సూపర్!</string>
     <string name="library_permission_needed">ఈ ఫోన్‌లోని పాటలు చూడటానికి Ampli కి అనుమతి ఇవ్వండి.</string>
+    <string name="auto_no_songs_title">ఇంకా పాటలు లేవు</string>
+    <string name="auto_no_songs_text">ఫోన్‌లో Ampli తెరిచి పాటల అనుమతి ఇవ్వండి</string>
     <string name="library_allow_access">అనుమతి ఇవ్వు</string>
     <string name="library_sort_songs">పాటలను క్రమపరచు</string>
     <string name="library_search_hint">మీ పాటలు వెతకండి</string>

@@ -95,6 +95,8 @@
     <string name="library_never_played">Never played</string>
     <string name="library_never_played_empty">You\'ve played every song. Nice!</string>
     <string name="library_permission_needed">Allow Ampli to see the music on this phone.</string>
+    <string name="auto_no_songs_title">No songs yet</string>
+    <string name="auto_no_songs_text">Open Ampli on your phone and allow music access</string>
     <string name="library_allow_access">Allow access</string>
     <string name="library_sort_songs">Sort songs</string>
     <string name="library_search_hint">Search your music</string>
