@@ -34,6 +34,7 @@ import com.vikash.mp3player.data.RADIO_HLS_PREFIX
 import com.vikash.mp3player.data.RADIO_PREFIX
 import com.vikash.mp3player.data.Song
 import com.vikash.mp3player.widget.WidgetState
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -54,7 +55,12 @@ import kotlinx.coroutines.launch
 class PlaybackService : MediaLibraryService() {
 
     private var session: MediaLibrarySession? = null
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+    // A failure inside one background job (a broken file, a car asking at a bad moment) is logged
+    // and dropped. It must never take the whole player down, least of all in Android Auto.
+    private val scope = CoroutineScope(
+        SupervisorJob() + Dispatchers.Main +
+            CoroutineExceptionHandler { _, e -> android.util.Log.w(TAG, "Background job failed", e) }
+    )
     private var autoPlay: AutoPlay? = null
     private lateinit var library: LocalMusicRepository
     private val resume by lazy { ResumePositions(this) }
@@ -399,12 +405,62 @@ class PlaybackService : MediaLibraryService() {
         )
         .build()
 
+    /**
+     * Never throws: no permission yet, a broken MediaStore or anything else just means "no songs",
+     * and the car shows the "open Ampli on your phone" item instead of an error.
+     */
     private suspend fun loadSongs(): List<Song> =
         try {
             library.loadSongs().also { songs = it }
-        } catch (_: SecurityException) {
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
+        } catch (e: Throwable) {
+            android.util.Log.w(TAG, "Could not load songs for the car", e)
             emptyList() // storage permission not granted yet; the phone app asks for it
         }
+
+    /**
+     * Shown in the car when there is nothing to browse (new install, no music, or music access
+     * not allowed yet), so the screen explains what to do instead of looking broken.
+     */
+    private fun emptyItem() = MediaItem.Builder()
+        .setMediaId(NODE_EMPTY)
+        .setMediaMetadata(
+            MediaMetadata.Builder()
+                .setTitle(getString(R.string.auto_no_songs_title))
+                .setSubtitle(getString(R.string.auto_no_songs_text))
+                .setIsBrowsable(false)
+                .setIsPlayable(true) // Android Auto hides items that are neither; a tap does nothing
+                .setMediaType(MediaMetadata.MEDIA_TYPE_MUSIC)
+                .build()
+        )
+        .build()
+
+    /** One page of [all]; an empty library gets the help item so a list is never blank. */
+    private fun pageOf(all: List<MediaItem>, page: Int, pageSize: Int): ImmutableList<MediaItem> {
+        val list = all.ifEmpty { if (page == 0) listOf(emptyItem()) else emptyList() }
+        val size = if (pageSize <= 0) Int.MAX_VALUE else pageSize
+        val from = (page.toLong() * size).coerceIn(0L, list.size.toLong()).toInt()
+        val to = (from.toLong() + size).coerceIn(from.toLong(), list.size.toLong()).toInt()
+        return ImmutableList.copyOf(list.subList(from, to))
+    }
+
+    /** Runs [block] off the binder call and always completes the future, with [fallback] on failure. */
+    private fun <T> answer(fallback: () -> T, block: suspend () -> T): ListenableFuture<T> {
+        val result = SettableFuture.create<T>()
+        scope.launch {
+            try {
+                result.set(block())
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                result.set(fallback())
+                throw e
+            } catch (e: Throwable) {
+                android.util.Log.w(TAG, "Android Auto request failed", e)
+                result.set(fallback())
+            }
+        }
+        return result
+    }
 
     /** The songs under a browse node, in the order the car should queue them. */
     private fun songsUnder(parentId: String): List<Song> = when {
@@ -483,12 +539,12 @@ class PlaybackService : MediaLibraryService() {
             browser: MediaSession.ControllerInfo,
             params: LibraryParams?,
         ): ListenableFuture<LibraryResult<MediaItem>> {
-            val result = SettableFuture.create<LibraryResult<MediaItem>>()
-            scope.launch {
+            val root = folderItem(NODE_ROOT, getString(R.string.app_name))
+            // The root itself never depends on the library, so the car always gets an answer.
+            return answer({ LibraryResult.ofItem(root, params) }) {
                 loadSongs()
-                result.set(LibraryResult.ofItem(folderItem(NODE_ROOT, getString(R.string.app_name)), params))
+                LibraryResult.ofItem(root, params)
             }
-            return result
         }
 
         override fun onGetChildren(
@@ -499,15 +555,11 @@ class PlaybackService : MediaLibraryService() {
             pageSize: Int,
             params: LibraryParams?,
         ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> {
-            val result = SettableFuture.create<LibraryResult<ImmutableList<MediaItem>>>()
-            scope.launch {
+            return answer({ LibraryResult.ofItemList(pageOf(emptyList(), page, pageSize), params) }) {
                 if (songs.isEmpty()) loadSongs()
-                val all = childrenOf(parentId)
-                val from = (page * pageSize).coerceIn(0, all.size)
-                val to = (from + pageSize).coerceIn(from, all.size)
-                result.set(LibraryResult.ofItemList(ImmutableList.copyOf(all.subList(from, to)), params))
+                val all = if (parentId == NODE_ROOT && songs.isEmpty()) emptyList() else childrenOf(parentId)
+                LibraryResult.ofItemList(pageOf(all, page, pageSize), params)
             }
-            return result
         }
 
         // The search box in Android Auto: say how many results there are, then hand them over.
@@ -519,7 +571,8 @@ class PlaybackService : MediaLibraryService() {
         ): ListenableFuture<LibraryResult<Void>> {
             scope.launch {
                 if (songs.isEmpty()) loadSongs()
-                session.notifySearchResultChanged(browser, query, VoiceSearch.find(songs, query).size, params)
+                val count = runCatching { VoiceSearch.find(songs, query).size }.getOrDefault(0)
+                session.notifySearchResultChanged(browser, query, count, params)
             }
             return Futures.immediateFuture(LibraryResult.ofVoid())
         }
@@ -532,15 +585,13 @@ class PlaybackService : MediaLibraryService() {
             pageSize: Int,
             params: LibraryParams?,
         ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> {
-            val result = SettableFuture.create<LibraryResult<ImmutableList<MediaItem>>>()
-            scope.launch {
+            return answer({ LibraryResult.ofItemList(ImmutableList.of(), params) }) {
                 if (songs.isEmpty()) loadSongs()
                 val all = childrenOf(PREFIX_SEARCH + query)
-                val from = (page * pageSize).coerceIn(0, all.size)
-                val to = (from + pageSize).coerceIn(from, all.size)
-                result.set(LibraryResult.ofItemList(ImmutableList.copyOf(all.subList(from, to)), params))
+                val from = (page.toLong() * pageSize).coerceIn(0L, all.size.toLong()).toInt()
+                val to = (from.toLong() + pageSize).coerceIn(from.toLong(), all.size.toLong()).toInt()
+                LibraryResult.ofItemList(ImmutableList.copyOf(all.subList(from, to)), params)
             }
-            return result
         }
 
         // Earbuds, the car or the quick-settings media card pressed play after Android closed the
@@ -569,13 +620,15 @@ class PlaybackService : MediaLibraryService() {
                         .apply { if (item.mediaId.startsWith(RADIO_HLS_PREFIX)) setMimeType(androidx.media3.common.MimeTypes.APPLICATION_M3U8) }
                         .build()
                 } else item
-            }.toMutableList()
+            }
+                // An item with no address (the car's help item, a stale browse id) would crash the
+                // player, so it is left out instead.
+                .filter { it.localConfiguration != null }
+                .toMutableList()
             val switcher = cast
             if (switcher == null || !switcher.isCasting) return Futures.immediateFuture(restored)
             // Casting: the TV needs Wi-Fi addresses instead of phone-only ones.
-            val result = SettableFuture.create<MutableList<MediaItem>>()
-            scope.launch { result.set(switcher.adaptForCast(restored).toMutableList()) }
-            return result
+            return answer({ restored }) { switcher.adaptForCast(restored).toMutableList() }
         }
 
         // A tap on a song in Android Auto: queue the whole list it came from, starting at that song.
@@ -586,12 +639,14 @@ class PlaybackService : MediaLibraryService() {
             startIndex: Int,
             startPositionMs: Long,
         ): ListenableFuture<MediaSession.MediaItemsWithStartPosition> {
+            val nothing = MediaSession.MediaItemsWithStartPosition(emptyList(), C.INDEX_UNSET, C.TIME_UNSET)
             val single = mediaItems.singleOrNull()
+            // The "open Ampli on your phone" help item: nothing to play.
+            if (single?.mediaId == NODE_EMPTY) return Futures.immediateFuture(nothing)
             // "Hey Google, play Coldplay on Ampli": a single item that carries only a search query.
             val query = single?.requestMetadata?.searchQuery
             if (single != null && query != null && single.requestMetadata.mediaUri == null) {
-                val result = SettableFuture.create<MediaSession.MediaItemsWithStartPosition>()
-                scope.launch {
+                return answer({ nothing }) {
                     if (songs.isEmpty()) loadSongs()
                     val extras = single.requestMetadata.extras
                     val found = VoiceSearch.find(
@@ -601,23 +656,25 @@ class PlaybackService : MediaLibraryService() {
                     ).let { if (query.isBlank()) it.shuffled() else it }
                     // Nothing matched: play everything shuffled rather than staying silent in the car.
                     val list = found.ifEmpty { songs.shuffled() }
-                    result.set(
-                        MediaSession.MediaItemsWithStartPosition(
-                            list.map { it.toMediaItem() }, if (list.isEmpty()) C.INDEX_UNSET else 0, if (list.isEmpty()) C.TIME_UNSET else 0L,
-                        )
+                    MediaSession.MediaItemsWithStartPosition(
+                        list.map { it.toMediaItem() }, if (list.isEmpty()) C.INDEX_UNSET else 0, if (list.isEmpty()) C.TIME_UNSET else 0L,
                     )
                 }
-                return result
             }
             val parent = single?.mediaId?.substringBeforeLast(SEP, missingDelimiterValue = "")
             if (single != null && !parent.isNullOrEmpty() && single.requestMetadata.mediaUri == null) {
                 val songId = single.mediaId.substringAfterLast(SEP)
-                val list = songsUnder(parent)
-                val index = list.indexOfFirst { it.id == songId }
-                if (index >= 0) {
-                    return Futures.immediateFuture(
+                // The service may have been restarted since the car loaded this list: reload first.
+                return answer({ nothing }) {
+                    if (songs.isEmpty()) loadSongs()
+                    val list = songsUnder(parent)
+                    val index = list.indexOfFirst { it.id == songId }
+                    if (index >= 0) {
                         MediaSession.MediaItemsWithStartPosition(list.map { it.toMediaItem() }, index, 0L)
-                    )
+                    } else {
+                        // The song is gone (deleted, or music access was taken away): play nothing.
+                        nothing
+                    }
                 }
             }
             return super.onSetMediaItems(mediaSession, controller, mediaItems, startIndex, startPositionMs)
@@ -638,5 +695,7 @@ class PlaybackService : MediaLibraryService() {
         const val PREFIX_FOLDER = "folder:"
         const val PREFIX_SEARCH = "search:"
         const val SEP = "|"
+        const val NODE_EMPTY = "ampli.empty"
+        const val TAG = "PlaybackService"
     }
 }

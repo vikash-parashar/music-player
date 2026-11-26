@@ -91,6 +91,8 @@
     <string name="library_never_played">কখনও শোনা হয়নি</string>
     <string name="library_never_played_empty">আপনি সব গান শুনে ফেলেছেন। দারুণ!</string>
     <string name="library_permission_needed">এই ফোনের গান দেখার জন্য Ampli-কে অনুমতি দিন।</string>
+    <string name="auto_no_songs_title">এখনও কোনো গান নেই</string>
+    <string name="auto_no_songs_text">ফোনে Ampli খুলুন এবং গানের অনুমতি দিন</string>
     <string name="library_allow_access">অনুমতি দিন</string>
     <string name="library_sort_songs">গান সাজান</string>
     <string name="library_search_hint">আপনার গান খুঁজুন</string>
