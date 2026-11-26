@@ -1,0 +1,3 @@
+Build 263 (Android Auto fix) was sent for Google review on 27 Nov 2026 (Production + closed testing).
+A Play upload now would cancel that review, so automatic uploads are paused.
+Delete this file once Play has approved the release.
