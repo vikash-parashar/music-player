@@ -135,23 +135,25 @@ internal fun keyFace(accent: Boolean): Brush {
     val s = LocalSkin.current
     val paper = LocalPaper.current.takeOrElse { paperColor() }
     return if (accent) when (s.look) {
+        // Top-to-bottom shade, never a radial spot: a radial fill on a wide pill drew a bright
+        // white dot in the middle of every button (owner, 2026-11-27).
         TactileLook.Jelly, TactileLook.Arcade, TactileLook.Bubble ->
-            Brush.radialGradient(listOf(lerp(s.tactileAccent, Color.White, 0.45f), s.tactileAccent, lerp(s.tactileAccent, Color.Black, 0.25f)))
+            Brush.verticalGradient(listOf(lerp(s.tactileAccent, Color.White, 0.22f), s.tactileAccent, lerp(s.tactileAccent, Color.Black, 0.18f)))
         TactileLook.Sticker -> Brush.linearGradient(listOf(Color(0xFFFDE047), Color(0xFFFDE047)))
         else -> Brush.linearGradient(listOf(lerp(s.tactileAccent, Color.White, 0.22f), lerp(s.tactileAccent, Color.Black, 0.12f)))
     }
     else when (s.look) {
         // Brushed chrome knob.
-        TactileLook.Metal -> if (s.dark) Brush.radialGradient(listOf(Color(0xFF6B6F78), Color(0xFF34373D)))
-            else Brush.radialGradient(listOf(Color.White, Color(0xFFC9CDD3)))
+        TactileLook.Metal -> if (s.dark) Brush.verticalGradient(listOf(Color(0xFF6B6F78), Color(0xFF34373D)))
+            else Brush.verticalGradient(listOf(Color(0xFFF4F5F7), Color(0xFFC9CDD3)))
         TactileLook.Frost -> Brush.linearGradient(listOf(Color.White.copy(alpha = if (s.dark) 0.30f else 0.85f), Color.White.copy(alpha = if (s.dark) 0.12f else 0.45f)))
         TactileLook.Led -> Brush.linearGradient(listOf(lerp(paper, Color.White, 0.08f), lerp(paper, Color.Black, 0.25f)))
-        // Candy: a light top fading into the key colour, with a gloss spot.
-        TactileLook.Jelly -> Brush.radialGradient(listOf(lerp(s.tactile, Color.White, 0.75f), s.tactile, lerp(s.tactile, Color.Black, 0.10f)))
+        // Candy: a light top fading into the key colour (no centre gloss spot).
+        TactileLook.Jelly -> Brush.verticalGradient(listOf(lerp(s.tactile, Color.White, 0.45f), s.tactile, lerp(s.tactile, Color.Black, 0.10f)))
         TactileLook.Sticker -> Brush.linearGradient(listOf(s.tactile, s.tactile))
         // Rainbow film on a clear bubble.
-        TactileLook.Bubble -> Brush.radialGradient(listOf(Color.White.copy(alpha = 0.15f), Color(0x55F0ABFC), Color(0x887DD3FC), Color(0x66FDE68A)))
-        TactileLook.Arcade -> Brush.radialGradient(listOf(lerp(s.tactile, Color.White, 0.18f), s.tactile))
+        TactileLook.Bubble -> Brush.verticalGradient(listOf(Color.White.copy(alpha = 0.15f), Color(0x55F0ABFC), Color(0x887DD3FC), Color(0x66FDE68A)))
+        TactileLook.Arcade -> Brush.verticalGradient(listOf(lerp(s.tactile, Color.White, 0.18f), s.tactile))
         else -> Brush.linearGradient(listOf(lerp(paper, Color.White, if (s.dark) 0.05f else 0.5f), lerp(paper, Color.Black, if (s.dark) 0.08f else 0.04f)))
     }
 }
