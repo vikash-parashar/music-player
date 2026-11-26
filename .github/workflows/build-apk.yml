@@ -159,7 +159,9 @@ jobs:
           whatsNewDirectory: distribution/whatsnew
 
       - name: Upload to Play closed test (without release notes)
+        id: playupload2
         if: steps.play.outputs.ready == 'true' && steps.playupload.outcome == 'failure'
+        continue-on-error: true
         uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
@@ -168,6 +170,22 @@ jobs:
           mappingFile: Ampli-${{ github.run_number }}-mapping.txt
           track: ${{ vars.PLAY_TRACK || 'alpha' }}
           status: completed
+
+      # After a rejection (or with other changes waiting in the Console) Play refuses to send an
+      # edit for review automatically. Upload anyway and leave it as a saved change; the owner
+      # then presses "Send for review" in Publishing overview.
+      - name: Upload to Play closed test (send for review from the Console)
+        if: steps.play.outputs.ready == 'true' && steps.playupload.outcome == 'failure' && steps.playupload2.outcome == 'failure'
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.vikash.ampli
+          releaseFiles: Ampli-${{ github.run_number }}.aab
+          mappingFile: Ampli-${{ github.run_number }}-mapping.txt
+          track: ${{ vars.PLAY_TRACK || 'alpha' }}
+          status: completed
+          whatsNewDirectory: distribution/whatsnew
+          changesNotSentForReview: true
 
   # Installs the R8 (shrunk, like Play) build on an emulator, adds a song, opens Car mode with
   # autoplay and checks that the song actually plays and nothing crashed.
